@@ -1,0 +1,1648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SkyPage — Astronomy Club</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================= DESIGN TOKENS ============================= */
+:root{
+  --void:#05070d;
+  --void-soft:#0b0f1d;
+  --void-softer:#121729;
+  --panel-border:rgba(232,176,75,0.14);
+  --starlight:#f5f3ec;
+  --starlight-dim:#a9adc1;
+  --gold:#e8b04b;
+  --gold-dim:#8a6a2e;
+  --nebula:#a86bff;
+  --hydrogen:#ff5d5d;
+  --teal:#5dd9c1;
+  --font-display:'Space Grotesk', sans-serif;
+  --font-body:'IBM Plex Sans', sans-serif;
+  --font-mono:'IBM Plex Mono', monospace;
+  --radius:2px;
+  --sidebar-w:272px;
+  --transition-nv: background-color .5s ease, color .5s ease, border-color .5s ease, filter .5s ease;
+}
+
+body.night-vision{
+  --void:#0a0000;
+  --void-soft:#140202;
+  --void-softer:#1c0303;
+  --panel-border:rgba(255,80,80,0.25);
+  --starlight:#ff9d9d;
+  --starlight-dim:#b85454;
+  --gold:#ff3b3b;
+  --gold-dim:#8a1f1f;
+  --nebula:#ff6666;
+  --hydrogen:#ff5d5d;
+  --teal:#ff5d5d;
+}
+body.night-vision img,
+body.night-vision .apod-image,
+body.night-vision .gallery-thumb{
+  filter: grayscale(1) sepia(1) saturate(4) hue-rotate(-50deg) brightness(0.65);
+}
+
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+  background:var(--void);
+  color:var(--starlight);
+  font-family:var(--font-body);
+  line-height:1.55;
+  transition:var(--transition-nv);
+}
+::selection{background:var(--gold); color:var(--void);}
+a{color:inherit;}
+img{max-width:100%; display:block;}
+.mono{font-family:var(--font-mono);}
+.eyebrow{
+  font-family:var(--font-mono); font-size:0.7rem; letter-spacing:0.12em; text-transform:uppercase;
+  color:var(--gold); display:flex; align-items:center; gap:0.6em; margin-bottom:0.6rem;
+}
+.eyebrow::before{content:''; width:20px; height:1px; background:var(--gold); display:inline-block;}
+h1,h2,h3,h4{font-family:var(--font-display); font-weight:600; letter-spacing:-0.01em;}
+.pane-head{max-width:680px; margin-bottom:2.4rem;}
+.pane-head h2{font-size:clamp(1.6rem,3vw,2.3rem); margin-bottom:0.7rem;}
+.pane-head p{color:var(--starlight-dim); font-size:1rem; max-width:58ch;}
+button{font-family:var(--font-body); cursor:pointer;}
+.btn{
+  display:inline-flex; align-items:center; gap:0.5em; background:transparent; border:1px solid var(--gold-dim);
+  color:var(--starlight); padding:0.7em 1.4em; font-size:0.85rem; letter-spacing:0.03em; border-radius:var(--radius);
+  transition:border-color .25s ease, background .25s ease, color .25s ease; text-decoration:none;
+}
+.btn:hover{border-color:var(--gold); background:rgba(232,176,75,0.08); color:var(--gold);}
+.btn.solid{background:var(--gold); color:var(--void); border-color:var(--gold); font-weight:600;}
+.btn.solid:hover{background:var(--starlight); border-color:var(--starlight); color:var(--void);}
+.tag{
+  font-family:var(--font-mono); font-size:0.66rem; letter-spacing:0.07em; border:1px solid var(--panel-border);
+  color:var(--starlight-dim); padding:0.25em 0.6em; border-radius:20px; text-transform:uppercase;
+}
+::-webkit-scrollbar{width:8px; height:8px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--void-softer); border:1px solid var(--panel-border);}
+
+/* ============================= STARFIELD BACKDROP ============================= */
+#starfield{position:fixed; inset:0; width:100%; height:100%; z-index:0; pointer-events:none;}
+
+/* ============================= TOP NAV LAYOUT ============================= */
+header#topnav{
+  position:sticky; top:0; z-index:150; display:flex; align-items:center; justify-content:space-between;
+  gap:1.5rem; padding:1rem clamp(1.25rem,4vw,3rem); background:rgba(5,7,13,0.85); backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--panel-border); transition:var(--transition-nv);
+}
+.sb-logo{
+  font-family:var(--font-display); font-weight:700; font-size:1.1rem; display:flex; align-items:center;
+  gap:0.55rem; flex-shrink:0;
+}
+.sb-logo svg{width:23px; height:23px; flex-shrink:0;}
+.sb-logo .sub{font-family:var(--font-mono); font-size:0.56rem; color:var(--starlight-dim); letter-spacing:0.1em; display:block; margin-top:1px;}
+
+.sidebar-nav{
+  display:flex; align-items:center; gap:0.3rem; flex-grow:1; overflow-x:auto; scrollbar-width:none;
+  -ms-overflow-style:none; min-width:0;
+}
+.sidebar-nav::-webkit-scrollbar{display:none;}
+.nav-item{
+  display:block; text-decoration:none; color:var(--starlight-dim); font-size:0.82rem; padding:0.55rem 0.8rem;
+  border-radius:20px; transition:background .15s ease, color .15s ease; white-space:nowrap; flex-shrink:0;
+}
+.nav-item:hover{color:var(--starlight); background:rgba(232,176,75,0.06);}
+.nav-item.active{color:var(--gold); background:rgba(232,176,75,0.1); font-weight:600;}
+
+.nav-right{display:flex; align-items:center; gap:0.8rem; flex-shrink:0;}
+#nvToggle{
+  display:flex; align-items:center; gap:0.5em; background:transparent; border:1px solid var(--panel-border);
+  color:var(--starlight-dim); padding:0.5em 0.75em; border-radius:20px; font-size:0.66rem; font-family:var(--font-mono);
+  letter-spacing:0.03em; transition:var(--transition-nv); white-space:nowrap;
+}
+#nvToggle:hover{border-color:var(--gold); color:var(--gold);}
+#nvToggle .dot{width:6px; height:6px; border-radius:50%; background:var(--hydrogen); box-shadow:0 0 6px var(--hydrogen);}
+#burger{display:none; background:none; border:1px solid var(--panel-border); color:var(--starlight); padding:0.5em 0.7em; border-radius:var(--radius);}
+
+@media(max-width:980px){
+  .sidebar-nav{
+    display:none; position:fixed; top:60px; left:0; right:0; bottom:0; overflow-y:auto; flex-direction:column;
+    align-items:stretch; background:rgba(5,7,13,0.97); backdrop-filter:blur(10px); padding:1rem 1.2rem; z-index:140; gap:0.2rem;
+  }
+  .sidebar-nav.open{display:flex;}
+  .nav-item{padding:0.9rem 0.8rem; border-radius:var(--radius); border-bottom:1px solid var(--panel-border);}
+  #burger{display:block;}
+}
+
+#content{padding:2.6rem clamp(1.25rem,4vw,3rem) 0; max-width:1280px; margin:0 auto; position:relative; z-index:2;}
+.pane{display:none;}
+.pane.active{display:block; animation:paneFade .35s ease;}
+@keyframes paneFade{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+
+/* photo banner — real NASA imagery blended behind each pane's header */
+.photo-banner{
+  position:relative; border:1px solid var(--panel-border); margin-bottom:2.4rem; padding:2.4rem clamp(1.25rem,3vw,2.6rem);
+  min-height:200px; display:flex; flex-direction:column; justify-content:flex-end; overflow:hidden;
+  background-color:var(--void-soft); background-size:cover; background-position:center; background-repeat:no-repeat;
+  transition:var(--transition-nv);
+}
+.photo-banner::before{
+  content:''; position:absolute; inset:0; z-index:0;
+  background:linear-gradient(180deg, rgba(3,4,8,0.6) 0%, rgba(3,4,8,0.45) 45%, var(--void) 94%);
+  transition:var(--transition-nv);
+}
+.photo-banner.has-photo::before{background:linear-gradient(180deg, rgba(3,4,8,0.65) 0%, rgba(3,4,8,0.5) 45%, var(--void) 96%);}
+.photo-banner > *{position:relative; z-index:1;}
+.photo-banner .pane-head{margin-bottom:0; max-width:680px;}
+.photo-banner .pb-credit{
+  position:absolute; bottom:0.6rem; right:0.9rem; z-index:1; font-family:var(--font-mono); font-size:0.58rem;
+  color:rgba(255,255,255,0.45); letter-spacing:0.03em;
+}
+
+footer.site-footer{
+  margin-top:5rem; border-top:1px solid var(--panel-border); position:relative; z-index:2;
+  padding:3rem clamp(1.25rem,4vw,3rem) 1.6rem;
+}
+.footer-grid{max-width:1280px; margin:0 auto; display:flex; flex-wrap:wrap; justify-content:space-between; gap:2.4rem; padding-bottom:2rem;}
+.footer-grid h4{font-size:0.9rem; margin-bottom:0.8rem;}
+.footer-grid p{color:var(--starlight-dim); font-size:0.85rem; max-width:32ch;}
+.footer-grid .flinks{display:flex; flex-direction:column; gap:0.5rem;}
+.footer-grid .flinks a{text-decoration:none; color:var(--starlight-dim); font-size:0.84rem; transition:color .2s ease;}
+.footer-grid .flinks a:hover{color:var(--gold);}
+.footbar{
+  max-width:1280px; margin:0 auto; display:flex; justify-content:space-between; flex-wrap:wrap; gap:0.8rem;
+  padding-top:1.5rem; border-top:1px solid var(--panel-border); font-family:var(--font-mono); font-size:0.7rem; color:var(--starlight-dim);
+}
+.footbar b{color:var(--gold); font-weight:600;}
+
+.photo-banner.hero-banner{min-height:62vh; justify-content:center; padding:3rem clamp(1.25rem,4vw,3rem);}
+
+/* ============================= HOME PANE ============================= */
+.home-h1{font-size:clamp(2.2rem,5vw,3.6rem); line-height:1.02; letter-spacing:-0.02em; max-width:820px;}
+.home-h1 em{font-style:normal; color:var(--gold);}
+.home-sub{margin-top:1.3rem; color:var(--starlight-dim); font-size:1.05rem; max-width:60ch;}
+.home-cta{display:flex; gap:1rem; margin-top:2rem; flex-wrap:wrap;}
+
+#quoteBox{
+  margin-top:2.6rem; padding:1.5rem 1.7rem; border-left:2px solid var(--gold);
+  background:rgba(232,176,75,0.04); max-width:680px; min-height:96px; transition:opacity .4s ease;
+}
+#quoteBox.fade{opacity:0;}
+.quote-kicker{
+  font-family:var(--font-mono); font-size:0.62rem; letter-spacing:0.1em; text-transform:uppercase;
+  color:var(--teal); display:block; margin-bottom:0.6rem;
+}
+#quoteBox p{font-family:var(--font-display); font-size:1.08rem; font-weight:500; color:var(--starlight);}
+#quoteBox cite{display:block; margin-top:0.7rem; font-style:normal; font-family:var(--font-mono); font-size:0.74rem; color:var(--gold);}
+
+.home-shortcuts{margin-top:3.5rem; padding-bottom:1rem;}
+.shortcut-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1.1rem;}
+.shortcut-card{
+  display:block; border:1px solid var(--panel-border); background:var(--void-soft); padding:1.3rem;
+  text-decoration:none; color:var(--starlight); transition:border-color .2s ease, transform .2s ease;
+}
+.shortcut-card:hover{border-color:var(--gold-dim); transform:translateY(-2px);}
+.shortcut-card h4{font-size:1rem; margin:0.7rem 0 0.4rem;}
+.shortcut-card p{color:var(--starlight-dim); font-size:0.84rem;}
+
+/* ============================= APOD ============================= */
+.apod-grid{display:grid; grid-template-columns:1.15fr 1fr; gap:2.6rem; align-items:start;}
+@media(max-width:860px){.apod-grid{grid-template-columns:1fr;}}
+.apod-media{position:relative; border:1px solid var(--panel-border); background:var(--void-soft); aspect-ratio:4/3; overflow:hidden;}
+.apod-image, .apod-media video{width:100%; height:100%; object-fit:cover;}
+.apod-skel{position:absolute; inset:0; background:linear-gradient(100deg, var(--void-soft) 30%, var(--void-softer) 50%, var(--void-soft) 70%); background-size:200% 100%; animation:shimmer 1.6s infinite;}
+@keyframes shimmer{0%{background-position:200% 0;} 100%{background-position:-200% 0;}}
+.apod-info h3{font-size:1.4rem; margin:0.9rem 0 0.8rem;}
+.apod-info p{color:var(--starlight-dim);}
+
+/* ============================= SKY EVENTS ============================= */
+.upcoming-row{display:grid; grid-template-columns:repeat(3,1fr); gap:1.3rem; margin-bottom:3rem;}
+@media(max-width:900px){.upcoming-row{grid-template-columns:1fr;}}
+.event-card{border:1px solid var(--panel-border); background:var(--void-soft); padding:1.5rem; position:relative; overflow:hidden;}
+.event-card .icon{width:40px; height:40px; margin-bottom:1rem;}
+.event-card .countdown{font-family:var(--font-mono); font-size:1.6rem; color:var(--gold); font-weight:600;}
+.event-card .countdown small{font-size:0.68rem; color:var(--starlight-dim); font-family:var(--font-mono); display:block; margin-top:0.3rem; font-weight:400;}
+.event-card h4{font-size:1.02rem; margin:0.85rem 0 0.5rem;}
+.event-card p{font-size:0.84rem; color:var(--starlight-dim);}
+.event-card .edate{font-family:var(--font-mono); font-size:0.7rem; color:var(--teal); margin-top:0.8rem; display:block;}
+
+.events-panel{border:1px solid var(--panel-border); background:var(--void-soft); padding:1.7rem; margin-bottom:2.8rem;}
+.events-panel-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:1.1rem; flex-wrap:wrap; gap:0.6rem;}
+.events-panel-head h3{font-size:1.05rem;}
+.almanac-list{display:flex; flex-direction:column;}
+.almanac-row{display:grid; grid-template-columns:32px 120px 1fr auto; gap:1rem; align-items:center; padding:0.8rem 0; border-top:1px solid var(--panel-border);}
+.almanac-row:first-child{border-top:none;}
+.almanac-row .icon{width:20px; height:20px;}
+.almanac-row .date{font-family:var(--font-mono); font-size:0.76rem; color:var(--starlight-dim);}
+.almanac-row .name{font-size:0.92rem;}
+.almanac-row .desc{font-size:0.78rem; color:var(--starlight-dim); display:block; margin-top:0.15rem;}
+@media(max-width:700px){
+  .almanac-row{grid-template-columns:24px 1fr; grid-template-areas:"icon name" ". date" ". desc" ". tag";}
+  .almanac-row .icon{grid-area:icon;} .almanac-row .name{grid-area:name;} .almanac-row .date{grid-area:date;} .almanac-row .desc{grid-area:desc;} .almanac-row .tag{grid-area:tag; justify-self:start; margin-top:0.4rem;}
+}
+.live-tool-card{border:1px dashed var(--panel-border); padding:1.9rem; background:rgba(168,107,255,0.03);}
+.live-tool-card h4{font-size:1.15rem; max-width:44ch; margin-bottom:0.7rem;}
+.live-tool-card p{color:var(--starlight-dim); max-width:60ch; margin-bottom:1.3rem;}
+.live-links{display:flex; gap:1rem; flex-wrap:wrap;}
+.live-links .btn{flex-direction:column; align-items:flex-start; gap:0.15rem; padding:0.8em 1.2em;}
+.live-links .btn span{font-family:var(--font-mono); font-size:0.64rem; color:var(--starlight-dim);}
+
+/* ============================= STAR MAP (2D constellations) ============================= */
+.const-chips{display:flex; gap:0.6rem; flex-wrap:wrap; margin-bottom:2rem;}
+.const-chip{
+  background:transparent; border:1px solid var(--panel-border); color:var(--starlight-dim);
+  padding:0.55em 1.1em; font-size:0.82rem; border-radius:20px; transition:all .2s ease; font-family:var(--font-body);
+}
+.const-chip:hover{color:var(--starlight); border-color:var(--gold-dim);}
+.const-chip.active{background:var(--gold); color:var(--void); border-color:var(--gold); font-weight:600;}
+
+.starmap-grid{display:grid; grid-template-columns:1.4fr 1fr; gap:2rem; align-items:start;}
+@media(max-width:900px){.starmap-grid{grid-template-columns:1fr;}}
+.starmap-canvas-wrap{
+  position:relative; border:1px solid var(--panel-border);
+  background:radial-gradient(circle at 50% 45%, var(--void-softer), var(--void-soft) 70%);
+  aspect-ratio:1/1; overflow:hidden; padding:1.2rem;
+}
+.const-title{position:absolute; top:1.1rem; left:1.2rem; font-family:var(--font-mono); font-size:0.72rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--starlight-dim); z-index:2;}
+#constSvg{width:100%; height:100%; display:block;}
+#constSvg .const-line{stroke:var(--gold-dim); stroke-width:0.4; opacity:0.75; fill:none;}
+#constSvg .star-dot{cursor:pointer; transition:r .15s ease;}
+#constSvg .star-dot:hover{filter:brightness(1.3);}
+#constSvg .star-label{font-family:'IBM Plex Mono', monospace; font-size:2.6px; fill:var(--starlight-dim); pointer-events:none;}
+.starmap-legend{
+  position:absolute; bottom:1rem; left:1rem; display:flex; flex-direction:column; gap:0.35rem;
+  font-family:var(--font-mono); font-size:0.63rem; color:var(--starlight-dim);
+  background:rgba(5,7,13,0.55); padding:0.65rem 0.85rem; border:1px solid var(--panel-border);
+}
+.starmap-legend span{display:flex; align-items:center; gap:0.5em;}
+.starmap-legend i{width:8px; height:8px; border-radius:50%; display:inline-block;}
+.starmap-info{border:1px solid var(--panel-border); background:var(--void-soft); padding:2rem; min-height:340px;}
+.starmap-info h3{font-size:1.4rem; margin:0.6rem 0 1rem;}
+.starmap-info .stat-row{display:flex; justify-content:space-between; padding:0.6rem 0; border-top:1px solid var(--panel-border); font-size:0.86rem;}
+.starmap-info .stat-row .k{color:var(--starlight-dim); font-family:var(--font-mono); font-size:0.72rem; letter-spacing:0.03em; text-transform:uppercase;}
+.starmap-info .stat-row .v{font-family:var(--font-mono); color:var(--gold);}
+.starmap-info .fun-fact{margin-top:1.2rem; padding-top:1.2rem; border-top:1px dashed var(--panel-border); color:var(--starlight-dim); font-size:0.86rem; font-style:italic;}
+
+/* ============================= TELESCOPE ACADEMY ============================= */
+.scope-tabs{display:flex; gap:0.6rem; flex-wrap:wrap; margin-bottom:2rem; border-bottom:1px solid var(--panel-border); padding-bottom:1.4rem;}
+.scope-tab{
+  background:transparent; border:1px solid var(--panel-border); color:var(--starlight-dim);
+  padding:0.7em 1.3em; font-size:0.85rem; border-radius:20px; transition:all .2s ease; font-family:var(--font-body);
+}
+.scope-tab:hover{color:var(--starlight); border-color:var(--gold-dim);}
+.scope-tab.active{background:var(--gold); color:var(--void); border-color:var(--gold); font-weight:600;}
+.scope-panel{display:grid; grid-template-columns:1fr 1fr; gap:2.6rem; align-items:center;}
+@media(max-width:860px){.scope-panel{grid-template-columns:1fr;}}
+.scope-diagram{border:1px solid var(--panel-border); background:var(--void-soft); padding:2rem; aspect-ratio:16/10; display:flex; align-items:center; justify-content:center;}
+.scope-diagram svg{width:100%; height:100%;}
+.scope-text h3{font-size:1.4rem; margin-bottom:0.9rem;}
+.scope-text p{color:var(--starlight-dim); margin-bottom:1rem;}
+.scope-specs{display:flex; gap:0.7rem; flex-wrap:wrap; margin-top:1.2rem;}
+.scope-good, .scope-watch{margin-top:0.5rem; font-size:0.86rem;}
+.scope-good b, .scope-watch b{color:var(--gold); font-family:var(--font-mono); font-size:0.7rem; text-transform:uppercase; letter-spacing:0.04em; display:block; margin-bottom:0.3rem;}
+.scope-watch{color:var(--starlight-dim);}
+
+.glossary-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:1.3rem;}
+.glossary-card{border:1px solid var(--panel-border); background:var(--void-soft); padding:1.5rem;}
+.glossary-card h4{font-size:1rem; margin-bottom:0.6rem;}
+.glossary-card .formula{
+  font-family:var(--font-mono); font-size:0.84rem; color:var(--teal); background:rgba(93,217,193,0.06);
+  border:1px solid rgba(93,217,193,0.18); padding:0.6em 0.8em; display:inline-block; margin-bottom:0.8rem; border-radius:var(--radius);
+}
+.glossary-card p{color:var(--starlight-dim); font-size:0.86rem;}
+
+/* ============================= OPTICS SIMULATOR ============================= */
+.sim-grid{display:grid; grid-template-columns:1fr 1.15fr; gap:2.6rem; align-items:start;}
+@media(max-width:900px){.sim-grid{grid-template-columns:1fr;}}
+.sim-presets{display:flex; gap:0.6rem; flex-wrap:wrap; margin-bottom:2rem;}
+.sim-presets .btn{font-size:0.76rem; padding:0.6em 1em;}
+.sim-label{display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.04em; color:var(--starlight-dim); margin-bottom:0.5rem; margin-top:1.4rem;}
+.sim-range{-webkit-appearance:none; width:100%; height:2px; background:var(--panel-border); outline:none; margin-bottom:0.4rem;}
+.sim-range::-webkit-slider-thumb{-webkit-appearance:none; width:15px; height:15px; border-radius:50%; background:var(--gold); cursor:pointer; box-shadow:0 0 8px rgba(232,176,75,0.6);}
+.sim-range::-moz-range-thumb{width:15px; height:15px; border-radius:50%; background:var(--gold); cursor:pointer; border:none; box-shadow:0 0 8px rgba(232,176,75,0.6);}
+.mono-select{background:rgba(5,7,13,0.75); color:var(--starlight); border:1px solid var(--panel-border); font-family:var(--font-mono); font-size:0.72rem; padding:0.5em 0.7em; border-radius:var(--radius);}
+.sim-stats{margin-top:2.1rem; border-top:1px solid var(--panel-border); padding-top:1rem;}
+.sim-stats .stat-row{display:flex; justify-content:space-between; padding:0.55rem 0; border-top:1px solid var(--panel-border); font-size:0.86rem;}
+.sim-stats .stat-row:first-child{border-top:none;}
+.sim-stats .k{color:var(--starlight-dim); font-family:var(--font-mono); font-size:0.72rem; text-transform:uppercase;}
+.sim-stats .v{font-family:var(--font-mono); color:var(--gold);}
+.sim-view{position:relative; border:1px solid var(--panel-border); background:radial-gradient(circle at 50% 50%, #0d0e1a, var(--void)); aspect-ratio:4/3; overflow:hidden;}
+#saturnCanvas{width:100%; height:100%;}
+.sim-view-caption{position:absolute; bottom:0.8rem; left:0.9rem; right:0.9rem; font-family:var(--font-mono); font-size:0.62rem; color:var(--starlight-dim); opacity:0.8;}
+
+/* ============================= MEMBER GALLERY ============================= */
+.shared-note{font-family:var(--font-mono); font-size:0.74rem; color:var(--starlight-dim); margin:1.3rem 0 1.8rem;}
+.gallery-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:1.3rem;}
+.gallery-card{border:1px solid var(--panel-border); background:var(--void-soft); cursor:pointer; overflow:hidden; transition:border-color .2s ease;}
+.gallery-card:hover{border-color:var(--gold-dim);}
+.gallery-thumb-wrap{aspect-ratio:4/3; overflow:hidden; background:var(--void-softer);}
+.gallery-thumb{width:100%; height:100%; object-fit:cover; transition:transform .3s ease;}
+.gallery-card:hover .gallery-thumb{transform:scale(1.04);}
+.gallery-card-body{padding:1rem 1.1rem 1.2rem;}
+.gallery-card-body h4{font-size:0.96rem; margin-bottom:0.3rem;}
+.gallery-card-body .meta{font-family:var(--font-mono); font-size:0.68rem; color:var(--starlight-dim);}
+.gallery-empty, .gallery-loading{grid-column:1/-1; text-align:center; padding:3.5rem 1rem; color:var(--starlight-dim); border:1px dashed var(--panel-border);}
+.gallery-empty h4{color:var(--starlight); margin-bottom:0.5rem; font-family:var(--font-display);}
+
+.modal-overlay{position:fixed; inset:0; background:rgba(2,3,7,0.85); backdrop-filter:blur(4px); display:none; align-items:center; justify-content:center; z-index:200; padding:1.5rem;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:var(--void-soft); border:1px solid var(--panel-border); max-width:520px; width:100%; padding:2rem; max-height:88vh; overflow-y:auto; position:relative;}
+.lightbox-box{max-width:640px;}
+.lightbox-box img{width:100%; border:1px solid var(--panel-border); margin-bottom:1.2rem;}
+.modal-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:1.4rem;}
+.modal-head h3{font-size:1.15rem;}
+.modal-close{position:absolute; top:1.2rem; right:1.2rem; background:none; border:none; color:var(--starlight-dim); font-size:1rem;}
+.modal-close:hover{color:var(--starlight);}
+.field-label{display:block; font-family:var(--font-mono); font-size:0.68rem; text-transform:uppercase; letter-spacing:0.04em; color:var(--starlight-dim); margin:1.1rem 0 0.4rem;}
+.field-label:first-of-type{margin-top:0;}
+#uploadForm input[type=text], #uploadForm input[type=date], #uploadForm textarea, #uploadForm input[type=file]{
+  width:100%; background:var(--void-softer); border:1px solid var(--panel-border); color:var(--starlight);
+  padding:0.7em 0.8em; font-family:var(--font-body); font-size:0.9rem; border-radius:var(--radius);
+}
+#uploadForm textarea{resize:vertical;}
+.field-row{display:grid; grid-template-columns:1fr 1fr; gap:1rem;}
+@media(max-width:480px){.field-row{grid-template-columns:1fr;}}
+#filePreviewWrap{margin-top:0.8rem;}
+#filePreviewWrap img{width:100%; max-height:180px; object-fit:cover; border:1px solid var(--panel-border);}
+.upload-error{color:var(--hydrogen); font-size:0.82rem; margin-top:1rem;}
+.lightbox-meta{font-family:var(--font-mono); font-size:0.76rem; color:var(--teal); margin-bottom:0.9rem;}
+.lightbox-info p{color:var(--starlight-dim); font-size:0.9rem;}
+
+/* ============================= GEAR GUIDE ============================= */
+.gear-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:1.4rem;}
+.gear-card{border:1px solid var(--panel-border); background:var(--void-soft); padding:1.7rem; display:flex; flex-direction:column; gap:0.8rem;}
+.gear-card h4{font-size:1.1rem;}
+.gear-card p{color:var(--starlight-dim); font-size:0.86rem; flex-grow:1;}
+.gear-card .btn{align-self:flex-start;}
+.gear-disclaimer{margin-top:2rem; font-size:0.8rem; color:var(--starlight-dim); font-style:italic; max-width:64ch;}
+
+@media(prefers-reduced-motion: reduce){
+  *{animation-duration:0.001ms !important; transition-duration:0.001ms !important;}
+}
+</style>
+</head>
+<body>
+
+<canvas id="starfield"></canvas>
+
+<header id="topnav">
+  <div class="sb-logo">
+    <svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="1.6" fill="var(--gold)"/><circle cx="8" cy="12" r="1.3" fill="var(--starlight)"/><circle cx="30" cy="10" r="1.1" fill="var(--starlight)"/><circle cx="33" cy="26" r="1.6" fill="var(--gold)"/><circle cx="12" cy="31" r="1.1" fill="var(--starlight)"/><path d="M8 12 L20 20 L30 10 M20 20 L33 26 M20 20 L12 31" stroke="var(--gold-dim)" stroke-width="0.7"/></svg>
+    <span>SKYPAGE<span class="sub">ASTRONOMY CLUB</span></span>
+  </div>
+
+  <nav class="sidebar-nav" id="sidebarNav">
+    <a class="nav-item" data-target="home">Home</a>
+    <a class="nav-item" data-target="apod">NASA Picture of the Day</a>
+    <a class="nav-item" data-target="events">Sky Events</a>
+    <a class="nav-item" data-target="starmap">Star Map</a>
+    <a class="nav-item" data-target="academy-types">Telescope Types</a>
+    <a class="nav-item" data-target="academy-glossary">Specs Glossary</a>
+    <a class="nav-item" data-target="simulator">Optics Simulator</a>
+    <a class="nav-item" data-target="gallery">Member Gallery</a>
+    <a class="nav-item" data-target="gear">Gear Guide</a>
+  </nav>
+
+  <div class="nav-right">
+    <button id="nvToggle"><span class="dot"></span> NIGHT VISION</button>
+    <button id="burger">☰</button>
+  </div>
+</header>
+
+  <main id="content">
+<div class="pane" id="pane-home">
+      <div class="photo-banner hero-banner" id="banner-home">
+      <div class="eyebrow">Est. today — open to every stargazer</div>
+      <h1 class="home-h1">We study the dark<br>so the sky makes <em>sense.</em></h1>
+      <p class="home-sub">SkyPage is a student astronomy club for anyone who has ever looked up and wanted to know more — observers, astrophotographers, telescope tinkerers, and the just-plain-curious. Use the menu above to jump straight to what you're after.</p>
+      <div class="home-cta">
+        <a href="#" class="btn solid" data-target="starmap">Open the Star Map</a>
+        <a href="#" class="btn" data-target="academy-types">Learn the equipment</a>
+      </div>
+
+      <div id="quoteBox">
+        <span class="quote-kicker" id="quoteKicker">Quote</span>
+        <p id="quoteText">Loading…</p>
+        <cite id="quoteAuthor"></cite>
+      </div>
+      <span class="pb-credit">NASA</span>
+      </div>
+
+      <div class="home-shortcuts">
+        <div class="eyebrow" style="margin-bottom:1.1rem;">Jump in</div>
+        <div class="shortcut-grid">
+          <a href="#" class="shortcut-card" data-target="apod"><span class="tag">Sky Today</span><h4>NASA Picture of the Day</h4><p>A new image and its story, fetched live.</p></a>
+          <a href="#" class="shortcut-card" data-target="starmap"><span class="tag">Interactive</span><h4>Star Map</h4><p>Click through real constellations, star by star.</p></a>
+          <a href="#" class="shortcut-card" data-target="simulator"><span class="tag">Interactive</span><h4>Optics Simulator</h4><p>Build a telescope, watch Saturn respond.</p></a>
+          <a href="#" class="shortcut-card" data-target="gallery"><span class="tag">Community</span><h4>Member Gallery</h4><p>Real captures, real setups, real details.</p></a>
+        </div>
+      </div>
+    </div>
+
+<div class="pane" id="pane-apod">
+      <div class="photo-banner" id="banner-apod">
+      <div class="pane-head">
+        <div class="eyebrow">The Sky Today</div>
+        <h2>NASA's picture of the day</h2>
+        <p>Pulled live from NASA's Astronomy Picture of the Day archive — a new image, and the story behind it, every 24 hours.</p>
+      </div>
+      <span class="pb-credit">NASA</span>
+      </div>
+      <div class="apod-grid">
+        <div class="apod-media">
+          <div class="apod-skel" id="apodSkel"></div>
+          <img id="apodImg" class="apod-image" alt="" style="display:none;">
+          <video id="apodVideo" style="display:none;" controls></video>
+        </div>
+        <div class="apod-info">
+          <span class="tag" id="apodDate">—</span>
+          <h3 id="apodTitle">Fetching today's image…</h3>
+          <p id="apodExplain">Reaching out to api.nasa.gov.</p>
+          <div id="apodError" style="display:none;">
+            <p style="color:var(--starlight-dim);">Live fetch didn't come through this time — NASA's demo API key is shared and rate-limited across every visitor using it. You can still browse the full archive directly:</p>
+          </div>
+          <a href="https://apod.nasa.gov/apod/archivepix.html" target="_blank" rel="noopener" class="btn" style="margin-top:1.2rem;">Open the full APOD Archive ↗</a>
+        </div>
+      </div>
+    </div>
+
+<div class="pane" id="pane-events">
+      <div class="photo-banner" id="banner-events">
+      <div class="pane-head">
+        <div class="eyebrow">The Sky Today</div>
+        <h2>What the sky is doing</h2>
+        <p>A running calendar of meteor showers, solstices, equinoxes, and eclipses — computed against today's date, every time you load this page. For live positions right now, from exactly where you're standing, we hand off to tools built for that.</p>
+      </div>
+      <span class="pb-credit">NASA</span>
+      </div>
+
+      <div class="upcoming-row" id="upcomingRow"></div>
+
+      <div class="events-panel">
+        <div class="events-panel-head">
+          <h3>Full almanac</h3>
+          <span class="tag" id="almanacRange">—</span>
+        </div>
+        <div id="almanacList" class="almanac-list"></div>
+      </div>
+
+      <div class="live-tools">
+        <div class="live-tool-card">
+          <div class="eyebrow" style="margin-bottom:0.6rem;">Live &amp; location-based</div>
+          <h4>Need it happening right now, from exactly where you're standing?</h4>
+          <p>Satellite passes, real-time planet altitude, and minute-by-minute eclipse timing depend on live orbital data and your GPS coordinates — the kind of thing a static page shouldn't guess at. These do it properly:</p>
+          <div class="live-links">
+            <a href="https://www.heavens-above.com" target="_blank" rel="noopener" class="btn">Heavens-Above ↗<span>ISS &amp; satellite passes</span></a>
+            <a href="https://in-the-sky.org" target="_blank" rel="noopener" class="btn">In-The-Sky.org ↗<span>Tonight's local sky</span></a>
+            <a href="https://stellarium-web.org" target="_blank" rel="noopener" class="btn">Stellarium Web ↗<span>Interactive planetarium</span></a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+<div class="pane" id="pane-starmap">
+      <div class="photo-banner" id="banner-starmap">
+      <div class="pane-head">
+        <div class="eyebrow">Star Map</div>
+        <h2>Constellations, star by star</h2>
+        <p>Pick a constellation. Click any star in it for its real distance, brightness, and spectral type — the numbers behind the picture.</p>
+      </div>
+      <span class="pb-credit">NASA</span>
+      </div>
+
+      <div class="const-chips" id="constChips"></div>
+
+      <div class="starmap-grid">
+        <div class="starmap-canvas-wrap">
+          <div class="const-title" id="constTitle"></div>
+          <svg id="constSvg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet"></svg>
+          <div class="starmap-legend">
+            <span><i style="background:#9fc4ff"></i>O/B — blue giants</span>
+            <span><i style="background:#eef2ff"></i>A/F — white</span>
+            <span><i style="background:#ffe9b3"></i>G — yellow (our Sun's class)</span>
+            <span><i style="background:#ff8a5c"></i>K/M — orange–red</span>
+          </div>
+        </div>
+        <div class="starmap-info" id="starInfo">
+          <div class="eyebrow">Tap a star</div>
+          <h3>Nothing selected yet</h3>
+          <p>Click any point in the diagram. The brightest stars in the sky aren't always the closest — some of this light left its star before your grandparents were born.</p>
+        </div>
+      </div>
+    </div>
+
+<div class="pane" id="pane-academy-types">
+      <div class="photo-banner" id="banner-academy-types">
+      <div class="pane-head">
+        <div class="eyebrow">Telescope Academy</div>
+        <h2>How a telescope actually works</h2>
+        <p>Three optical designs cover almost everything you'll ever point at the sky. Understanding how each bends light tells you what it's good at — and what it isn't.</p>
+      </div>
+      <span class="pb-credit">NASA</span>
+      </div>
+      <div class="scope-tabs" id="scopeTabs">
+        <button class="scope-tab active" data-scope="refractor">Refractor</button>
+        <button class="scope-tab" data-scope="reflector">Reflector (Newtonian)</button>
+        <button class="scope-tab" data-scope="catadioptric">Catadioptric (SCT)</button>
+      </div>
+      <div class="scope-panel" id="scopePanel"></div>
+    </div>
+
+<div class="pane" id="pane-academy-glossary">
+      <div class="photo-banner" id="banner-academy-glossary">
+      <div class="pane-head">
+        <div class="eyebrow">Telescope Academy</div>
+        <h2>The specs, decoded</h2>
+        <p>Every telescope listing throws these numbers at you. Here's what they actually mean, and the formula behind each — the same ones driving the Optics Simulator.</p>
+      </div>
+      <span class="pb-credit">NASA</span>
+      </div>
+      <div class="glossary-grid" id="glossaryGrid"></div>
+    </div>
+
+<div class="pane" id="pane-simulator">
+      <div class="photo-banner" id="banner-simulator">
+      <div class="pane-head">
+        <div class="eyebrow">Optics Simulator</div>
+        <h2>Build a telescope, see what it buys you</h2>
+        <p>Move the sliders. Every number here runs on the same formulas from the Academy — aperture and eyepiece choice actually change what you'd see if you pointed this rig at Saturn tonight.</p>
+      </div>
+      <span class="pb-credit">NASA</span>
+      </div>
+      <div class="sim-grid">
+        <div class="sim-controls">
+          <div class="sim-presets">
+            <button class="btn" data-preset="beginner">Beginner scope</button>
+            <button class="btn" data-preset="serious">Serious amateur</button>
+            <button class="btn" data-preset="big">Large Dobsonian</button>
+          </div>
+          <label class="sim-label">Aperture <span class="mono" id="apertureVal"></span></label>
+          <input type="range" id="apertureSlider" min="50" max="300" value="130" class="sim-range">
+          <label class="sim-label">Telescope focal length <span class="mono" id="focalVal"></span></label>
+          <input type="range" id="focalSlider" min="400" max="3000" value="900" class="sim-range">
+          <label class="sim-label">Eyepiece focal length <span class="mono" id="eyepieceVal"></span></label>
+          <input type="range" id="eyepieceSlider" min="4" max="32" value="10" class="sim-range">
+          <label class="sim-label">Sky conditions</label>
+          <select id="seeingSelect" class="mono-select" style="width:100%; padding:0.8em;">
+            <option value="0.5">Excellent — steady, dark rural sky</option>
+            <option value="1.5" selected>Average — typical suburban night</option>
+            <option value="3">Poor — turbulent air / city glow</option>
+          </select>
+          <div class="sim-stats" id="simStats"></div>
+        </div>
+        <div class="sim-view">
+          <canvas id="saturnCanvas"></canvas>
+          <span class="sim-view-caption">Illustrative render — proportions are exaggerated for teaching, not an optically exact simulation.</span>
+        </div>
+      </div>
+    </div>
+
+<div class="pane" id="pane-gallery">
+      <div class="photo-banner" id="banner-gallery">
+      <div class="pane-head" style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:1.5rem; max-width:none;">
+        <div style="max-width:640px;">
+          <div class="eyebrow">Community</div>
+          <h2>What we've actually seen</h2>
+          <p>Real captures from real member setups — with the details that make astrophotography a technical hobby, not just a pretty picture.</p>
+        </div>
+        <button class="btn solid" id="openUploadBtn">+ Add your photo</button>
+      </div>
+      <span class="pb-credit">NASA</span>
+      </div>
+      <p class="shared-note">📡 This gallery is shared — photos you add here are visible to everyone who opens this page.</p>
+      <div id="galleryGrid" class="gallery-grid"></div>
+    </div>
+
+    <div class="modal-overlay" id="uploadOverlay">
+      <div class="modal-box">
+        <div class="modal-head">
+          <h3>Add a photo to the gallery</h3>
+          <button class="modal-close" id="closeUploadBtn">✕</button>
+        </div>
+        <form id="uploadForm">
+          <label class="field-label">Image file</label>
+          <input type="file" id="fieldFile" accept="image/*" required>
+          <div id="filePreviewWrap" style="display:none;"><img id="filePreview" alt="preview"></div>
+          <label class="field-label">What is it?</label>
+          <input type="text" id="fieldObject" placeholder="e.g. M42 — The Orion Nebula" required>
+          <div class="field-row">
+            <div>
+              <label class="field-label">Date captured</label>
+              <input type="date" id="fieldDate" required>
+            </div>
+            <div>
+              <label class="field-label">Exposure / stacking (optional)</label>
+              <input type="text" id="fieldExposure" placeholder="e.g. 40× 30s subs">
+            </div>
+          </div>
+          <label class="field-label">Telescope / camera setup</label>
+          <input type="text" id="fieldSetup" placeholder="e.g. 150mm Newtonian, ZWO ASI224MC, EQ3-2 mount" required>
+          <label class="field-label">Notes (optional)</label>
+          <textarea id="fieldNotes" rows="3" placeholder="Conditions, processing, what to look for…"></textarea>
+          <div id="uploadError" class="upload-error" style="display:none;"></div>
+          <button type="submit" class="btn solid" id="submitUploadBtn" style="width:100%; justify-content:center; margin-top:0.6rem;">Add to gallery</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="lightboxOverlay">
+      <div class="modal-box lightbox-box">
+        <button class="modal-close" id="closeLightboxBtn">✕</button>
+        <img id="lightboxImg" alt="">
+        <div class="lightbox-info">
+          <h3 id="lightboxTitle"></h3>
+          <div class="lightbox-meta" id="lightboxMeta"></div>
+          <p id="lightboxNotes"></p>
+          <button class="btn" id="deleteEntryBtn" style="margin-top:1rem;">Remove this photo</button>
+        </div>
+      </div>
+    </div>
+
+<div class="pane" id="pane-gear">
+      <div class="photo-banner" id="banner-gear">
+      <div class="pane-head">
+        <div class="eyebrow">Community</div>
+        <h2>Where to actually buy this, in India</h2>
+        <p>Four dealers members have sourced real gear from — spanning first telescopes to full astrophotography rigs. Always confirm current stock, warranty terms, and authorized-dealer status directly before ordering.</p>
+      </div>
+      <span class="pb-credit">NASA</span>
+      </div>
+      <div class="gear-grid">
+        <div class="gear-card">
+          <span class="tag">Legacy &amp; telescopes</span>
+          <h4>Tejraj &amp; Co.</h4>
+          <p>Mumbai-based telescope manufacturer and dealer operating since 1976 — one of India's longest-running names in the hobby, with Newtonian, refractor, and Maksutov-Cassegrain telescopes plus accessories.</p>
+          <a href="https://www.tejraj.com" target="_blank" rel="noopener" class="btn">Visit tejraj.com ↗</a>
+        </div>
+        <div class="gear-card">
+          <span class="tag">Multi-brand catalog</span>
+          <h4>Modern Telescopes</h4>
+          <p>A wide-ranging online store carrying Celestron, Bresser, Explore Scientific, GSO, Vixen, and ZWO — telescopes, mounts, eyepieces, filters, and imaging cameras in one catalog.</p>
+          <a href="https://moderntelescopes.net" target="_blank" rel="noopener" class="btn">Visit moderntelescopes.net ↗</a>
+        </div>
+        <div class="gear-card">
+          <span class="tag">Astrophotography specialist</span>
+          <h4>EDISLA</h4>
+          <p>Focused on astrophotography gear specifically — authorized ZWO, Askar, and Player One cameras, mounts, and full imaging rig builds with compatibility guidance.</p>
+          <a href="https://edisla.in" target="_blank" rel="noopener" class="btn">Visit edisla.in ↗</a>
+        </div>
+        <div class="gear-card">
+          <span class="tag">Professional &amp; institutional</span>
+          <h4>Galileo Telescope</h4>
+          <p>Supplies observatory-grade setups and has worked with ISRO, IIA, and BARC — the option to look at once you're past beginner gear and thinking about serious, permanent equipment.</p>
+          <a href="https://galileotelescope.com" target="_blank" rel="noopener" class="btn">Visit galileotelescope.com ↗</a>
+        </div>
+      </div>
+      <p class="gear-disclaimer">SkyPage isn't affiliated with any of these sellers and earns nothing from your purchase — this list exists because members needed it, not because anyone paid for a placement.</p>
+    </div>
+  </main>
+
+<footer class="site-footer">
+  <div class="footer-grid">
+    <div style="max-width:300px;">
+      <div class="sb-logo" style="margin-bottom:0.9rem;">
+        <svg viewBox="0 0 40 40" fill="none" style="width:22px;height:22px;"><circle cx="20" cy="20" r="1.6" fill="var(--gold)"/><circle cx="8" cy="12" r="1.3" fill="var(--starlight)"/><circle cx="30" cy="10" r="1.1" fill="var(--starlight)"/><circle cx="33" cy="26" r="1.6" fill="var(--gold)"/><path d="M8 12 L20 20 L30 10 M20 20 L33 26" stroke="var(--gold-dim)" stroke-width="0.7"/></svg>
+        <span>SKYPAGE</span>
+      </div>
+      <p>A club built around one idea: the sky rewards anyone willing to look carefully. Explore, learn, and add what you've seen.</p>
+    </div>
+    <div>
+      <h4>The Sky Today</h4>
+      <div class="flinks">
+        <a href="#" data-target="apod">NASA Picture of the Day</a>
+        <a href="#" data-target="events">Sky Events Almanac</a>
+        <a href="#" data-target="starmap">Star Map</a>
+      </div>
+    </div>
+    <div>
+      <h4>Learn &amp; build</h4>
+      <div class="flinks">
+        <a href="#" data-target="academy-types">Telescope Types</a>
+        <a href="#" data-target="academy-glossary">Specs Glossary</a>
+        <a href="#" data-target="simulator">Optics Simulator</a>
+      </div>
+    </div>
+    <div>
+      <h4>Community</h4>
+      <div class="flinks">
+        <a href="#" data-target="gallery">Member Gallery</a>
+        <a href="#" data-target="gear">Gear Guide</a>
+      </div>
+    </div>
+    <div>
+      <h4>Elsewhere in the sky</h4>
+      <div class="flinks">
+        <a href="https://apod.nasa.gov/apod/archivepix.html" target="_blank" rel="noopener">APOD Archive ↗</a>
+        <a href="https://www.heavens-above.com" target="_blank" rel="noopener">Heavens-Above ↗</a>
+        <a href="https://in-the-sky.org" target="_blank" rel="noopener">In-The-Sky.org ↗</a>
+        <a href="https://stellarium-web.org" target="_blank" rel="noopener">Stellarium Web ↗</a>
+        <a href="https://images.nasa.gov" target="_blank" rel="noopener">NASA Image Library ↗</a>
+      </div>
+    </div>
+  </div>
+  <div class="footbar">
+    <span>© <span id="yearNow"></span> SkyPage Astronomy Club. Look up more often.</span>
+    <span>Designed &amp; built by <b>Sujal Sharma</b></span>
+  </div>
+</footer>
+
+<script>
+document.getElementById('yearNow').textContent = new Date().getFullYear();
+
+/* =============================================================
+   NASA IMAGE LIBRARY — public, unauthenticated JSON API
+   (images-api.nasa.gov). Used to pull real, public-domain NASA
+   photography into the photo banners across the site, so imagery
+   is live and varies rather than a handful of hardcoded links.
+============================================================= */
+async function setPhotoBanner(bannerId, query){
+  const el = document.getElementById(bannerId);
+  if(!el) return;
+  try{
+    const res = await fetch(`https://images-api.nasa.gov/search?q=${encodeURIComponent(query)}&media_type=image`);
+    if(!res.ok) throw new Error('bad response');
+    const data = await res.json();
+    const items = ((data.collection && data.collection.items) || [])
+      .filter(it => it.links && it.links[0] && it.links[0].href && it.data && it.data[0]);
+    if(!items.length) return;
+    const pick = items[Math.floor(Math.random()*Math.min(items.length,12))];
+    const url = pick.links[0].href;
+    const credit = pick.data[0].title || 'NASA';
+    // preload before swapping in, so we never show a broken/half-loaded image
+    const img = new Image();
+    img.onload = ()=>{
+      el.style.backgroundImage = `url("${url}")`;
+      el.classList.add('has-photo');
+      const creditEl = el.querySelector('.pb-credit');
+      if(creditEl) creditEl.textContent = 'NASA — ' + credit;
+    };
+    img.src = url;
+  }catch(err){ console.warn('NASA photo fetch failed for', query, err); }
+}
+
+setPhotoBanner('banner-home', 'hubble deep field galaxy');
+setPhotoBanner('banner-apod', 'spiral galaxy hubble');
+setPhotoBanner('banner-events', 'meteor shower night sky');
+setPhotoBanner('banner-starmap', 'milky way night sky stars');
+setPhotoBanner('banner-academy-types', 'observatory telescope night');
+setPhotoBanner('banner-academy-glossary', 'amateur telescope stargazing');
+setPhotoBanner('banner-simulator', 'saturn rings');
+setPhotoBanner('banner-gallery', 'astrophotography nebula');
+setPhotoBanner('banner-gear', 'telescope equipment');
+
+/* ---------- night vision toggle ---------- */
+document.getElementById('nvToggle').addEventListener('click', ()=>{
+  document.body.classList.toggle('night-vision');
+});
+
+/* ---------- mobile nav menu ---------- */
+const navMenuEl = document.getElementById('sidebarNav');
+document.getElementById('burger').addEventListener('click', ()=>{
+  navMenuEl.classList.toggle('open');
+});
+
+/* ---------- pane router (any element with data-target routes, not just top nav) ---------- */
+function showPane(target){
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+  const pane = document.getElementById('pane-'+target);
+  if(pane) pane.classList.add('active');
+  document.querySelectorAll('.nav-item[data-target]').forEach(l=>l.classList.toggle('active', l.dataset.target===target));
+  window.scrollTo({top:0, behavior:'instant'});
+  history.replaceState(null, '', '#'+target);
+  navMenuEl.classList.remove('open');
+}
+document.querySelectorAll('[data-target]').forEach(link=>{
+  link.addEventListener('click', (e)=>{
+    e.preventDefault();
+    showPane(link.dataset.target);
+  });
+});
+const initialTarget = (location.hash || '#home').slice(1);
+showPane(document.getElementById('pane-'+initialTarget) ? initialTarget : 'home');
+
+/* ---------- starfield background: varied twinkle, subtle parallax, occasional shooting stars ---------- */
+(function(){
+  const canvas = document.getElementById('starfield');
+  const ctx = canvas.getContext('2d');
+  let w,h,stars=[],meteors=[];
+  let mouseX=0, mouseY=0;
+  // Real naked-eye stars skew white/blue-white with occasional warm tones —
+  // kept low-saturation so it reads as "starlight," not a rainbow.
+  const PALETTE = ['#f5f3ec','#f5f3ec','#dce6ff','#dce6ff','#fff3da','#ffe3c2'];
+  function resize(){
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+    const count = Math.floor((w*h)/2600);
+    stars = Array.from({length:count}, ()=>{
+      const layer = Math.random(); // 0 = far/slow, 1 = near/fast
+      return {
+        x:Math.random()*w, y:Math.random()*h,
+        r: 0.25 + layer*1.6 + Math.random()*0.5,
+        col: PALETTE[Math.floor(Math.random()*PALETTE.length)],
+        baseAlpha:Math.random()*0.45+0.3,
+        tw:Math.random()*Math.PI*2,
+        // wide spread of twinkle speeds — some lazy, some quick beacons
+        speed:0.003 + Math.random()*Math.random()*0.09,
+        layer,
+        flare: layer>0.92 // a few bigger stars get a subtle cross-flare
+      };
+    });
+  }
+  window.addEventListener('resize', resize);
+  window.addEventListener('mousemove', (e)=>{
+    mouseX = (e.clientX/w - 0.5); mouseY = (e.clientY/h - 0.5);
+  });
+  resize();
+  function hexToRgb(hex){ const v=parseInt(hex.slice(1),16); return `${(v>>16)&255},${(v>>8)&255},${v&255}`; }
+
+  function maybeSpawnMeteor(){
+    if(Math.random() < 0.006 && meteors.length < 2){
+      const startX = Math.random()*w*0.7 + w*0.15;
+      const angle = Math.PI/4 + (Math.random()*0.3-0.15); // diagonal, down-right-ish
+      meteors.push({
+        x:startX, y:-20, angle,
+        speed: 9 + Math.random()*6,
+        life: 1,
+        len: 90 + Math.random()*60
+      });
+    }
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,w,h);
+    const nv = document.body.classList.contains('night-vision');
+    for(const s of stars){
+      s.tw += s.speed;
+      const a = s.baseAlpha + Math.sin(s.tw)*(0.22+s.layer*0.18);
+      const rgb = nv ? '255,90,90' : hexToRgb(s.col);
+      const px = s.x + mouseX * s.layer * 14;
+      const py = s.y + mouseY * s.layer * 14;
+      const alpha = Math.max(a,0.05);
+      ctx.beginPath();
+      ctx.fillStyle = `rgba(${rgb},${alpha})`;
+      ctx.arc(px, py, s.r, 0, Math.PI*2);
+      ctx.fill();
+      if(s.flare && alpha>0.55){
+        ctx.strokeStyle = `rgba(${rgb},${(alpha-0.5)*0.9})`;
+        ctx.lineWidth = 0.6;
+        ctx.beginPath();
+        ctx.moveTo(px-s.r*3.2,py); ctx.lineTo(px+s.r*3.2,py);
+        ctx.moveTo(px,py-s.r*3.2); ctx.lineTo(px,py+s.r*3.2);
+        ctx.stroke();
+      }
+    }
+
+    maybeSpawnMeteor();
+    meteors = meteors.filter(m=>m.life>0 && m.y<h+100 && m.x<w+100);
+    for(const m of meteors){
+      const dx = Math.cos(m.angle), dy = Math.sin(m.angle);
+      const tailX = m.x - dx*m.len, tailY = m.y - dy*m.len;
+      const grad = ctx.createLinearGradient(m.x,m.y,tailX,tailY);
+      const rgb = nv ? '255,120,110' : '255,250,235';
+      grad.addColorStop(0, `rgba(${rgb},${0.9*m.life})`);
+      grad.addColorStop(1, `rgba(${rgb},0)`);
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(m.x,m.y); ctx.lineTo(tailX,tailY); ctx.stroke();
+      ctx.beginPath();
+      ctx.fillStyle = `rgba(${rgb},${m.life})`;
+      ctx.arc(m.x,m.y,1.5,0,Math.PI*2); ctx.fill();
+      m.x += dx*m.speed; m.y += dy*m.speed;
+      m.life -= 0.012;
+    }
+    requestAnimationFrame(draw);
+  }
+  requestAnimationFrame(draw);
+})();
+</script>
+<script>
+/* =============================================================
+   QUOTE + SPACE FACT ROTATOR
+   Strictly astronomy/astrophysics content. Quotes are a curated,
+   verified local set (public quote APIs are frequently unreliable
+   or return unverifiable text — not a great foundation for a
+   "changes every load" feature), mixed with short verified space
+   facts for variety.
+============================================================= */
+const QUOTES = [
+  {q:"The Cosmos is all that is or ever was or ever will be.", a:"Carl Sagan"},
+  {q:"We are made of star stuff.", a:"Carl Sagan"},
+  {q:"Somewhere, something incredible is waiting to be known.", a:"Carl Sagan"},
+  {q:"For small creatures such as we, the vastness is bearable only through love.", a:"Carl Sagan"},
+  {q:"Astronomy is a humbling and character-building experience.", a:"Carl Sagan"},
+  {q:"Look up at the stars and not down at your feet.", a:"Stephen Hawking"},
+  {q:"The universe is under no obligation to make sense to you.", a:"Neil deGrasse Tyson"},
+  {q:"Not only do we live among the stars, the stars live within us.", a:"Neil deGrasse Tyson"},
+  {q:"Equipped with his five senses, man explores the universe and calls the adventure Science.", a:"Edwin Hubble"},
+  {q:"We have peered into a new world and have seen that it is more mysterious and more complex than we had imagined.", a:"Vera Rubin"},
+  {q:"The Sun, with all the planets revolving around it, can still ripen a bunch of grapes as if it had nothing else in the universe to do.", a:"Galileo Galilei"},
+  {q:"Finally we shall place the Sun himself at the center of the Universe.", a:"Nicolaus Copernicus"},
+];
+const FACTS = [
+  "A day on Venus (243 Earth days) is longer than its year (225 Earth days).",
+  "Neutron stars can spin up to 700 times per second.",
+  "Footprints left on the Moon should last millions of years — there's no wind or water to erode them.",
+  "One teaspoon of neutron-star material would weigh roughly a billion tonnes on Earth.",
+  "The Sun holds about 99.86% of all the mass in the solar system.",
+  "Sunlight takes about 8 minutes and 20 seconds to reach Earth.",
+  "There are more stars in the observable universe than grains of sand on every beach on Earth.",
+  "Saturn's moon Titan has lakes and rivers — made of liquid methane, not water.",
+  "India's first satellite, Aryabhata, was named for the 5th-century astronomer who calculated Earth's rotation and the length of a year.",
+  "A year on Mercury (88 Earth days) is shorter than a single Mercury day (176 Earth days).",
+  "The largest known star, UY Scuti, is so big a plane would take roughly 1,100 years to fly around it.",
+  "Jupiter's Great Red Spot is a storm that has raged for at least 350 years and is wider than Earth.",
+  "The ISS orbits Earth about every 90 minutes, travelling near 28,000 km/h.",
+];
+
+function paintQuote(){
+  const box = document.getElementById('quoteBox');
+  const kicker = document.getElementById('quoteKicker');
+  const textEl = document.getElementById('quoteText');
+  const authEl = document.getElementById('quoteAuthor');
+  box.classList.add('fade');
+  setTimeout(()=>{
+    if(Math.random() < 0.5){
+      const q = QUOTES[Math.floor(Math.random()*QUOTES.length)];
+      kicker.textContent = 'Quote';
+      textEl.textContent = "“" + q.q + "”";
+      authEl.textContent = "— " + q.a;
+    } else {
+      const f = FACTS[Math.floor(Math.random()*FACTS.length)];
+      kicker.textContent = 'Space fact';
+      textEl.textContent = f;
+      authEl.textContent = '';
+    }
+    box.classList.remove('fade');
+  }, 250);
+}
+paintQuote();
+</script>
+<script>
+
+/* =============================================================
+   NASA APOD — fetched live from api.nasa.gov using the public
+   DEMO_KEY (shared/rate-limited — swap in a free personal key from
+   https://api.nasa.gov for real club use). Falls back to the
+   archive link on any failure.
+============================================================= */
+(function initAPOD(){
+  const NASA_KEY = 'DEMO_KEY';
+  fetch(`https://api.nasa.gov/planetary/apod?api_key=${NASA_KEY}`)
+    .then(r=>{ if(!r.ok) throw new Error('APOD unavailable'); return r.json(); })
+    .then(data=>{
+      document.getElementById('apodSkel').style.display='none';
+      document.getElementById('apodDate').textContent = data.date;
+      document.getElementById('apodTitle').textContent = data.title;
+      document.getElementById('apodExplain').textContent = data.explanation.length > 320 ? data.explanation.slice(0,317)+'…' : data.explanation;
+      if(data.media_type === 'video'){
+        const v = document.getElementById('apodVideo');
+        v.src = data.url; v.style.display='block';
+      } else {
+        const img = document.getElementById('apodImg');
+        img.src = data.hdurl || data.url;
+        img.alt = data.title;
+        img.style.display='block';
+      }
+    })
+    .catch(()=>{
+      document.getElementById('apodSkel').style.display='none';
+      document.getElementById('apodTitle').textContent = "Today's image is a click away";
+      document.getElementById('apodExplain').style.display='none';
+      document.getElementById('apodError').style.display='block';
+      document.getElementById('apodDate').textContent = 'Archive';
+    });
+})();
+</script>
+<script>
+/* =============================================================
+   SKY EVENTS ALMANAC — recurring events computed from today's
+   date; eclipses are individually verified fixed dates (through 2027).
+============================================================= */
+const ICONS = {
+  meteor: `<svg viewBox="0 0 44 44" fill="none"><circle cx="22" cy="22" r="20" stroke="var(--gold-dim)" stroke-width="1"/><path d="M12 30 L26 16" stroke="var(--gold)" stroke-width="1.6" stroke-linecap="round"/><path d="M16 30 L28 18" stroke="var(--gold)" stroke-width="1" stroke-linecap="round" opacity="0.5"/><path d="M8 26 L20 14" stroke="var(--gold)" stroke-width="1" stroke-linecap="round" opacity="0.5"/><circle cx="27" cy="15" r="2.4" fill="var(--gold)"/></svg>`,
+  equinox: `<svg viewBox="0 0 44 44" fill="none"><circle cx="22" cy="22" r="13" stroke="var(--teal)" stroke-width="1.4"/><line x1="22" y1="2" x2="22" y2="42" stroke="var(--panel-border)" stroke-width="1"/><line x1="2" y1="22" x2="42" y2="22" stroke="var(--panel-border)" stroke-width="1"/><path d="M22 9 A13 13 0 0 1 22 35" fill="var(--teal)" opacity="0.35"/></svg>`,
+  solstice: `<svg viewBox="0 0 44 44" fill="none"><circle cx="22" cy="22" r="9" fill="none" stroke="var(--gold)" stroke-width="1.4"/><g stroke="var(--gold)" stroke-width="1.2" stroke-linecap="round"><line x1="22" y1="3" x2="22" y2="9"/><line x1="22" y1="35" x2="22" y2="41"/><line x1="3" y1="22" x2="9" y2="22"/><line x1="35" y1="22" x2="41" y2="22"/><line x1="8" y1="8" x2="12" y2="12"/><line x1="32" y1="32" x2="36" y2="36"/><line x1="36" y1="8" x2="32" y2="12"/><line x1="12" y1="32" x2="8" y2="36"/></g></svg>`,
+  "solar-eclipse": `<svg viewBox="0 0 44 44" fill="none"><circle cx="20" cy="22" r="11" fill="var(--gold)"/><circle cx="26" cy="22" r="11" fill="var(--void)" stroke="var(--panel-border)" stroke-width="0.6"/></svg>`,
+  "lunar-eclipse": `<svg viewBox="0 0 44 44" fill="none"><circle cx="22" cy="22" r="12" fill="var(--hydrogen)" opacity="0.85"/><circle cx="22" cy="22" r="12" fill="none" stroke="var(--hydrogen)" stroke-width="1"/></svg>`
+};
+const TYPE_LABEL = {meteor:'Meteor shower', equinox:'Equinox', solstice:'Solstice', 'solar-eclipse':'Solar eclipse', 'lunar-eclipse':'Lunar eclipse'};
+
+const RECURRING = [
+  {name:'Quadrantids Meteor Shower', type:'meteor', month:1, day:3, desc:'A sharp, short peak — up to 80 meteors/hr under dark skies.'},
+  {name:'March Equinox', type:'equinox', month:3, day:20, desc:'Day and night split evenly worldwide.'},
+  {name:'Lyrids Meteor Shower', type:'meteor', month:4, day:22, desc:'Debris of Comet Thatcher; ~18 meteors/hr.'},
+  {name:'Eta Aquariids Meteor Shower', type:'meteor', month:5, day:5, desc:"Dust from Halley's Comet; best viewed pre-dawn."},
+  {name:'June Solstice', type:'solstice', month:6, day:21, desc:"Longest day in the Northern Hemisphere."},
+  {name:'Perseids Meteor Shower', type:'meteor', month:8, day:12, desc:'The most reliable shower of the year — up to 60/hr.'},
+  {name:'September Equinox', type:'equinox', month:9, day:22, desc:'Day and night split evenly worldwide.'},
+  {name:'Orionids Meteor Shower', type:'meteor', month:10, day:21, desc:"More debris from Halley's Comet."},
+  {name:'Leonids Meteor Shower', type:'meteor', month:11, day:17, desc:'Fast, bright meteors; occasional storms every ~33 years.'},
+  {name:'Geminids Meteor Shower', type:'meteor', month:12, day:13, desc:'Usually the best shower of the year — up to 120/hr.'},
+  {name:'December Solstice', type:'solstice', month:12, day:21, desc:'Shortest day in the Northern Hemisphere.'},
+  {name:'Ursids Meteor Shower', type:'meteor', month:12, day:22, desc:'A quiet, minor shower closing out the year.'},
+];
+const FIXED = [
+  {name:'Total Solar Eclipse', type:'solar-eclipse', date:'2026-08-12', desc:'Path crosses Europe, N. Africa, N. America & the Arctic.'},
+  {name:'Partial Lunar Eclipse', type:'lunar-eclipse', date:'2026-08-28', desc:'Deep partial (96%); visible from the Americas, Europe & Africa.'},
+  {name:'Annular Solar Eclipse', type:'solar-eclipse', date:'2027-02-06', desc:'"Ring of fire" across Africa, South America & Antarctica.'},
+  {name:'Penumbral Lunar Eclipse', type:'lunar-eclipse', date:'2027-02-20', desc:'Subtle shading — best noticed by comparison over the night.'},
+  {name:'Total Solar Eclipse', type:'solar-eclipse', date:'2027-08-02', desc:'Path crosses Europe, South/West Asia & Africa.'},
+  {name:'Penumbral Lunar Eclipse', type:'lunar-eclipse', date:'2027-08-16', desc:'Gentle penumbral dimming, worldwide moonrise-dependent.'},
+];
+function nextOccurrence(month, day){
+  const now = new Date(); let year = now.getFullYear();
+  let d = new Date(year, month-1, day, 12,0,0);
+  if(d < now){ d = new Date(year+1, month-1, day, 12,0,0); }
+  return d;
+}
+function daysUntil(date){
+  const now = new Date(); now.setHours(0,0,0,0);
+  const target = new Date(date); target.setHours(0,0,0,0);
+  return Math.round((target-now)/86400000);
+}
+function fmtDate(d){ return d.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}); }
+
+const allEvents = [
+  ...RECURRING.map(e=>({...e, date:nextOccurrence(e.month, e.day)})),
+  ...FIXED.map(e=>({...e, date:new Date(e.date+'T12:00:00')})).filter(e=>daysUntil(e.date)>=0)
+].sort((a,b)=>a.date-b.date);
+
+(function renderEvents(){
+  const upcoming = allEvents.slice(0,3);
+  document.getElementById('upcomingRow').innerHTML = upcoming.map(e=>`
+    <div class="event-card">
+      <div class="icon">${ICONS[e.type]}</div>
+      <div class="countdown">${daysUntil(e.date)===0 ? 'Today' : 'T–'+daysUntil(e.date)}${daysUntil(e.date)!==0 ? '<small>days</small>' : ''}</div>
+      <h4>${e.name}</h4>
+      <p>${e.desc}</p>
+      <span class="edate">${fmtDate(e.date)}</span>
+    </div>
+  `).join('');
+  document.getElementById('almanacList').innerHTML = allEvents.map(e=>`
+    <div class="almanac-row">
+      <div class="icon">${ICONS[e.type]}</div>
+      <div class="date">${fmtDate(e.date)}</div>
+      <div><div class="name">${e.name}</div><span class="desc">${e.desc}</span></div>
+      <span class="tag">${TYPE_LABEL[e.type]}</span>
+    </div>
+  `).join('');
+  document.getElementById('almanacRange').textContent = `${fmtDate(allEvents[0].date)} → ${fmtDate(allEvents[allEvents.length-1].date)}`;
+})();
+</script>
+<script>
+/* =============================================================
+   STAR MAP — simple 2D constellations
+   Coordinates are simplified schematic layouts (like a planetarium
+   chart), not literal RA/Dec projections — built to be recognizable
+   and readable. Star data (distance/magnitude/spectral type) is real,
+   rounded, textbook-standard values.
+============================================================= */
+const SPEC_COLOR = {O:'#9fc4ff', B:'#bcd4ff', A:'#eef2ff', F:'#fff7e8', G:'#ffe9b3', K:'#ffc27a', M:'#ff8a5c'};
+function specColor(spec){ return SPEC_COLOR[spec[0]] || '#eef2ff'; }
+function magSize(mag){ return Math.max(1.1, 3.4 - mag*0.4); }
+
+const CONSTELLATIONS = {
+  orion: {
+    label:'Orion — The Hunter',
+    stars:[
+      {n:'Meissa', x:50, y:10, dist:1100, mag:3.54, spec:'O8III'},
+      {n:'Betelgeuse', x:30, y:25, dist:548, mag:0.50, spec:'M1Ia'},
+      {n:'Bellatrix', x:68, y:22, dist:250, mag:1.64, spec:'B2III'},
+      {n:'Mintaka', x:46, y:50, dist:900, mag:2.23, spec:'B0III'},
+      {n:'Alnilam', x:52, y:53, dist:2000, mag:1.69, spec:'B0Ia'},
+      {n:'Alnitak', x:58, y:56, dist:800, mag:1.77, spec:'O9.5Ib'},
+      {n:'Rigel', x:28, y:88, dist:860, mag:0.13, spec:'B8Ia'},
+      {n:'Saiph', x:62, y:85, dist:650, mag:2.07, spec:'B0.5Ia'},
+    ],
+    lines:[[0,1],[0,2],[1,3],[2,5],[3,4],[4,5],[3,6],[5,7]]
+  },
+  ursaMajor: {
+    label:'Ursa Major — The Great Bear',
+    stars:[
+      {n:'Dubhe', x:20, y:20, dist:123, mag:1.79, spec:'K0III'},
+      {n:'Merak', x:22, y:40, dist:79.7, mag:2.37, spec:'A1V'},
+      {n:'Phecda', x:45, y:45, dist:83.2, mag:2.44, spec:'A0V'},
+      {n:'Megrez', x:50, y:22, dist:58.4, mag:3.32, spec:'A3V'},
+      {n:'Alioth', x:65, y:18, dist:82.6, mag:1.77, spec:'A1III'},
+      {n:'Mizar', x:80, y:15, dist:82.9, mag:2.04, spec:'A2V'},
+      {n:'Alkaid', x:95, y:10, dist:103.9, mag:1.86, spec:'B3V'},
+    ],
+    lines:[[0,1],[1,2],[2,3],[3,0],[3,4],[4,5],[5,6]]
+  },
+  cassiopeia: {
+    label:'Cassiopeia — The Seated Queen',
+    stars:[
+      {n:'Segin', x:10, y:50, dist:442, mag:3.35, spec:'B3V'},
+      {n:'Ruchbah', x:30, y:20, dist:99.4, mag:2.68, spec:'A5V'},
+      {n:'Navi', x:50, y:55, dist:550, mag:2.47, spec:'B0.5IVe'},
+      {n:'Schedar', x:70, y:15, dist:228, mag:2.24, spec:'K0II'},
+      {n:'Caph', x:90, y:45, dist:54.7, mag:2.28, spec:'F2III'},
+    ],
+    lines:[[0,1],[1,2],[2,3],[3,4]]
+  },
+  scorpius: {
+    label:'Scorpius — The Scorpion',
+    stars:[
+      {n:'Dschubba', x:20, y:10, dist:400, mag:2.29, spec:'B0.3IV'},
+      {n:'Antares', x:35, y:30, dist:550, mag:1.06, spec:'M1.5Iab'},
+      {n:'Sargas', x:55, y:55, dist:272, mag:1.87, spec:'F1II'},
+      {n:'Shaula', x:75, y:75, dist:570, mag:1.63, spec:'B1.5IV'},
+      {n:'Lesath', x:80, y:68, dist:520, mag:2.70, spec:'B2IV'},
+    ],
+    lines:[[0,1],[1,2],[2,3],[3,4]]
+  },
+  leo: {
+    label:'Leo — The Lion',
+    stars:[
+      {n:'Regulus', x:15, y:70, dist:79, mag:1.36, spec:'B8IV'},
+      {n:'Algieba', x:30, y:30, dist:130, mag:2.28, spec:'K1III'},
+      {n:'Zosma', x:60, y:25, dist:58, mag:2.56, spec:'A4V'},
+      {n:'Chertan', x:58, y:45, dist:165, mag:3.34, spec:'A2V'},
+      {n:'Denebola', x:85, y:45, dist:36, mag:2.14, spec:'A3V'},
+    ],
+    lines:[[0,1],[1,2],[2,3],[3,4],[3,0]]
+  },
+  cygnus: {
+    label:'Cygnus — The Swan',
+    stars:[
+      {n:'Deneb', x:50, y:10, dist:2600, mag:1.25, spec:'A2Ia'},
+      {n:'Sadr', x:50, y:40, dist:1800, mag:2.23, spec:'F8Ib'},
+      {n:'Albireo', x:50, y:85, dist:430, mag:3.18, spec:'K3II'},
+      {n:'Gienah', x:20, y:45, dist:72, mag:2.48, spec:'K3III'},
+      {n:'Fawaris', x:80, y:35, dist:165, mag:2.87, spec:'A0IV'},
+    ],
+    lines:[[0,1],[1,2],[1,3],[1,4]]
+  },
+  taurus: {
+    label:'Taurus — The Bull',
+    stars:[
+      {n:'Aldebaran', x:35, y:55, dist:65, mag:0.85, spec:'K5III'},
+      {n:'Ain', x:15, y:68, dist:146, mag:3.53, spec:'K0III'},
+      {n:'Theta Tauri', x:55, y:75, dist:150, mag:3.40, spec:'A7III'},
+      {n:'Zeta Tauri', x:65, y:30, dist:440, mag:3.00, spec:'B4III'},
+      {n:'Elnath', x:85, y:15, dist:134, mag:1.65, spec:'B7III'},
+    ],
+    lines:[[1,0],[0,2],[0,3],[3,4]]
+  },
+  crux: {
+    label:'Crux — The Southern Cross',
+    stars:[
+      {n:'Gacrux', x:50, y:15, dist:88, mag:1.63, spec:'M3.5III'},
+      {n:'Acrux', x:50, y:85, dist:320, mag:0.77, spec:'B0.5IV'},
+      {n:'Mimosa', x:15, y:45, dist:280, mag:1.25, spec:'B0.5III'},
+      {n:'Delta Crucis', x:75, y:40, dist:345, mag:2.79, spec:'B2IV'},
+    ],
+    lines:[[0,1],[2,3]]
+  },
+};
+
+let activeConstKey = 'orion';
+
+function renderConstChips(){
+  document.getElementById('constChips').innerHTML = Object.entries(CONSTELLATIONS).map(([key,c])=>
+    `<button class="const-chip${key===activeConstKey?' active':''}" data-key="${key}">${c.label.split(' — ')[0]}</button>`
+  ).join('');
+  document.querySelectorAll('.const-chip').forEach(chip=>{
+    chip.addEventListener('click', ()=>{
+      activeConstKey = chip.dataset.key;
+      document.querySelectorAll('.const-chip').forEach(c=>c.classList.toggle('active', c===chip));
+      drawConstellation(activeConstKey);
+      resetStarInfo();
+    });
+  });
+}
+
+function drawConstellation(key){
+  const c = CONSTELLATIONS[key];
+  document.getElementById('constTitle').textContent = c.label;
+  const svg = document.getElementById('constSvg');
+  let markup = '';
+  // connecting lines first, so stars render on top
+  c.lines.forEach(([a,b])=>{
+    const s1 = c.stars[a], s2 = c.stars[b];
+    markup += `<line class="const-line" x1="${s1.x}" y1="${s1.y}" x2="${s2.x}" y2="${s2.y}"/>`;
+  });
+  c.stars.forEach((s,i)=>{
+    const r = magSize(s.mag);
+    const col = specColor(s.spec);
+    markup += `<circle class="star-dot" data-idx="${i}" cx="${s.x}" cy="${s.y}" r="${r}" fill="${col}" style="filter:drop-shadow(0 0 ${r}px ${col})"/>`;
+    markup += `<text class="star-label" x="${s.x+r+1.2}" y="${s.y+1}">${s.n}</text>`;
+  });
+  svg.innerHTML = markup;
+  svg.querySelectorAll('.star-dot').forEach(dot=>{
+    dot.addEventListener('click', ()=>{
+      const idx = +dot.dataset.idx;
+      showStarInfo(c.stars[idx], c.label.split(' — ')[0]);
+    });
+  });
+}
+
+function resetStarInfo(){
+  document.getElementById('starInfo').innerHTML = `
+    <div class="eyebrow">Tap a star</div>
+    <h3>Nothing selected yet</h3>
+    <p>Click any point in the diagram. The brightest stars in the sky aren't always the closest — some of this light left its star before your grandparents were born.</p>
+  `;
+}
+
+function showStarInfo(star, constellationName){
+  const yearsAgo = Math.round(star.dist);
+  const nowYear = new Date().getFullYear();
+  const leftYear = nowYear - yearsAgo;
+  const leftLabel = leftYear > 0 ? `around ${leftYear} CE` : `around ${Math.abs(leftYear)+1} BCE`;
+  document.getElementById('starInfo').innerHTML = `
+    <div class="eyebrow">${constellationName}</div>
+    <h3>${star.n}</h3>
+    <div class="stat-row"><span class="k">Distance</span><span class="v">${star.dist.toLocaleString()} ly</span></div>
+    <div class="stat-row"><span class="k">Apparent magnitude</span><span class="v">${star.mag}</span></div>
+    <div class="stat-row"><span class="k">Spectral type</span><span class="v">${star.spec}</span></div>
+    <div class="stat-row"><span class="k">Constellation</span><span class="v">${constellationName}</span></div>
+    <p class="fun-fact">The light hitting your eye right now left ${star.n} ${leftLabel} — ${yearsAgo.toLocaleString()} year${yearsAgo===1?'':'s'} ago.</p>
+  `;
+}
+
+renderConstChips();
+drawConstellation(activeConstKey);
+</script>
+<script>
+/* =============================================================
+   TELESCOPE ACADEMY
+============================================================= */
+const SCOPES = {
+  refractor: {
+    title:'Refractor',
+    svg:`<svg viewBox="0 0 300 180"><rect x="30" y="80" width="220" height="20" fill="none" stroke="var(--starlight-dim)" stroke-width="1.4"/>
+      <path d="M40 76 L40 104" stroke="var(--gold)" stroke-width="4" stroke-linecap="round"/>
+      <line x1="40" y1="82" x2="180" y2="90" stroke="var(--gold)" stroke-width="1"/>
+      <line x1="40" y1="98" x2="180" y2="90" stroke="var(--gold)" stroke-width="1"/>
+      <line x1="40" y1="86" x2="180" y2="90" stroke="var(--gold)" stroke-width="1" opacity="0.6"/>
+      <line x1="40" y1="94" x2="180" y2="90" stroke="var(--gold)" stroke-width="1" opacity="0.6"/>
+      <circle cx="180" cy="90" r="2.6" fill="var(--gold)"/>
+      <rect x="248" y="83" width="14" height="14" fill="none" stroke="var(--starlight-dim)" stroke-width="1.2"/>
+      <line x1="196" y1="90" x2="248" y2="90" stroke="var(--gold)" stroke-width="1" stroke-dasharray="2 3"/>
+      <text x="40" y="130" fill="var(--starlight-dim)" font-size="9" font-family="monospace">OBJECTIVE LENS</text>
+      <text x="230" y="130" fill="var(--starlight-dim)" font-size="9" font-family="monospace">EYEPIECE</text>
+      <text x="150" y="65" fill="var(--gold)" font-size="9" font-family="monospace" text-anchor="middle">FOCAL POINT</text></svg>`,
+    desc:"Light passes straight through a curved glass lens at the front, which bends (refracts) it to a focus. No obstructions in the light path, which means crisp, high-contrast views — the classic 'spyglass' shape.",
+    good:"Planets, the Moon, double stars. Zero maintenance — nothing to align.",
+    watch:"Gets expensive fast at large apertures; big lenses are heavy and pricey to make well.",
+    specs:['Aperture: 60–150mm typical','No collimation needed','Sealed tube = less dust/cooldown']
+  },
+  reflector: {
+    title:'Reflector (Newtonian)',
+    svg:`<svg viewBox="0 0 300 180"><rect x="30" y="70" width="200" height="40" fill="none" stroke="var(--starlight-dim)" stroke-width="1.4"/>
+      <path d="M225 70 Q235 90 225 110" fill="none" stroke="var(--gold)" stroke-width="2.4"/>
+      <line x1="40" y1="76" x2="222" y2="86" stroke="var(--gold)" stroke-width="1"/>
+      <line x1="222" y1="86" x2="120" y2="90" stroke="var(--gold)" stroke-width="1"/>
+      <line x1="40" y1="104" x2="222" y2="94" stroke="var(--gold)" stroke-width="1"/>
+      <line x1="222" y1="94" x2="120" y2="90" stroke="var(--gold)" stroke-width="1"/>
+      <rect x="112" y="82" width="14" height="4" fill="var(--gold)" transform="rotate(-45 119 84)"/>
+      <line x1="120" y1="90" x2="120" y2="40" stroke="var(--gold)" stroke-width="1" stroke-dasharray="2 3"/>
+      <rect x="112" y="26" width="14" height="14" fill="none" stroke="var(--starlight-dim)" stroke-width="1.2"/>
+      <text x="30" y="130" fill="var(--starlight-dim)" font-size="9" font-family="monospace">OPEN TUBE</text>
+      <text x="195" y="130" fill="var(--starlight-dim)" font-size="9" font-family="monospace">PRIMARY MIRROR</text>
+      <text x="128" y="50" fill="var(--starlight-dim)" font-size="9" font-family="monospace">EYEPIECE</text>
+      <text x="95" y="75" fill="var(--gold)" font-size="9" font-family="monospace">SECONDARY</text></svg>`,
+    desc:"Light travels down an open tube to a curved primary mirror at the back, which reflects it forward to a small flat secondary mirror angled at 45°, kicking the focus out through the side of the tube.",
+    good:"Deep-sky objects — galaxies, nebulae, star clusters. Best aperture-per-rupee of any design.",
+    watch:"Mirrors drift out of alignment (collimation) and need periodic adjustment. Open tube means more cooldown time and dust exposure.",
+    specs:['Aperture: 114–300mm+ typical','Needs occasional collimation','Best value per inch of aperture']
+  },
+  catadioptric: {
+    title:'Catadioptric (SCT)',
+    svg:`<svg viewBox="0 0 300 180"><rect x="40" y="72" width="200" height="36" fill="none" stroke="var(--starlight-dim)" stroke-width="1.4"/>
+      <line x1="46" y1="72" x2="46" y2="108" stroke="var(--teal)" stroke-width="3"/>
+      <path d="M228 72 Q238 90 228 108" fill="none" stroke="var(--gold)" stroke-width="2.4"/>
+      <circle cx="46" cy="90" r="4" fill="var(--teal)"/>
+      <line x1="46" y1="90" x2="226" y2="90" stroke="var(--gold)" stroke-width="1"/>
+      <line x1="226" y1="90" x2="46" y2="82" stroke="var(--gold)" stroke-width="1"/>
+      <line x1="46" y1="82" x2="200" y2="90" stroke="var(--gold)" stroke-width="1" stroke-dasharray="2 3"/>
+      <rect x="196" y="83" width="10" height="14" fill="none" stroke="var(--starlight-dim)" stroke-width="1"/>
+      <line x1="206" y1="90" x2="255" y2="90" stroke="var(--gold)" stroke-width="1" stroke-dasharray="2 3"/>
+      <rect x="255" y="83" width="12" height="14" fill="none" stroke="var(--starlight-dim)" stroke-width="1.2"/>
+      <text x="34" y="130" fill="var(--teal)" font-size="9" font-family="monospace">CORRECTOR</text>
+      <text x="185" y="130" fill="var(--starlight-dim)" font-size="9" font-family="monospace">PRIMARY MIRROR</text>
+      <text x="235" y="60" fill="var(--starlight-dim)" font-size="9" font-family="monospace">EYEPIECE</text></svg>`,
+    desc:"A thin corrector lens at the front pairs with a curved primary and a small secondary mirror on the back of that corrector. Light folds back on itself twice, packing a long focal length into a short, portable tube.",
+    good:"A do-everything scope — planets, deep-sky, and astrophotography without a huge tube.",
+    watch:"Costs more per inch of aperture than a Newtonian; longer to cool to ambient temperature.",
+    specs:['Aperture: 90–355mm typical','Compact, portable for its focal length','Popular for GoTo/astrophotography rigs']
+  }
+};
+function renderScopePanel(key){
+  const s = SCOPES[key];
+  document.getElementById('scopePanel').innerHTML = `
+    <div class="scope-diagram">${s.svg}</div>
+    <div class="scope-text">
+      <h3>${s.title}</h3>
+      <p>${s.desc}</p>
+      <div class="scope-good"><b>Best for</b>${s.good}</div>
+      <div class="scope-watch"><b>Trade-off</b>${s.watch}</div>
+      <div class="scope-specs">${s.specs.map(sp=>`<span class="tag">${sp}</span>`).join('')}</div>
+    </div>
+  `;
+}
+renderScopePanel('refractor');
+document.querySelectorAll('.scope-tab').forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    document.querySelectorAll('.scope-tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    renderScopePanel(tab.dataset.scope);
+  });
+});
+
+const GLOSSARY = [
+  {t:'Aperture (D)', f:'measured in mm', d:"The diameter of the main lens or mirror. This is the single most important spec — more aperture gathers more light, revealing fainter and sharper detail than a small one, regardless of magnification."},
+  {t:'Focal Length (f)', f:'f = D × focal ratio', d:'The distance light travels inside the scope before it converges to a sharp point. Longer focal lengths mean more magnification for a given eyepiece.'},
+  {t:'Focal Ratio (f/#)', f:'f/# = focal length ÷ D', d:'"Fast" scopes (low f/#, like f/4) show wide, bright fields — good for astrophotography. "Slow" scopes (high f/#, like f/10) give more magnification per eyepiece — good for planets.'},
+  {t:'Magnification', f:'M = scope f ÷ eyepiece f', d:"How many times larger an object appears. Swapping to a shorter focal-length eyepiece increases magnification — but only up to what your aperture can resolve sharply."},
+  {t:'Resolving Power', f:'116 ÷ D(mm) = arcsec', d:"The Dawes limit — the smallest angular separation between two points the scope can distinguish as separate. Smaller number = sharper detail on close double stars or planetary features."},
+  {t:'Limiting Magnitude', f:'≈2.7 + 5×log₁₀(D in mm)', d:'The faintest star (by apparent magnitude) the scope can theoretically detect under dark skies. Every extra magnitude is a star roughly 2.5× fainter.'},
+  {t:'True Field of View', f:'TFOV = AFOV ÷ magnification', d:"How much sky you actually see through the eyepiece, in degrees or arcminutes. Higher magnification always narrows the field — there's a real trade-off between zoom and context."},
+];
+document.getElementById('glossaryGrid').innerHTML = GLOSSARY.map(g=>`
+  <div class="glossary-card">
+    <h4>${g.t}</h4>
+    <div class="formula">${g.f}</div>
+    <p>${g.d}</p>
+  </div>
+`).join('');
+</script>
+<script>
+/* =============================================================
+   OPTICS SIMULATOR — real formulas drive every number; moons are
+   checked against computed limiting magnitude for visibility.
+============================================================= */
+const MOONS = [
+  {n:'Titan', mag:8.4, orbit:2.6},
+  {n:'Rhea', mag:9.7, orbit:1.55},
+  {n:'Tethys', mag:10.2, orbit:1.1},
+  {n:'Dione', mag:10.4, orbit:1.3},
+  {n:'Iapetus', mag:11.0, orbit:3.4},
+  {n:'Enceladus', mag:11.7, orbit:0.85},
+  {n:'Mimas', mag:12.9, orbit:0.65},
+];
+const MOON_ANGLES = [0.3, -0.9, 2.1, -1.6, 0.8, -2.4, 1.4];
+
+const apertureSlider = document.getElementById('apertureSlider');
+const focalSlider = document.getElementById('focalSlider');
+const eyepieceSlider = document.getElementById('eyepieceSlider');
+const seeingSelect = document.getElementById('seeingSelect');
+const canvas = document.getElementById('saturnCanvas');
+const sctx = canvas.getContext('2d');
+
+function resizeSimCanvas(){
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width; canvas.height = rect.height;
+}
+window.addEventListener('resize', resizeSimCanvas);
+resizeSimCanvas();
+
+function computeAndRender(){
+  const D = parseFloat(apertureSlider.value);
+  const FL = parseFloat(focalSlider.value);
+  const EP = parseFloat(eyepieceSlider.value);
+  const seeing = parseFloat(seeingSelect.value);
+
+  const fRatio = FL / D;
+  const mag = FL / EP;
+  const dawes = 116 / D;
+  const limitMag = 2.7 + 5*Math.log10(D);
+  const afov = 50;
+  const tfovArcmin = (afov / mag) * 60;
+
+  document.getElementById('apertureVal').textContent = D + ' mm';
+  document.getElementById('focalVal').textContent = FL + ' mm';
+  document.getElementById('eyepieceVal').textContent = EP + ' mm';
+  document.getElementById('simStats').innerHTML = `
+    <div class="stat-row"><span class="k">Focal ratio</span><span class="v">f/${fRatio.toFixed(1)}</span></div>
+    <div class="stat-row"><span class="k">Magnification</span><span class="v">${Math.round(mag)}×</span></div>
+    <div class="stat-row"><span class="k">Resolving power</span><span class="v">${dawes.toFixed(2)}″</span></div>
+    <div class="stat-row"><span class="k">Limiting magnitude</span><span class="v">${limitMag.toFixed(1)}</span></div>
+    <div class="stat-row"><span class="k">True field of view</span><span class="v">${tfovArcmin.toFixed(1)}′</span></div>
+    <div class="stat-row"><span class="k">Moons visible</span><span class="v">${MOONS.filter(m=>m.mag<limitMag).length} / ${MOONS.length}</span></div>
+  `;
+  renderSaturn(D, mag, dawes, seeing, limitMag);
+}
+
+function renderSaturn(D, mag, dawes, seeing, limitMag){
+  const W = canvas.width, H = canvas.height;
+  sctx.clearRect(0,0,W,H);
+  const cx = W/2, cy = H/2;
+  const nv = document.body.classList.contains('night-vision');
+  const size = Math.min(H*0.34, 10 + mag*0.075);
+  const blurPx = Math.min(9, Math.sqrt(dawes*dawes + seeing*seeing) * 1.7);
+
+  sctx.save();
+  sctx.filter = `blur(${blurPx.toFixed(2)}px)`;
+  const bodyCol = nv ? '#ff8a6a' : '#e8c98a';
+  const ringCol = nv ? 'rgba(255,120,100,0.55)' : 'rgba(220,195,150,0.55)';
+  const ringColDark = nv ? 'rgba(255,90,90,0.3)' : 'rgba(160,140,110,0.35)';
+
+  sctx.beginPath();
+  sctx.ellipse(cx, cy, size*2.3, size*0.72, -0.18, Math.PI*1.02, Math.PI*1.98);
+  sctx.strokeStyle = ringColDark; sctx.lineWidth = size*0.42; sctx.stroke();
+
+  const grad = sctx.createRadialGradient(cx-size*0.3, cy-size*0.3, size*0.1, cx, cy, size);
+  grad.addColorStop(0, nv ? '#ffb199' : '#f5e3bd');
+  grad.addColorStop(1, bodyCol);
+  sctx.beginPath();
+  sctx.ellipse(cx, cy, size, size*0.92, 0, 0, Math.PI*2);
+  sctx.fillStyle = grad; sctx.fill();
+
+  sctx.beginPath();
+  sctx.ellipse(cx, cy, size*2.3, size*0.72, -0.18, -0.02*Math.PI, Math.PI*1.02);
+  sctx.strokeStyle = ringCol; sctx.lineWidth = size*0.42; sctx.stroke();
+  sctx.beginPath();
+  sctx.ellipse(cx, cy, size*1.85, size*0.58, -0.18, -0.02*Math.PI, Math.PI*1.02);
+  sctx.strokeStyle = nv ? 'rgba(10,0,0,0.5)' : 'rgba(10,10,15,0.35)'; sctx.lineWidth = size*0.06; sctx.stroke();
+  sctx.restore();
+
+  MOONS.forEach((m, i)=>{
+    if(m.mag >= limitMag) return;
+    const angle = MOON_ANGLES[i];
+    const dist = size*2.6 + m.orbit*size*1.9;
+    const mx = cx + Math.cos(angle*0.15)*dist;
+    const my = cy + Math.sin(angle)*size*0.4;
+    const brightness = Math.max(0.35, Math.min(1, (limitMag - m.mag)/6 + 0.4));
+    sctx.beginPath();
+    sctx.arc(mx, my, Math.max(1.2, 2.6-blurPx*0.1), 0, Math.PI*2);
+    sctx.fillStyle = nv ? `rgba(255,140,140,${brightness})` : `rgba(240,240,255,${brightness})`;
+    sctx.shadowColor = sctx.fillStyle; sctx.shadowBlur = 4;
+    sctx.fill(); sctx.shadowBlur = 0;
+    sctx.font = '9px "IBM Plex Mono", monospace';
+    sctx.fillStyle = nv ? 'rgba(255,140,140,0.55)' : 'rgba(200,200,215,0.55)';
+    sctx.fillText(m.n, mx+5, my+3);
+  });
+}
+
+[apertureSlider, focalSlider, eyepieceSlider, seeingSelect].forEach(el=>{
+  el.addEventListener('input', computeAndRender);
+});
+const PRESETS = {beginner:{a:76,f:700,e:20}, serious:{a:150,f:1200,e:9}, big:{a:254,f:1200,e:6}};
+document.querySelectorAll('.sim-presets .btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const p = PRESETS[btn.dataset.preset];
+    apertureSlider.value = p.a; focalSlider.value = p.f; eyepieceSlider.value = p.e;
+    computeAndRender();
+  });
+});
+computeAndRender();
+
+/* re-render Saturn (and constellation svg sizing) whenever their pane becomes visible,
+   since canvases drawn while display:none report zero size */
+const _origShowPane = showPane;
+showPane = function(target){
+  _origShowPane(target);
+  if(target==='simulator'){ resizeSimCanvas(); computeAndRender(); }
+};
+</script>
+<script>
+/* =============================================================
+   MEMBER GALLERY — shared persistent storage across visitors.
+============================================================= */
+const GALLERY_KEY = 'skypage-gallery-entries';
+let galleryEntries = [];
+let pendingImageData = null;
+let activeEntryId = null;
+const galleryGrid = document.getElementById('galleryGrid');
+
+function renderGallery(){
+  if(galleryEntries.length === 0){
+    galleryGrid.innerHTML = `<div class="gallery-empty"><h4>No photos yet</h4>Be the first to add one — every capture starts the archive.</div>`;
+    return;
+  }
+  galleryGrid.innerHTML = galleryEntries.slice().reverse().map(e=>`
+    <div class="gallery-card" data-id="${e.id}">
+      <div class="gallery-thumb-wrap"><img class="gallery-thumb" src="${e.imageData}" alt="${escapeHtml(e.object)}"></div>
+      <div class="gallery-card-body">
+        <h4>${escapeHtml(e.object)}</h4>
+        <div class="meta">${e.date} · ${escapeHtml(e.setup)}</div>
+      </div>
+    </div>
+  `).join('');
+  document.querySelectorAll('.gallery-card').forEach(card=>{
+    card.addEventListener('click', ()=>openLightbox(card.dataset.id));
+  });
+}
+function escapeHtml(s){ const d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
+
+async function loadGallery(){
+  galleryGrid.innerHTML = `<div class="gallery-loading">Loading the archive…</div>`;
+  try{
+    const result = await window.storage.get(GALLERY_KEY, true);
+    galleryEntries = result && result.value ? JSON.parse(result.value) : [];
+  }catch(err){
+    galleryEntries = [];
+  }
+  renderGallery();
+}
+async function saveGallery(){
+  let payload = JSON.stringify(galleryEntries);
+  while(payload.length > 4.3*1024*1024 && galleryEntries.length > 1){
+    galleryEntries.shift();
+    payload = JSON.stringify(galleryEntries);
+  }
+  try{
+    const result = await window.storage.set(GALLERY_KEY, payload, true);
+    if(!result) throw new Error('Storage returned no result');
+    return true;
+  }catch(err){
+    console.error('Gallery save failed:', err);
+    return false;
+  }
+}
+loadGallery();
+
+const uploadOverlay = document.getElementById('uploadOverlay');
+document.getElementById('openUploadBtn').addEventListener('click', ()=>{
+  uploadOverlay.classList.add('open');
+  document.getElementById('fieldDate').valueAsDate = new Date();
+});
+document.getElementById('closeUploadBtn').addEventListener('click', ()=>uploadOverlay.classList.remove('open'));
+uploadOverlay.addEventListener('click', (e)=>{ if(e.target===uploadOverlay) uploadOverlay.classList.remove('open'); });
+
+document.getElementById('fieldFile').addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev)=>{
+    compressImage(ev.target.result, 900, 0.72).then(dataUrl=>{
+      pendingImageData = dataUrl;
+      document.getElementById('filePreview').src = dataUrl;
+      document.getElementById('filePreviewWrap').style.display='block';
+    });
+  };
+  reader.readAsDataURL(file);
+});
+function compressImage(srcDataUrl, maxWidth, quality){
+  return new Promise((resolve)=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const scale = Math.min(1, maxWidth/img.width);
+      const w = Math.round(img.width*scale), h = Math.round(img.height*scale);
+      const c = document.createElement('canvas'); c.width=w; c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      resolve(c.toDataURL('image/jpeg', quality));
+    };
+    img.src = srcDataUrl;
+  });
+}
+document.getElementById('uploadForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const errEl = document.getElementById('uploadError');
+  errEl.style.display='none';
+  if(!pendingImageData){ errEl.textContent='Choose an image file first.'; errEl.style.display='block'; return; }
+  const submitBtn = document.getElementById('submitUploadBtn');
+  submitBtn.disabled = true; submitBtn.textContent = 'Saving…';
+  const entry = {
+    id: 'g'+Date.now()+Math.random().toString(36).slice(2,7),
+    imageData: pendingImageData,
+    object: document.getElementById('fieldObject').value.trim(),
+    date: document.getElementById('fieldDate').value,
+    exposure: document.getElementById('fieldExposure').value.trim(),
+    setup: document.getElementById('fieldSetup').value.trim(),
+    notes: document.getElementById('fieldNotes').value.trim(),
+  };
+  galleryEntries.push(entry);
+  const ok = await saveGallery();
+  submitBtn.disabled = false; submitBtn.textContent = 'Add to gallery';
+  if(ok){
+    renderGallery();
+    uploadOverlay.classList.remove('open');
+    e.target.reset();
+    document.getElementById('filePreviewWrap').style.display='none';
+    pendingImageData = null;
+  }else{
+    galleryEntries.pop();
+    errEl.textContent = "Couldn't save — check your connection and try again.";
+    errEl.style.display='block';
+  }
+});
+
+const lightboxOverlay = document.getElementById('lightboxOverlay');
+function openLightbox(id){
+  const e = galleryEntries.find(x=>x.id===id);
+  if(!e) return;
+  activeEntryId = id;
+  document.getElementById('lightboxImg').src = e.imageData;
+  document.getElementById('lightboxTitle').textContent = e.object;
+  document.getElementById('lightboxMeta').textContent = `${e.date}${e.exposure ? ' · '+e.exposure : ''} · ${e.setup}`;
+  document.getElementById('lightboxNotes').textContent = e.notes || 'No additional notes.';
+  lightboxOverlay.classList.add('open');
+}
+document.getElementById('closeLightboxBtn').addEventListener('click', ()=>lightboxOverlay.classList.remove('open'));
+lightboxOverlay.addEventListener('click', (e)=>{ if(e.target===lightboxOverlay) lightboxOverlay.classList.remove('open'); });
+document.getElementById('deleteEntryBtn').addEventListener('click', async ()=>{
+  if(!activeEntryId) return;
+  if(!confirm('Remove this photo from the shared gallery for everyone?')) return;
+  const backup = galleryEntries;
+  galleryEntries = galleryEntries.filter(x=>x.id!==activeEntryId);
+  const ok = await saveGallery();
+  if(ok){ renderGallery(); lightboxOverlay.classList.remove('open'); }
+  else{ galleryEntries = backup; alert("Couldn't remove the photo — try again."); }
+});
+</script>
+</body>
+</html>
