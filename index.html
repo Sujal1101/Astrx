@@ -103,7 +103,7 @@ header#topnav{
 .sb-logo .sub{font-family:var(--font-mono); font-size:0.56rem; color:var(--starlight-dim); letter-spacing:0.1em; display:block; margin-top:1px;}
 
 .sidebar-nav{
-  display:flex; align-items:center; gap:0.3rem; flex-grow:1; overflow-x:auto; scrollbar-width:none;
+  display:flex; align-items:center; justify-content:space-evenly; gap:0.4rem; flex-grow:1; overflow-x:auto; scrollbar-width:none;
   -ms-overflow-style:none; min-width:0;
 }
 .sidebar-nav::-webkit-scrollbar{display:none;}
@@ -125,9 +125,10 @@ header#topnav{
 #burger{display:none; background:none; border:1px solid var(--panel-border); color:var(--starlight); padding:0.5em 0.7em; border-radius:var(--radius);}
 
 @media(max-width:980px){
+  header#topnav{backdrop-filter:none;} /* backdrop-filter creates a containing block for position:fixed children — breaks the mobile menu below otherwise */
   .sidebar-nav{
     display:none; position:fixed; top:60px; left:0; right:0; bottom:0; overflow-y:auto; flex-direction:column;
-    align-items:stretch; background:rgba(5,7,13,0.97); backdrop-filter:blur(10px); padding:1rem 1.2rem; z-index:140; gap:0.2rem;
+    align-items:stretch; background:rgba(5,7,13,0.98); padding:1rem 1.2rem; z-index:200; gap:0.2rem;
   }
   .sidebar-nav.open{display:flex;}
   .nav-item{padding:0.9rem 0.8rem; border-radius:var(--radius); border-bottom:1px solid var(--panel-border);}
@@ -140,18 +141,91 @@ header#topnav{
 @keyframes paneFade{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
 
 /* photo banner — real NASA imagery blended behind each pane's header */
-.photo-banner{
-  position:relative; border:1px solid var(--panel-border); margin-bottom:2.4rem; padding:2.4rem clamp(1.25rem,3vw,2.6rem);
-  min-height:200px; display:flex; flex-direction:column; justify-content:flex-end; overflow:hidden;
-  background-color:var(--void-soft); background-size:cover; background-position:center; background-repeat:no-repeat;
-  transition:var(--transition-nv);
+/* ============================= UPGRADED PHOTO BANNERS ============================= */
+.photo-banner {
+  position: relative;
+  margin-bottom: 2.4rem;
+  padding: 2.4rem clamp(1.25rem, 3vw, 2.6rem);
+  min-height: 240px; 
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: hidden;
+  
+  background-color: var(--void-softer);
+  background-image: radial-gradient(circle at top right, rgba(168,107,255,0.08) 0%, transparent 50%),
+                    radial-gradient(circle at bottom left, rgba(93,217,193,0.05) 0%, transparent 50%);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  
+  background-blend-mode: luminosity;
+  
+  border-radius: var(--radius);
+  border: 1px solid rgba(255,255,255,0.03);
+  border-bottom: none;
+  box-shadow: inset 0 0 40px rgba(0,0,0,0.5), 0 8px 24px rgba(0,0,0,0.2);
+  transition: var(--transition-nv);
 }
-.photo-banner::before{
-  content:''; position:absolute; inset:0; z-index:0;
-  background:linear-gradient(180deg, rgba(3,4,8,0.6) 0%, rgba(3,4,8,0.45) 45%, var(--void) 94%);
-  transition:var(--transition-nv);
+
+.photo-banner::before {
+  content: ''; 
+  position: absolute; 
+  inset: 0; 
+  z-index: 0;
+  background: linear-gradient(180deg, rgba(5,7,13,0.1) 0%, rgba(5,7,13,0.95) 100%);
+  transition: var(--transition-nv);
 }
-.photo-banner.has-photo::before{background:linear-gradient(180deg, rgba(3,4,8,0.65) 0%, rgba(3,4,8,0.5) 45%, var(--void) 96%);}
+
+.photo-banner.has-photo::before {
+  background: linear-gradient(180deg, rgba(5,7,13,0.2) 0%, rgba(5,7,13,0.95) 100%);
+}
+
+.photo-banner > * {
+  position: relative; 
+  z-index: 1;
+}
+
+.photo-banner h1, .photo-banner h2 {
+  text-shadow: 0 4px 16px rgba(0,0,0,0.9);
+}
+
+.home-h1 em {
+  font-style: normal; 
+  color: var(--gold);
+  text-shadow: 0 0 24px rgba(232,176,75,0.35); 
+}
+
+.photo-banner .pane-head {
+  margin-bottom: 0; 
+  max-width: 680px;
+}
+
+.photo-banner .pb-credit {
+  position: absolute; 
+  bottom: 0.8rem; 
+  right: 1.2rem; 
+  z-index: 1; 
+  font-family: var(--font-mono); 
+  font-size: 0.58rem;
+  color: rgba(255,255,255,0.35); 
+  letter-spacing: 0.05em;
+}
+
+.photo-banner.hero-banner {
+  min-height: 65vh; 
+  justify-content: center; 
+  padding: 3rem clamp(1.25rem, 4vw, 3rem);
+}
+
+@media(max-width: 768px) {
+  .photo-banner {
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+}
+}
 .photo-banner > *{position:relative; z-index:1;}
 .photo-banner .pane-head{margin-bottom:0; max-width:680px;}
 .photo-banner .pb-credit{
@@ -185,7 +259,8 @@ footer.site-footer{
 
 #quoteBox{
   margin-top:2.6rem; padding:1.5rem 1.7rem; border-left:2px solid var(--gold);
-  background:rgba(232,176,75,0.04); max-width:680px; min-height:96px; transition:opacity .4s ease;
+  background:transparent; /* Removed the faint yellow tint */
+  max-width:680px; min-height:96px; transition:opacity .4s ease;
 }
 #quoteBox.fade{opacity:0;}
 .quote-kicker{
@@ -282,8 +357,25 @@ footer.site-footer{
 .starmap-info .stat-row .k{color:var(--starlight-dim); font-family:var(--font-mono); font-size:0.72rem; letter-spacing:0.03em; text-transform:uppercase;}
 .starmap-info .stat-row .v{font-family:var(--font-mono); color:var(--gold);}
 .starmap-info .fun-fact{margin-top:1.2rem; padding-top:1.2rem; border-top:1px dashed var(--panel-border); color:var(--starlight-dim); font-size:0.86rem; font-style:italic;}
+.catalog-note{margin-top:1.6rem; font-size:0.78rem; color:var(--starlight-dim); font-style:italic; max-width:70ch;}
+
+.sm-view{display:none;}
+.sm-view.active{display:block; animation:paneFade .3s ease;}
+.dso-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:1.4rem;}
+.dso-card{border:1px solid var(--panel-border); background:var(--void-soft); overflow:hidden;}
+.dso-photo{aspect-ratio:4/3; background:var(--void-softer) center/cover no-repeat; position:relative;}
+.dso-photo .dso-skel{position:absolute; inset:0; background:linear-gradient(100deg, var(--void-soft) 30%, var(--void-softer) 50%, var(--void-soft) 70%); background-size:200% 100%; animation:shimmer 1.6s infinite;}
+.dso-body{padding:1.2rem 1.3rem 1.4rem;}
+.dso-body h4{font-size:1.05rem; margin-bottom:0.2rem;}
+.dso-body .dso-type{font-family:var(--font-mono); font-size:0.66rem; color:var(--teal); text-transform:uppercase; letter-spacing:0.05em;}
+.dso-body p{color:var(--starlight-dim); font-size:0.85rem; margin-top:0.7rem;}
+.dso-stats{display:flex; gap:0.6rem; flex-wrap:wrap; margin-top:0.9rem;}
+.dso-stats span{font-family:var(--font-mono); font-size:0.68rem; color:var(--starlight-dim); border:1px solid var(--panel-border); padding:0.2em 0.55em; border-radius:20px;}
 
 /* ============================= TELESCOPE ACADEMY ============================= */
+.academy-section{display:none;}
+.academy-section.active{display:block; animation:paneFade .35s ease;}
+#academyTabs{margin-bottom:2.4rem;}
 .scope-tabs{display:flex; gap:0.6rem; flex-wrap:wrap; margin-bottom:2rem; border-bottom:1px solid var(--panel-border); padding-bottom:1.4rem;}
 .scope-tab{
   background:transparent; border:1px solid var(--panel-border); color:var(--starlight-dim);
@@ -395,12 +487,9 @@ footer.site-footer{
     <a class="nav-item" data-target="home">Home</a>
     <a class="nav-item" data-target="apod">NASA Picture of the Day</a>
     <a class="nav-item" data-target="events">Sky Events</a>
-    <a class="nav-item" data-target="starmap">Star Map</a>
-    <a class="nav-item" data-target="academy-types">Telescope Types</a>
-    <a class="nav-item" data-target="academy-glossary">Specs Glossary</a>
-    <a class="nav-item" data-target="simulator">Optics Simulator</a>
+    <a class="nav-item" data-target="starmap">Heavens</a>
+    <a class="nav-item" data-target="academy">Telescope Academy</a>
     <a class="nav-item" data-target="gallery">Member Gallery</a>
-    <a class="nav-item" data-target="gear">Gear Guide</a>
   </nav>
 
   <div class="nav-right">
@@ -416,8 +505,8 @@ footer.site-footer{
       <h1 class="home-h1">We study the dark<br>so the sky makes <em>sense.</em></h1>
       <p class="home-sub">SkyPage is a student astronomy club for anyone who has ever looked up and wanted to know more — observers, astrophotographers, telescope tinkerers, and the just-plain-curious. Use the menu above to jump straight to what you're after.</p>
       <div class="home-cta">
-        <a href="#" class="btn solid" data-target="starmap">Open the Star Map</a>
-        <a href="#" class="btn" data-target="academy-types">Learn the equipment</a>
+        <a href="#" class="btn solid" data-target="starmap">Open the Heavens</a>
+        <a href="#" class="btn" data-target="academy">Learn the equipment</a>
       </div>
 
       <div id="quoteBox">
@@ -425,15 +514,15 @@ footer.site-footer{
         <p id="quoteText">Loading…</p>
         <cite id="quoteAuthor"></cite>
       </div>
-      <span class="pb-credit">NASA</span>
+      <span class="pb-credit"></span>
       </div>
 
       <div class="home-shortcuts">
         <div class="eyebrow" style="margin-bottom:1.1rem;">Jump in</div>
         <div class="shortcut-grid">
           <a href="#" class="shortcut-card" data-target="apod"><span class="tag">Sky Today</span><h4>NASA Picture of the Day</h4><p>A new image and its story, fetched live.</p></a>
-          <a href="#" class="shortcut-card" data-target="starmap"><span class="tag">Interactive</span><h4>Star Map</h4><p>Click through real constellations, star by star.</p></a>
-          <a href="#" class="shortcut-card" data-target="simulator"><span class="tag">Interactive</span><h4>Optics Simulator</h4><p>Build a telescope, watch Saturn respond.</p></a>
+          <a href="#" class="shortcut-card" data-target="starmap"><span class="tag">Interactive</span><h4>Heavens</h4><p>Click through real constellations, star by star.</p></a>
+          <a href="#" class="shortcut-card" data-target="academy" data-subtab="simulator"><span class="tag">Interactive</span><h4>Optics Simulator</h4><p>Build a telescope, watch Saturn respond.</p></a>
           <a href="#" class="shortcut-card" data-target="gallery"><span class="tag">Community</span><h4>Member Gallery</h4><p>Real captures, real setups, real details.</p></a>
         </div>
       </div>
@@ -446,7 +535,7 @@ footer.site-footer{
         <h2>NASA's picture of the day</h2>
         <p>Pulled live from NASA's Astronomy Picture of the Day archive — a new image, and the story behind it, every 24 hours.</p>
       </div>
-      <span class="pb-credit">NASA</span>
+      <span class="pb-credit"></span>
       </div>
       <div class="apod-grid">
         <div class="apod-media">
@@ -473,7 +562,7 @@ footer.site-footer{
         <h2>What the sky is doing</h2>
         <p>A running calendar of meteor showers, solstices, equinoxes, and eclipses — computed against today's date, every time you load this page. For live positions right now, from exactly where you're standing, we hand off to tools built for that.</p>
       </div>
-      <span class="pb-credit">NASA</span>
+      <span class="pb-credit"></span>
       </div>
 
       <div class="upcoming-row" id="upcomingRow"></div>
@@ -503,96 +592,116 @@ footer.site-footer{
 <div class="pane" id="pane-starmap">
       <div class="photo-banner" id="banner-starmap">
       <div class="pane-head">
-        <div class="eyebrow">Star Map</div>
-        <h2>Constellations, star by star</h2>
-        <p>Pick a constellation. Click any star in it for its real distance, brightness, and spectral type — the numbers behind the picture.</p>
+        <div class="eyebrow">Heavens</div>
+        <h2>The sky, object by object</h2>
+        <p>Constellations, galaxies, and nebulae — click through real catalog data and real NASA imagery for each.</p>
       </div>
-      <span class="pb-credit">NASA</span>
+      <span class="pb-credit"></span>
       </div>
 
-      <div class="const-chips" id="constChips"></div>
+      <div class="scope-tabs" id="starmapTabs">
+        <button class="scope-tab active" data-smtab="constellations">Constellations</button>
+        <button class="scope-tab" data-smtab="galaxies">Galaxies</button>
+        <button class="scope-tab" data-smtab="nebulae">Nebulae</button>
+      </div>
 
-      <div class="starmap-grid">
-        <div class="starmap-canvas-wrap">
-          <div class="const-title" id="constTitle"></div>
-          <svg id="constSvg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet"></svg>
-          <div class="starmap-legend">
-            <span><i style="background:#9fc4ff"></i>O/B — blue giants</span>
-            <span><i style="background:#eef2ff"></i>A/F — white</span>
-            <span><i style="background:#ffe9b3"></i>G — yellow (our Sun's class)</span>
-            <span><i style="background:#ff8a5c"></i>K/M — orange–red</span>
+      <div class="sm-view active" id="sm-constellations">
+        <div class="const-chips" id="constChips"></div>
+        <div class="starmap-grid">
+          <div class="starmap-canvas-wrap">
+            <div class="const-title" id="constTitle"></div>
+            <svg id="constSvg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet"></svg>
+            <div class="starmap-legend">
+              <span><i style="background:#9fc4ff"></i>O/B — blue giants</span>
+              <span><i style="background:#eef2ff"></i>A/F — white</span>
+              <span><i style="background:#ffe9b3"></i>G — yellow (our Sun's class)</span>
+              <span><i style="background:#ff8a5c"></i>K/M — orange–red</span>
+            </div>
+          </div>
+          <div class="starmap-info" id="starInfo">
+            <div class="eyebrow">Tap a star</div>
+            <h3>Nothing selected yet</h3>
+            <p>Click any point in the diagram. The brightest stars in the sky aren't always the closest — some of this light left its star before your grandparents were born.</p>
           </div>
         </div>
-        <div class="starmap-info" id="starInfo">
-          <div class="eyebrow">Tap a star</div>
-          <h3>Nothing selected yet</h3>
-          <p>Click any point in the diagram. The brightest stars in the sky aren't always the closest — some of this light left its star before your grandparents were born.</p>
+        <p class="catalog-note">Star positions are plotted from real right ascension / declination catalog coordinates using a gnomonic projection centered on each constellation — the same technique real star charts use.</p>
+      </div>
+
+      <div class="sm-view" id="sm-galaxies">
+        <div class="dso-grid" id="galaxyGrid"></div>
+      </div>
+
+      <div class="sm-view" id="sm-nebulae">
+        <div class="dso-grid" id="nebulaGrid"></div>
+      </div>
+    </div>
+
+<div class="pane" id="pane-academy">
+      <div class="photo-banner" id="banner-academy">
+      <div class="pane-head">
+        <div class="eyebrow">Telescope Academy</div>
+        <h2>How telescopes actually work</h2>
+        <p>Three optical designs, the specs every listing throws at you, and a simulator to see how they interact — everything about the gear itself, in one place.</p>
+      </div>
+      <span class="pb-credit"></span>
+      </div>
+      <div class="scope-tabs" id="academyTabs">
+        <button class="scope-tab active" data-academy="types">How It Works</button>
+        <button class="scope-tab" data-academy="glossary">Specs Glossary</button>
+        <button class="scope-tab" data-academy="simulator">Optics Simulator</button>
+      </div>
+
+      <div class="academy-section active" id="academy-types">
+        <div class="pane-head" style="margin-bottom:1.6rem;">
+          <h3>How a telescope actually works</h3>
+          <p>Three optical designs cover almost everything you'll ever point at the sky. Understanding how each bends light tells you what it's good at — and what it isn't.</p>
         </div>
+        <div class="scope-tabs" id="scopeTabs">
+          <button class="scope-tab active" data-scope="refractor">Refractor</button>
+          <button class="scope-tab" data-scope="reflector">Reflector (Newtonian)</button>
+          <button class="scope-tab" data-scope="catadioptric">Catadioptric (SCT)</button>
+        </div>
+        <div class="scope-panel" id="scopePanel"></div>
       </div>
-    </div>
 
-<div class="pane" id="pane-academy-types">
-      <div class="photo-banner" id="banner-academy-types">
-      <div class="pane-head">
-        <div class="eyebrow">Telescope Academy</div>
-        <h2>How a telescope actually works</h2>
-        <p>Three optical designs cover almost everything you'll ever point at the sky. Understanding how each bends light tells you what it's good at — and what it isn't.</p>
+      <div class="academy-section" id="academy-glossary">
+        <div class="pane-head" style="margin-bottom:1.6rem;">
+          <h3>The specs, decoded</h3>
+          <p>Every telescope listing throws these numbers at you. Here's what they actually mean, and the formula behind each — the same ones driving the Optics Simulator.</p>
+        </div>
+        <div class="glossary-grid" id="glossaryGrid"></div>
       </div>
-      <span class="pb-credit">NASA</span>
-      </div>
-      <div class="scope-tabs" id="scopeTabs">
-        <button class="scope-tab active" data-scope="refractor">Refractor</button>
-        <button class="scope-tab" data-scope="reflector">Reflector (Newtonian)</button>
-        <button class="scope-tab" data-scope="catadioptric">Catadioptric (SCT)</button>
-      </div>
-      <div class="scope-panel" id="scopePanel"></div>
-    </div>
 
-<div class="pane" id="pane-academy-glossary">
-      <div class="photo-banner" id="banner-academy-glossary">
-      <div class="pane-head">
-        <div class="eyebrow">Telescope Academy</div>
-        <h2>The specs, decoded</h2>
-        <p>Every telescope listing throws these numbers at you. Here's what they actually mean, and the formula behind each — the same ones driving the Optics Simulator.</p>
-      </div>
-      <span class="pb-credit">NASA</span>
-      </div>
-      <div class="glossary-grid" id="glossaryGrid"></div>
-    </div>
-
-<div class="pane" id="pane-simulator">
-      <div class="photo-banner" id="banner-simulator">
-      <div class="pane-head">
-        <div class="eyebrow">Optics Simulator</div>
-        <h2>Build a telescope, see what it buys you</h2>
-        <p>Move the sliders. Every number here runs on the same formulas from the Academy — aperture and eyepiece choice actually change what you'd see if you pointed this rig at Saturn tonight.</p>
-      </div>
-      <span class="pb-credit">NASA</span>
-      </div>
-      <div class="sim-grid">
-        <div class="sim-controls">
-          <div class="sim-presets">
-            <button class="btn" data-preset="beginner">Beginner scope</button>
-            <button class="btn" data-preset="serious">Serious amateur</button>
-            <button class="btn" data-preset="big">Large Dobsonian</button>
+      <div class="academy-section" id="academy-simulator">
+        <div class="pane-head" style="margin-bottom:1.6rem;">
+          <h3>Build a telescope, see what it buys you</h3>
+          <p>Move the sliders. Every number here runs on the same formulas from the Academy — aperture and eyepiece choice actually change what you'd see if you pointed this rig at Saturn tonight.</p>
+        </div>
+        <div class="sim-grid">
+          <div class="sim-controls">
+            <div class="sim-presets">
+              <button class="btn" data-preset="beginner">Beginner scope</button>
+              <button class="btn" data-preset="serious">Serious amateur</button>
+              <button class="btn" data-preset="big">Large Dobsonian</button>
+            </div>
+            <label class="sim-label">Aperture <span class="mono" id="apertureVal"></span></label>
+            <input type="range" id="apertureSlider" min="50" max="300" value="130" class="sim-range">
+            <label class="sim-label">Telescope focal length <span class="mono" id="focalVal"></span></label>
+            <input type="range" id="focalSlider" min="400" max="3000" value="900" class="sim-range">
+            <label class="sim-label">Eyepiece focal length <span class="mono" id="eyepieceVal"></span></label>
+            <input type="range" id="eyepieceSlider" min="4" max="32" value="10" class="sim-range">
+            <label class="sim-label">Sky conditions</label>
+            <select id="seeingSelect" class="mono-select" style="width:100%; padding:0.8em;">
+              <option value="0.5">Excellent — steady, dark rural sky</option>
+              <option value="1.5" selected>Average — typical suburban night</option>
+              <option value="3">Poor — turbulent air / city glow</option>
+            </select>
+            <div class="sim-stats" id="simStats"></div>
           </div>
-          <label class="sim-label">Aperture <span class="mono" id="apertureVal"></span></label>
-          <input type="range" id="apertureSlider" min="50" max="300" value="130" class="sim-range">
-          <label class="sim-label">Telescope focal length <span class="mono" id="focalVal"></span></label>
-          <input type="range" id="focalSlider" min="400" max="3000" value="900" class="sim-range">
-          <label class="sim-label">Eyepiece focal length <span class="mono" id="eyepieceVal"></span></label>
-          <input type="range" id="eyepieceSlider" min="4" max="32" value="10" class="sim-range">
-          <label class="sim-label">Sky conditions</label>
-          <select id="seeingSelect" class="mono-select" style="width:100%; padding:0.8em;">
-            <option value="0.5">Excellent — steady, dark rural sky</option>
-            <option value="1.5" selected>Average — typical suburban night</option>
-            <option value="3">Poor — turbulent air / city glow</option>
-          </select>
-          <div class="sim-stats" id="simStats"></div>
-        </div>
-        <div class="sim-view">
-          <canvas id="saturnCanvas"></canvas>
-          <span class="sim-view-caption">Illustrative render — proportions are exaggerated for teaching, not an optically exact simulation.</span>
+          <div class="sim-view">
+            <canvas id="saturnCanvas"></canvas>
+            <span class="sim-view-caption">Illustrative render — proportions are exaggerated for teaching, not an optically exact simulation.</span>
+          </div>
         </div>
       </div>
     </div>
@@ -607,7 +716,7 @@ footer.site-footer{
         </div>
         <button class="btn solid" id="openUploadBtn">+ Add your photo</button>
       </div>
-      <span class="pb-credit">NASA</span>
+      <span class="pb-credit"></span>
       </div>
       <p class="shared-note">📡 This gallery is shared — photos you add here are visible to everyone who opens this page.</p>
       <div id="galleryGrid" class="gallery-grid"></div>
@@ -657,44 +766,6 @@ footer.site-footer{
         </div>
       </div>
     </div>
-
-<div class="pane" id="pane-gear">
-      <div class="photo-banner" id="banner-gear">
-      <div class="pane-head">
-        <div class="eyebrow">Community</div>
-        <h2>Where to actually buy this, in India</h2>
-        <p>Four dealers members have sourced real gear from — spanning first telescopes to full astrophotography rigs. Always confirm current stock, warranty terms, and authorized-dealer status directly before ordering.</p>
-      </div>
-      <span class="pb-credit">NASA</span>
-      </div>
-      <div class="gear-grid">
-        <div class="gear-card">
-          <span class="tag">Legacy &amp; telescopes</span>
-          <h4>Tejraj &amp; Co.</h4>
-          <p>Mumbai-based telescope manufacturer and dealer operating since 1976 — one of India's longest-running names in the hobby, with Newtonian, refractor, and Maksutov-Cassegrain telescopes plus accessories.</p>
-          <a href="https://www.tejraj.com" target="_blank" rel="noopener" class="btn">Visit tejraj.com ↗</a>
-        </div>
-        <div class="gear-card">
-          <span class="tag">Multi-brand catalog</span>
-          <h4>Modern Telescopes</h4>
-          <p>A wide-ranging online store carrying Celestron, Bresser, Explore Scientific, GSO, Vixen, and ZWO — telescopes, mounts, eyepieces, filters, and imaging cameras in one catalog.</p>
-          <a href="https://moderntelescopes.net" target="_blank" rel="noopener" class="btn">Visit moderntelescopes.net ↗</a>
-        </div>
-        <div class="gear-card">
-          <span class="tag">Astrophotography specialist</span>
-          <h4>EDISLA</h4>
-          <p>Focused on astrophotography gear specifically — authorized ZWO, Askar, and Player One cameras, mounts, and full imaging rig builds with compatibility guidance.</p>
-          <a href="https://edisla.in" target="_blank" rel="noopener" class="btn">Visit edisla.in ↗</a>
-        </div>
-        <div class="gear-card">
-          <span class="tag">Professional &amp; institutional</span>
-          <h4>Galileo Telescope</h4>
-          <p>Supplies observatory-grade setups and has worked with ISRO, IIA, and BARC — the option to look at once you're past beginner gear and thinking about serious, permanent equipment.</p>
-          <a href="https://galileotelescope.com" target="_blank" rel="noopener" class="btn">Visit galileotelescope.com ↗</a>
-        </div>
-      </div>
-      <p class="gear-disclaimer">SkyPage isn't affiliated with any of these sellers and earns nothing from your purchase — this list exists because members needed it, not because anyone paid for a placement.</p>
-    </div>
   </main>
 
 <footer class="site-footer">
@@ -707,26 +778,30 @@ footer.site-footer{
       <p>A club built around one idea: the sky rewards anyone willing to look carefully. Explore, learn, and add what you've seen.</p>
     </div>
     <div>
-      <h4>The Sky Today</h4>
+      <h4>Connect</h4>
       <div class="flinks">
-        <a href="#" data-target="apod">NASA Picture of the Day</a>
-        <a href="#" data-target="events">Sky Events Almanac</a>
-        <a href="#" data-target="starmap">Star Map</a>
+        <a href="https://chat.whatsapp.com/IWAyZiFGem7B2PqX8br41t" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" style="vertical-align:-3px; margin-right:0.4em;"><path d="M12 2a10 10 0 0 0-8.5 15.2L2 22l4.9-1.5A10 10 0 1 0 12 2z"/><path d="M8.5 8.7c.2-.5.5-.5.7-.5h.5c.2 0 .4 0 .6.4.2.5.7 1.6.7 1.7.1.1.1.3 0 .4-.1.2-.2.3-.3.4-.1.1-.3.3-.4.4-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.4 2.4 1.5.3.1.5.1.7-.1.2-.2.7-.8.9-1.1.2-.3.4-.2.6-.1.2.1 1.5.7 1.8.8.3.1.4.2.5.3.1.2.1.9-.2 1.7-.3.8-1.7 1.5-2.3 1.5-.6 0-1.4.3-4.5-1-3.7-1.6-6-5.6-6.2-5.9-.2-.3-1.4-1.9-1.4-3.6 0-1.7.9-2.5 1.2-2.9z"/></svg>WhatsApp Group</a>
+        <a href="https://www.instagram.com/kosmazer?igsh=MTVyeDBuaHJ4Znlxag==" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" style="vertical-align:-3px; margin-right:0.4em;"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.2" cy="6.8" r="0.6" fill="currentColor" stroke="none"/></svg>Instagram</a>
       </div>
     </div>
     <div>
-      <h4>Learn &amp; build</h4>
+      <h4>Get a telescope</h4>
       <div class="flinks">
-        <a href="#" data-target="academy-types">Telescope Types</a>
-        <a href="#" data-target="academy-glossary">Specs Glossary</a>
-        <a href="#" data-target="simulator">Optics Simulator</a>
+        <a href="https://www.tejraj.com" target="_blank" rel="noopener">Tejraj &amp; Co. ↗</a>
+        <a href="https://moderntelescopes.net" target="_blank" rel="noopener">Modern Telescopes ↗</a>
+        <a href="https://edisla.in" target="_blank" rel="noopener">EDISLA ↗</a>
+        <a href="https://galileotelescope.com" target="_blank" rel="noopener">Galileo Telescope ↗</a>
       </div>
     </div>
     <div>
-      <h4>Community</h4>
+      <h4>Space agencies &amp; orgs</h4>
       <div class="flinks">
-        <a href="#" data-target="gallery">Member Gallery</a>
-        <a href="#" data-target="gear">Gear Guide</a>
+        <a href="https://www.nasa.gov" target="_blank" rel="noopener">NASA (USA) ↗</a>
+        <a href="https://www.isro.gov.in" target="_blank" rel="noopener">ISRO (India) ↗</a>
+        <a href="https://www.esa.int" target="_blank" rel="noopener">ESA (Europe) ↗</a>
+        <a href="https://global.jaxa.jp" target="_blank" rel="noopener">JAXA (Japan) ↗</a>
+        <a href="https://www.iau.org" target="_blank" rel="noopener">IAU ↗</a>
+        <a href="https://www.seti.org" target="_blank" rel="noopener">SETI Institute ↗</a>
       </div>
     </div>
     <div>
@@ -750,45 +825,46 @@ footer.site-footer{
 document.getElementById('yearNow').textContent = new Date().getFullYear();
 
 /* =============================================================
-   NASA IMAGE LIBRARY — public, unauthenticated JSON API
-   (images-api.nasa.gov). Used to pull real, public-domain NASA
-   photography into the photo banners across the site, so imagery
-   is live and varies rather than a handful of hardcoded links.
+   WIKIPEDIA REST API — page/summary endpoint (proven reachable),
+   using the full-size originalimage rather than the small preview
+   thumbnail so banners aren't blurry. Falls through a short list
+   of alternate titles if one article lacks a usable image.
 ============================================================= */
-async function setPhotoBanner(bannerId, query){
+async function setPhotoBanner(bannerId, titles){
   const el = document.getElementById(bannerId);
   if(!el) return;
-  try{
-    const res = await fetch(`https://images-api.nasa.gov/search?q=${encodeURIComponent(query)}&media_type=image`);
-    if(!res.ok) throw new Error('bad response');
-    const data = await res.json();
-    const items = ((data.collection && data.collection.items) || [])
-      .filter(it => it.links && it.links[0] && it.links[0].href && it.data && it.data[0]);
-    if(!items.length) return;
-    const pick = items[Math.floor(Math.random()*Math.min(items.length,12))];
-    const url = pick.links[0].href;
-    const credit = pick.data[0].title || 'NASA';
-    // preload before swapping in, so we never show a broken/half-loaded image
-    const img = new Image();
-    img.onload = ()=>{
-      el.style.backgroundImage = `url("${url}")`;
-      el.classList.add('has-photo');
-      const creditEl = el.querySelector('.pb-credit');
-      if(creditEl) creditEl.textContent = 'NASA — ' + credit;
-    };
-    img.src = url;
-  }catch(err){ console.warn('NASA photo fetch failed for', query, err); }
+  for(const title of titles){
+    try{
+      const res = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`);
+      if(!res.ok) continue;
+      const data = await res.json();
+      const src = (data.originalimage && data.originalimage.source) || (data.thumbnail && data.thumbnail.source);
+      if(!src) continue;
+      await new Promise((resolve, reject)=>{
+        const img = new Image();
+        img.onload = ()=>{
+          el.style.backgroundImage = `url("${src}")`;
+          el.classList.add('has-photo');
+          const creditEl = el.querySelector('.pb-credit');
+          if(creditEl) creditEl.textContent = 'Wikipedia — ' + (data.title || title);
+          resolve();
+        };
+        img.onerror = reject;
+        img.src = src;
+      });
+      return; // success — stop trying fallback titles
+    }catch(err){ /* try the next fallback title */ }
+  }
+  console.warn('Photo banner fetch failed for all titles:', titles);
 }
 
-setPhotoBanner('banner-home', 'hubble deep field galaxy');
-setPhotoBanner('banner-apod', 'spiral galaxy hubble');
-setPhotoBanner('banner-events', 'meteor shower night sky');
-setPhotoBanner('banner-starmap', 'milky way night sky stars');
-setPhotoBanner('banner-academy-types', 'observatory telescope night');
-setPhotoBanner('banner-academy-glossary', 'amateur telescope stargazing');
-setPhotoBanner('banner-simulator', 'saturn rings');
-setPhotoBanner('banner-gallery', 'astrophotography nebula');
-setPhotoBanner('banner-gear', 'telescope equipment');
+setPhotoBanner('banner-home', ['Hubble Deep Field', 'Hubble Ultra-Deep Field']);
+setPhotoBanner('banner-apod', ['Andromeda Galaxy', 'Spiral galaxy']);
+setPhotoBanner('banner-events', ['Meteor shower', 'Perseids']);
+setPhotoBanner('banner-starmap', ['Milky Way', 'Night sky']);
+setPhotoBanner('banner-academy', ['Amateur astronomy', 'Reflecting telescope']);
+setPhotoBanner('banner-gallery', ['Astrophotography', 'Orion Nebula']);
+
 
 /* ---------- night vision toggle ---------- */
 document.getElementById('nvToggle').addEventListener('click', ()=>{
@@ -808,13 +884,17 @@ function showPane(target){
   if(pane) pane.classList.add('active');
   document.querySelectorAll('.nav-item[data-target]').forEach(l=>l.classList.toggle('active', l.dataset.target===target));
   window.scrollTo({top:0, behavior:'instant'});
-  history.replaceState(null, '', '#'+target);
+  try{ history.replaceState(null, '', '#'+target); }catch(err){ /* blocked in some sandboxed preview contexts — harmless to skip */ }
   navMenuEl.classList.remove('open');
 }
 document.querySelectorAll('[data-target]').forEach(link=>{
   link.addEventListener('click', (e)=>{
     e.preventDefault();
     showPane(link.dataset.target);
+    if(link.dataset.subtab){
+      const tab = document.querySelector(`#academyTabs [data-academy="${link.dataset.subtab}"]`);
+      if(tab) tab.click();
+    }
   });
 });
 const initialTarget = (location.hash || '#home').slice(1);
@@ -1092,108 +1172,234 @@ const allEvents = [
 </script>
 <script>
 /* =============================================================
-   STAR MAP — simple 2D constellations
-   Coordinates are simplified schematic layouts (like a planetarium
-   chart), not literal RA/Dec projections — built to be recognizable
-   and readable. Star data (distance/magnitude/spectral type) is real,
-   rounded, textbook-standard values.
+   STAR MAP
+   Constellations are plotted from REAL catalog coordinates (right
+   ascension in hours, declination in degrees — standard J2000-ish
+   textbook values) using a gnomonic (tangent-plane) projection
+   centered on each constellation's mean position. This is the same
+   basic technique real star charts use for a small patch of sky —
+   it preserves true relative angular positions, not a hand-placed
+   illustration. Distance/magnitude/spectral type are real, rounded,
+   textbook-standard values.
 ============================================================= */
 const SPEC_COLOR = {O:'#9fc4ff', B:'#bcd4ff', A:'#eef2ff', F:'#fff7e8', G:'#ffe9b3', K:'#ffc27a', M:'#ff8a5c'};
 function specColor(spec){ return SPEC_COLOR[spec[0]] || '#eef2ff'; }
 function magSize(mag){ return Math.max(1.1, 3.4 - mag*0.4); }
 
+function projectConstellation(stars){
+  const raRad = s => (s.ra/24)*2*Math.PI;
+  const decRad = s => s.dec*Math.PI/180;
+  let sx=0, sy=0, sdec=0;
+  stars.forEach(s=>{ sx += Math.cos(raRad(s)); sy += Math.sin(raRad(s)); sdec += s.dec; });
+  const ra0 = Math.atan2(sy/stars.length, sx/stars.length);
+  const dec0 = (sdec/stars.length) * Math.PI/180;
+
+  const raw = stars.map(s=>{
+    const ra = raRad(s), dec = decRad(s);
+    const cosc = Math.sin(dec0)*Math.sin(dec) + Math.cos(dec0)*Math.cos(dec)*Math.cos(ra-ra0);
+    const X = -(Math.cos(dec)*Math.sin(ra-ra0))/cosc; // sky viewed from inside the sphere: RA increases leftward
+    const Y = (Math.cos(dec0)*Math.sin(dec) - Math.sin(dec0)*Math.cos(dec)*Math.cos(ra-ra0))/cosc;
+    return {X, Y, star:s};
+  });
+
+  const xs = raw.map(p=>p.X), ys = raw.map(p=>p.Y);
+  const minX=Math.min(...xs), maxX=Math.max(...xs), minY=Math.min(...ys), maxY=Math.max(...ys);
+  const spanX = maxX-minX || 0.01, spanY = maxY-minY || 0.01;
+  const span = Math.max(spanX, spanY);
+  const pad = 16, avail = 100 - pad*2;
+  const cx = (minX+maxX)/2, cy = (minY+maxY)/2;
+
+  return raw.map(p=>({
+    ...p.star,
+    x: 50 + ((p.X-cx)/span)*avail,
+    y: 50 - ((p.Y-cy)/span)*avail
+  }));
+}
+
 const CONSTELLATIONS = {
   orion: {
     label:'Orion — The Hunter',
     stars:[
-      {n:'Meissa', x:50, y:10, dist:1100, mag:3.54, spec:'O8III'},
-      {n:'Betelgeuse', x:30, y:25, dist:548, mag:0.50, spec:'M1Ia'},
-      {n:'Bellatrix', x:68, y:22, dist:250, mag:1.64, spec:'B2III'},
-      {n:'Mintaka', x:46, y:50, dist:900, mag:2.23, spec:'B0III'},
-      {n:'Alnilam', x:52, y:53, dist:2000, mag:1.69, spec:'B0Ia'},
-      {n:'Alnitak', x:58, y:56, dist:800, mag:1.77, spec:'O9.5Ib'},
-      {n:'Rigel', x:28, y:88, dist:860, mag:0.13, spec:'B8Ia'},
-      {n:'Saiph', x:62, y:85, dist:650, mag:2.07, spec:'B0.5Ia'},
+      {n:'Meissa', ra:5.586, dec:9.93, dist:1100, mag:3.54, spec:'O8III'},
+      {n:'Betelgeuse', ra:5.919, dec:7.40, dist:548, mag:0.50, spec:'M1Ia'},
+      {n:'Bellatrix', ra:5.419, dec:6.35, dist:250, mag:1.64, spec:'B2III'},
+      {n:'Mintaka', ra:5.533, dec:-0.30, dist:900, mag:2.23, spec:'B0III'},
+      {n:'Alnilam', ra:5.604, dec:-1.20, dist:2000, mag:1.69, spec:'B0Ia'},
+      {n:'Alnitak', ra:5.679, dec:-1.94, dist:800, mag:1.77, spec:'O9.5Ib'},
+      {n:'Rigel', ra:5.242, dec:-8.20, dist:860, mag:0.13, spec:'B8Ia'},
+      {n:'Saiph', ra:5.796, dec:-9.67, dist:650, mag:2.07, spec:'B0.5Ia'},
     ],
-    lines:[[0,1],[0,2],[1,3],[2,5],[3,4],[4,5],[3,6],[5,7]]
+    lines:[[0,1],[0,2],[1,5],[2,3],[3,4],[4,5],[3,6],[5,7]]
   },
   ursaMajor: {
     label:'Ursa Major — The Great Bear',
     stars:[
-      {n:'Dubhe', x:20, y:20, dist:123, mag:1.79, spec:'K0III'},
-      {n:'Merak', x:22, y:40, dist:79.7, mag:2.37, spec:'A1V'},
-      {n:'Phecda', x:45, y:45, dist:83.2, mag:2.44, spec:'A0V'},
-      {n:'Megrez', x:50, y:22, dist:58.4, mag:3.32, spec:'A3V'},
-      {n:'Alioth', x:65, y:18, dist:82.6, mag:1.77, spec:'A1III'},
-      {n:'Mizar', x:80, y:15, dist:82.9, mag:2.04, spec:'A2V'},
-      {n:'Alkaid', x:95, y:10, dist:103.9, mag:1.86, spec:'B3V'},
+      {n:'Dubhe', ra:11.062, dec:61.75, dist:123, mag:1.79, spec:'K0III'},
+      {n:'Merak', ra:11.031, dec:56.38, dist:79.7, mag:2.37, spec:'A1V'},
+      {n:'Phecda', ra:11.897, dec:53.69, dist:83.2, mag:2.44, spec:'A0V'},
+      {n:'Megrez', ra:12.257, dec:57.03, dist:58.4, mag:3.32, spec:'A3V'},
+      {n:'Alioth', ra:12.900, dec:55.96, dist:82.6, mag:1.77, spec:'A1III'},
+      {n:'Mizar', ra:13.399, dec:54.93, dist:82.9, mag:2.04, spec:'A2V'},
+      {n:'Alkaid', ra:13.792, dec:49.31, dist:103.9, mag:1.86, spec:'B3V'},
     ],
     lines:[[0,1],[1,2],[2,3],[3,0],[3,4],[4,5],[5,6]]
+  },
+  ursaMinor: {
+    label:'Ursa Minor — The Little Bear',
+    stars:[
+      {n:'Polaris', ra:2.530, dec:89.26, dist:433, mag:1.98, spec:'F7Ib'},
+      {n:'Yildun', ra:17.537, dec:86.59, dist:172, mag:4.36, spec:'A1V'},
+      {n:'Epsilon UMi', ra:16.767, dec:82.04, dist:347, mag:4.19, spec:'G5III'},
+      {n:'Zeta UMi', ra:15.734, dec:77.79, dist:369, mag:4.29, spec:'A3V'},
+      {n:'Kochab', ra:14.845, dec:74.16, dist:126, mag:2.08, spec:'K4III'},
+      {n:'Pherkad', ra:15.346, dec:71.83, dist:487, mag:3.05, spec:'A3II'},
+    ],
+    lines:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,2]]
   },
   cassiopeia: {
     label:'Cassiopeia — The Seated Queen',
     stars:[
-      {n:'Segin', x:10, y:50, dist:442, mag:3.35, spec:'B3V'},
-      {n:'Ruchbah', x:30, y:20, dist:99.4, mag:2.68, spec:'A5V'},
-      {n:'Navi', x:50, y:55, dist:550, mag:2.47, spec:'B0.5IVe'},
-      {n:'Schedar', x:70, y:15, dist:228, mag:2.24, spec:'K0II'},
-      {n:'Caph', x:90, y:45, dist:54.7, mag:2.28, spec:'F2III'},
+      {n:'Caph', ra:0.153, dec:59.15, dist:54.7, mag:2.28, spec:'F2III'},
+      {n:'Schedar', ra:0.675, dec:56.54, dist:228, mag:2.24, spec:'K0II'},
+      {n:'Navi', ra:0.945, dec:60.72, dist:550, mag:2.47, spec:'B0.5IVe'},
+      {n:'Ruchbah', ra:1.430, dec:60.24, dist:99.4, mag:2.68, spec:'A5V'},
+      {n:'Segin', ra:1.907, dec:63.67, dist:442, mag:3.35, spec:'B3V'},
     ],
     lines:[[0,1],[1,2],[2,3],[3,4]]
   },
   scorpius: {
     label:'Scorpius — The Scorpion',
     stars:[
-      {n:'Dschubba', x:20, y:10, dist:400, mag:2.29, spec:'B0.3IV'},
-      {n:'Antares', x:35, y:30, dist:550, mag:1.06, spec:'M1.5Iab'},
-      {n:'Sargas', x:55, y:55, dist:272, mag:1.87, spec:'F1II'},
-      {n:'Shaula', x:75, y:75, dist:570, mag:1.63, spec:'B1.5IV'},
-      {n:'Lesath', x:80, y:68, dist:520, mag:2.70, spec:'B2IV'},
+      {n:'Graffias', ra:16.091, dec:-19.80, dist:530, mag:2.56, spec:'B0.5V'},
+      {n:'Dschubba', ra:16.006, dec:-22.62, dist:400, mag:2.29, spec:'B0.3IV'},
+      {n:'Antares', ra:16.490, dec:-26.43, dist:550, mag:1.06, spec:'M1.5Iab'},
+      {n:'Sargas', ra:17.622, dec:-42.99, dist:272, mag:1.87, spec:'F1II'},
+      {n:'Shaula', ra:17.560, dec:-37.10, dist:570, mag:1.63, spec:'B1.5IV'},
+      {n:'Lesath', ra:17.513, dec:-37.29, dist:520, mag:2.70, spec:'B2IV'},
     ],
-    lines:[[0,1],[1,2],[2,3],[3,4]]
+    lines:[[0,1],[1,2],[2,3],[3,4],[4,5]]
   },
   leo: {
     label:'Leo — The Lion',
     stars:[
-      {n:'Regulus', x:15, y:70, dist:79, mag:1.36, spec:'B8IV'},
-      {n:'Algieba', x:30, y:30, dist:130, mag:2.28, spec:'K1III'},
-      {n:'Zosma', x:60, y:25, dist:58, mag:2.56, spec:'A4V'},
-      {n:'Chertan', x:58, y:45, dist:165, mag:3.34, spec:'A2V'},
-      {n:'Denebola', x:85, y:45, dist:36, mag:2.14, spec:'A3V'},
+      {n:'Regulus', ra:10.139, dec:11.97, dist:79, mag:1.36, spec:'B8IV'},
+      {n:'Eta Leo', ra:10.122, dec:16.76, dist:2000, mag:3.52, spec:'A0Ib'},
+      {n:'Algieba', ra:10.333, dec:19.84, dist:130, mag:2.28, spec:'K1III'},
+      {n:'Adhafera', ra:10.278, dec:23.42, dist:274, mag:3.44, spec:'F0III'},
+      {n:'Zosma', ra:11.237, dec:20.52, dist:58, mag:2.56, spec:'A4V'},
+      {n:'Chertan', ra:11.237, dec:15.42, dist:165, mag:3.34, spec:'A2V'},
+      {n:'Denebola', ra:11.818, dec:14.57, dist:36, mag:2.14, spec:'A3V'},
     ],
-    lines:[[0,1],[1,2],[2,3],[3,4],[3,0]]
+    lines:[[0,1],[1,2],[2,3],[2,4],[4,5],[5,6],[0,5]]
   },
   cygnus: {
     label:'Cygnus — The Swan',
     stars:[
-      {n:'Deneb', x:50, y:10, dist:2600, mag:1.25, spec:'A2Ia'},
-      {n:'Sadr', x:50, y:40, dist:1800, mag:2.23, spec:'F8Ib'},
-      {n:'Albireo', x:50, y:85, dist:430, mag:3.18, spec:'K3II'},
-      {n:'Gienah', x:20, y:45, dist:72, mag:2.48, spec:'K3III'},
-      {n:'Fawaris', x:80, y:35, dist:165, mag:2.87, spec:'A0IV'},
+      {n:'Deneb', ra:20.691, dec:45.28, dist:2600, mag:1.25, spec:'A2Ia'},
+      {n:'Sadr', ra:20.371, dec:40.26, dist:1800, mag:2.23, spec:'F8Ib'},
+      {n:'Albireo', ra:19.512, dec:27.96, dist:430, mag:3.18, spec:'K3II'},
+      {n:'Gienah', ra:20.770, dec:33.97, dist:72, mag:2.48, spec:'K3III'},
+      {n:'Fawaris', ra:19.749, dec:45.13, dist:165, mag:2.87, spec:'A0IV'},
     ],
     lines:[[0,1],[1,2],[1,3],[1,4]]
   },
   taurus: {
     label:'Taurus — The Bull',
     stars:[
-      {n:'Aldebaran', x:35, y:55, dist:65, mag:0.85, spec:'K5III'},
-      {n:'Ain', x:15, y:68, dist:146, mag:3.53, spec:'K0III'},
-      {n:'Theta Tauri', x:55, y:75, dist:150, mag:3.40, spec:'A7III'},
-      {n:'Zeta Tauri', x:65, y:30, dist:440, mag:3.00, spec:'B4III'},
-      {n:'Elnath', x:85, y:15, dist:134, mag:1.65, spec:'B7III'},
+      {n:'Aldebaran', ra:4.599, dec:16.51, dist:65, mag:0.85, spec:'K5III'},
+      {n:'Ain', ra:4.477, dec:19.18, dist:146, mag:3.53, spec:'K0III'},
+      {n:'Theta² Tauri', ra:4.478, dec:15.87, dist:150, mag:3.40, spec:'A7III'},
+      {n:'Zeta Tauri', ra:5.628, dec:21.14, dist:440, mag:3.00, spec:'B4III'},
+      {n:'Elnath', ra:5.438, dec:28.61, dist:134, mag:1.65, spec:'B7III'},
     ],
     lines:[[1,0],[0,2],[0,3],[3,4]]
   },
   crux: {
     label:'Crux — The Southern Cross',
     stars:[
-      {n:'Gacrux', x:50, y:15, dist:88, mag:1.63, spec:'M3.5III'},
-      {n:'Acrux', x:50, y:85, dist:320, mag:0.77, spec:'B0.5IV'},
-      {n:'Mimosa', x:15, y:45, dist:280, mag:1.25, spec:'B0.5III'},
-      {n:'Delta Crucis', x:75, y:40, dist:345, mag:2.79, spec:'B2IV'},
+      {n:'Acrux', ra:12.443, dec:-63.10, dist:320, mag:0.77, spec:'B0.5IV'},
+      {n:'Gacrux', ra:12.519, dec:-57.11, dist:88, mag:1.63, spec:'M3.5III'},
+      {n:'Mimosa', ra:12.795, dec:-59.69, dist:280, mag:1.25, spec:'B0.5III'},
+      {n:'Delta Crucis', ra:12.253, dec:-58.75, dist:345, mag:2.79, spec:'B2IV'},
     ],
     lines:[[0,1],[2,3]]
+  },
+  gemini: {
+    label:'Gemini — The Twins',
+    stars:[
+      {n:'Castor', ra:7.577, dec:31.89, dist:51, mag:1.58, spec:'A1V'},
+      {n:'Pollux', ra:7.755, dec:28.03, dist:34, mag:1.14, spec:'K0III'},
+      {n:'Alhena', ra:6.629, dec:16.40, dist:109, mag:1.93, spec:'A1IV'},
+      {n:'Wasat', ra:7.335, dec:21.98, dist:59, mag:3.53, spec:'F0IV'},
+      {n:'Mebsuta', ra:6.732, dec:25.13, dist:840, mag:3.06, spec:'G8Ib'},
+      {n:'Mekbuda', ra:7.068, dec:20.57, dist:1200, mag:3.79, spec:'G0Ib'},
+    ],
+    lines:[[0,4],[4,2],[1,5],[5,3],[0,1]]
+  },
+  lyra: {
+    label:'Lyra — The Lyre',
+    stars:[
+      {n:'Vega', ra:18.616, dec:38.78, dist:25, mag:0.03, spec:'A0V'},
+      {n:'Sheliak', ra:18.835, dec:33.36, dist:960, mag:3.52, spec:'B7V'},
+      {n:'Sulafat', ra:18.982, dec:32.69, dist:620, mag:3.24, spec:'B9III'},
+      {n:'Delta² Lyrae', ra:18.908, dec:36.90, dist:900, mag:4.30, spec:'M4II'},
+      {n:'Zeta¹ Lyrae', ra:18.746, dec:37.61, dist:154, mag:4.34, spec:'A3V'},
+    ],
+    lines:[[0,4],[4,1],[1,2],[2,3],[3,4]]
+  },
+  aquila: {
+    label:'Aquila — The Eagle',
+    stars:[
+      {n:'Altair', ra:19.846, dec:8.87, dist:16.7, mag:0.77, spec:'A7V'},
+      {n:'Tarazed', ra:19.771, dec:10.61, dist:395, mag:2.72, spec:'K3II'},
+      {n:'Alshain', ra:19.922, dec:6.41, dist:45, mag:3.71, spec:'G8IV'},
+      {n:'Deneb el Okab', ra:19.090, dec:13.86, dist:83, mag:2.99, spec:'A0IV'},
+      {n:'Theta Aquilae', ra:19.104, dec:-0.82, dist:287, mag:3.24, spec:'B9.5III'},
+    ],
+    lines:[[1,0],[0,2],[0,3],[0,4]]
+  },
+  canisMajor: {
+    label:'Canis Major — The Great Dog',
+    stars:[
+      {n:'Sirius', ra:6.752, dec:-16.72, dist:8.6, mag:-1.46, spec:'A1V'},
+      {n:'Mirzam', ra:6.378, dec:-17.96, dist:500, mag:1.98, spec:'B1II-III'},
+      {n:'Wezen', ra:7.140, dec:-26.39, dist:1800, mag:1.83, spec:'F8Ia'},
+      {n:'Adhara', ra:6.977, dec:-28.97, dist:430, mag:1.50, spec:'B2II'},
+      {n:'Aludra', ra:7.402, dec:-29.30, dist:2000, mag:2.45, spec:'B5Ia'},
+      {n:'Furud', ra:6.339, dec:-30.06, dist:362, mag:3.02, spec:'B2.5V'},
+    ],
+    lines:[[0,1],[0,2],[2,3],[3,4],[1,5]]
+  },
+  andromeda: {
+    label:'Andromeda — The Chained Princess',
+    stars:[
+      {n:'Alpheratz', ra:0.140, dec:29.09, dist:97, mag:2.06, spec:'B8IV'},
+      {n:'Delta Andromedae', ra:0.656, dec:30.86, dist:101, mag:3.28, spec:'K3III'},
+      {n:'Mirach', ra:1.162, dec:35.62, dist:197, mag:2.05, spec:'M0III'},
+      {n:'Almach', ra:2.065, dec:42.33, dist:355, mag:2.10, spec:'K3IIb'},
+    ],
+    lines:[[0,1],[1,2],[2,3]]
+  },
+  pegasus: {
+    label:'Pegasus — The Winged Horse',
+    stars:[
+      {n:'Markab', ra:23.079, dec:15.21, dist:133, mag:2.49, spec:'B9III'},
+      {n:'Scheat', ra:23.063, dec:28.08, dist:196, mag:2.42, spec:'M2.5II-III'},
+      {n:'Algenib', ra:0.221, dec:15.18, dist:390, mag:2.83, spec:'B2IV'},
+      {n:'Alpheratz', ra:0.140, dec:29.09, dist:97, mag:2.06, spec:'B8IV'},
+    ],
+    lines:[[0,1],[1,3],[3,2],[2,0]]
+  },
+  perseus: {
+    label:'Perseus — The Hero',
+    stars:[
+      {n:'Mirfak', ra:3.405, dec:49.87, dist:510, mag:1.79, spec:'F5Ib'},
+      {n:'Algol', ra:3.136, dec:40.96, dist:93, mag:2.12, spec:'B8V'},
+      {n:'Zeta Persei', ra:3.902, dec:31.88, dist:750, mag:2.85, spec:'B1Ib'},
+      {n:'Epsilon Persei', ra:3.964, dec:40.01, dist:640, mag:2.89, spec:'B0.5V'},
+      {n:'Delta Persei', ra:3.716, dec:47.79, dist:520, mag:3.01, spec:'B5III'},
+    ],
+    lines:[[1,0],[0,4],[4,2],[2,3]]
   },
 };
 
@@ -1217,23 +1423,23 @@ function drawConstellation(key){
   const c = CONSTELLATIONS[key];
   document.getElementById('constTitle').textContent = c.label;
   const svg = document.getElementById('constSvg');
+  const projected = projectConstellation(c.stars);
   let markup = '';
-  // connecting lines first, so stars render on top
   c.lines.forEach(([a,b])=>{
-    const s1 = c.stars[a], s2 = c.stars[b];
-    markup += `<line class="const-line" x1="${s1.x}" y1="${s1.y}" x2="${s2.x}" y2="${s2.y}"/>`;
+    const s1 = projected[a], s2 = projected[b];
+    markup += `<line class="const-line" x1="${s1.x.toFixed(2)}" y1="${s1.y.toFixed(2)}" x2="${s2.x.toFixed(2)}" y2="${s2.y.toFixed(2)}"/>`;
   });
-  c.stars.forEach((s,i)=>{
+  projected.forEach((s,i)=>{
     const r = magSize(s.mag);
     const col = specColor(s.spec);
-    markup += `<circle class="star-dot" data-idx="${i}" cx="${s.x}" cy="${s.y}" r="${r}" fill="${col}" style="filter:drop-shadow(0 0 ${r}px ${col})"/>`;
-    markup += `<text class="star-label" x="${s.x+r+1.2}" y="${s.y+1}">${s.n}</text>`;
+    markup += `<circle class="star-dot" data-idx="${i}" cx="${s.x.toFixed(2)}" cy="${s.y.toFixed(2)}" r="${r}" fill="${col}" style="filter:drop-shadow(0 0 ${r}px ${col})"/>`;
+    markup += `<text class="star-label" x="${(s.x+r+1.2).toFixed(2)}" y="${(s.y+1).toFixed(2)}">${s.n}</text>`;
   });
   svg.innerHTML = markup;
   svg.querySelectorAll('.star-dot').forEach(dot=>{
     dot.addEventListener('click', ()=>{
       const idx = +dot.dataset.idx;
-      showStarInfo(c.stars[idx], c.label.split(' — ')[0]);
+      showStarInfo(projected[idx], c.label.split(' — ')[0]);
     });
   });
 }
@@ -1264,6 +1470,99 @@ function showStarInfo(star, constellationName){
 
 renderConstChips();
 drawConstellation(activeConstKey);
+
+/* =============================================================
+   GALAXIES & NEBULAE — real catalog facts, images fetched live
+   from NASA's Image Library (decent-sized preview images, not
+   full-resolution originals, so this stays fast to load).
+============================================================= */
+const GALAXIES = [
+  {name:'Andromeda Galaxy', cat:'M31', type:'Spiral galaxy', dist:'2.5 million ly', mag:3.4, desc:"The nearest large spiral galaxy to the Milky Way, and the most distant object easily visible to the naked eye. It's on a slow collision course with us — the two galaxies will merge in roughly 4.5 billion years.", wiki:'Andromeda Galaxy'},
+  {name:'Triangulum Galaxy', cat:'M33', type:'Spiral galaxy', dist:'2.73 million ly', mag:5.7, desc:"The third-largest galaxy in our Local Group, after Andromeda and the Milky Way. Under very dark skies it's one of the faintest objects visible without a telescope.", wiki:'Triangulum Galaxy'},
+  {name:'Whirlpool Galaxy', cat:'M51', type:'Spiral galaxy', dist:'23 million ly', mag:8.4, desc:"A textbook grand-design spiral, caught mid-interaction with its smaller companion galaxy NGC 5195 — one of the clearest examples of galactic interaction in the sky.", wiki:'Whirlpool Galaxy'},
+  {name:'Sombrero Galaxy', cat:'M104', type:'Spiral galaxy', dist:'31 million ly', mag:8.0, desc:"Named for its resemblance to a wide-brimmed hat — a bright nucleus wrapped in a strikingly thick, dark dust lane seen almost edge-on.", wiki:'Sombrero Galaxy'},
+  {name:'Pinwheel Galaxy', cat:'M101', type:'Spiral galaxy', dist:'21 million ly', mag:7.9, desc:"A face-on spiral considerably larger than the Milky Way, with noticeably asymmetric arms thought to result from past close encounters with companion galaxies.", wiki:'Pinwheel Galaxy'},
+  {name:'Cigar Galaxy', cat:'M82', type:'Starburst galaxy', dist:'12 million ly', mag:8.4, desc:"Undergoing an intense burst of star formation — stars being born roughly ten times faster than in the Milky Way — likely triggered by a close pass with neighboring M81.", wiki:['Messier 82', 'M82']},
+  {name:"Bode's Galaxy", cat:'M81', type:'Spiral galaxy', dist:'12 million ly', mag:6.9, desc:"One of the brightest galaxies visible from Earth, and a favorite target for astrophotographers thanks to its tightly wound, well-defined spiral arms.", wiki:['Messier 81', 'M81']},
+  {name:'Centaurus A', cat:'NGC 5128', type:'Peculiar galaxy', dist:'12 million ly', mag:6.8, desc:"Cut through by a striking dark dust lane, with a supermassive black hole at its core powering jets of matter detectable across the electromagnetic spectrum.", wiki:'Centaurus A'},
+  {name:'Large Magellanic Cloud', cat:'LMC', type:'Irregular dwarf galaxy', dist:'160,000 ly', mag:0.9, desc:"A satellite galaxy of the Milky Way, bright enough to see with the naked eye from the Southern Hemisphere — it looks like a detached piece of the Milky Way itself.", wiki:'Large Magellanic Cloud'},
+  {name:'Small Magellanic Cloud', cat:'SMC', type:'Irregular dwarf galaxy', dist:'200,000 ly', mag:2.7, desc:"The Milky Way's smaller Magellanic companion, sitting in the same patch of southern sky as the dense star cluster 47 Tucanae.", wiki:'Small Magellanic Cloud'},
+  {name:'Black Eye Galaxy', cat:'M64', type:'Spiral galaxy', dist:'17 million ly', mag:8.5, desc:"Named for the dramatic dark band of light-absorbing dust curling in front of its bright nucleus. Its inner and outer regions rotate in opposite directions, likely the aftermath of an ancient merger.", wiki:'Black Eye Galaxy'},
+  {name:'Cartwheel Galaxy', cat:'ESO 350-40', type:'Ring galaxy', dist:'500 million ly', mag:15.2, desc:"A once-ordinary spiral galaxy transformed by a head-on collision with a smaller galaxy, which sent a ripple of star formation outward and left it looking like a glowing wagon wheel.", wiki:'Cartwheel Galaxy'},
+];
+const NEBULAE = [
+  {name:'Orion Nebula', cat:'M42', type:'Emission nebula', dist:'1,344 ly', mag:4.0, desc:"One of the brightest nebulae in the sky, visible to the naked eye as the fuzzy 'middle star' in Orion's sword — an active stellar nursery forming hundreds of new stars.", wiki:'Orion Nebula'},
+  {name:'Crab Nebula', cat:'M1', type:'Supernova remnant', dist:'6,500 ly', mag:8.4, desc:"The wreckage of a supernova recorded by astronomers in 1054 AD. At its center spins a pulsar — the crushed core of the original star — rotating about 30 times per second.", wiki:'Crab Nebula'},
+  {name:'Ring Nebula', cat:'M57', type:'Planetary nebula', dist:'2,300 ly', mag:8.8, desc:"The glowing shell of gas shed by a dying Sun-like star, forming the classic smoke-ring shape that gives this whole class of object its name.", wiki:'Ring Nebula'},
+  {name:'Eagle Nebula', cat:'M16', type:'Emission nebula', dist:'7,000 ly', mag:6.0, desc:"Home to the 'Pillars of Creation' — towering columns of gas and dust where new stars are actively being born, made famous by Hubble.", wiki:'Eagle Nebula'},
+  {name:'Helix Nebula', cat:'NGC 7293', type:'Planetary nebula', dist:'650 ly', mag:7.6, desc:"One of the closest planetary nebulae to Earth, nicknamed the 'Eye of God' for its layered, eye-like structure.", wiki:'Helix Nebula'},
+  {name:"Cat's Eye Nebula", cat:'NGC 6543', type:'Planetary nebula', dist:'3,300 ly', mag:8.1, desc:"An intricate, multi-shelled structure — likely shaped by a central binary star system shedding layers of gas in different directions.", wiki:"Cat's Eye Nebula"},
+  {name:'Carina Nebula', cat:'NGC 3372', type:'Emission nebula', dist:'7,500 ly', mag:1.0, desc:"One of the largest and brightest nebulae in the sky, home to the volatile hypergiant star Eta Carinae, which could go supernova at any time.", wiki:'Carina Nebula'},
+  {name:'Horsehead Nebula', cat:'Barnard 33', type:'Dark nebula', dist:'1,375 ly', mag:6.8, desc:"A cloud of dark dust silhouetted against a bright emission nebula behind it, forming one of the most recognizable shapes in astrophotography.", wiki:'Horsehead Nebula'},
+  {name:'Rosette Nebula', cat:'NGC 2237', type:'Emission nebula', dist:'5,200 ly', mag:9.0, desc:"A rose-shaped ring of glowing gas surrounding a cluster of young, hot stars whose radiation carved out the dark cavity at its center.", wiki:'Rosette Nebula'},
+  {name:'Lagoon Nebula', cat:'M8', type:'Emission nebula', dist:'4,100 ly', mag:6.0, desc:"A vast star-forming region bright enough to spot with the naked eye under dark skies, threaded through with dark dust lanes and young star clusters.", wiki:'Lagoon Nebula'},
+  {name:'Tarantula Nebula', cat:'NGC 2070', type:'Emission nebula', dist:'160,000 ly', mag:8.0, desc:"The largest and most active stellar nursery known in our galactic neighborhood, sitting inside the Large Magellanic Cloud. If it were as close as the Orion Nebula, it would cast shadows on Earth.", wiki:'Tarantula Nebula'},
+  {name:'Veil Nebula', cat:'NGC 6960/6992', type:'Supernova remnant', dist:'2,400 ly', mag:7.0, desc:"The delicate, filamentary wreckage of a star that exploded roughly 10,000 years ago, now spread across an area many times the size of the full Moon.", wiki:'Veil Nebula'},
+];
+
+function renderDsoGrid(containerId, items){
+  const el = document.getElementById(containerId);
+  el.innerHTML = items.map((d,i)=>`
+    <div class="dso-card">
+      <div class="dso-photo" id="${containerId}-photo-${i}"><div class="dso-skel"></div></div>
+      <div class="dso-body">
+        <span class="dso-type">${d.type}</span>
+        <h4>${d.name} <span class="mono" style="color:var(--starlight-dim); font-weight:400; font-size:0.8rem;">${d.cat}</span></h4>
+        <p>${d.desc}</p>
+        <div class="dso-stats"><span>Distance: ${d.dist}</span><span>Mag: ${d.mag}</span></div>
+      </div>
+    </div>
+  `).join('');
+  items.forEach((d,i)=>fetchDsoImage(`${containerId}-photo-${i}`, Array.isArray(d.wiki) ? d.wiki : [d.wiki]));
+}
+
+async function fetchDsoImage(elId, titles){
+  const el = document.getElementById(elId);
+  if(!el) return;
+  for(const title of titles){
+    try{
+      const url = `https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=pageimages&piprop=thumbnail&pithumbsize=500&titles=${encodeURIComponent(title)}`;
+      const res = await fetch(url);
+      if(!res.ok) continue;
+      const data = await res.json();
+      const pages = data.query && data.query.pages;
+      const page = pages && Object.values(pages)[0];
+      const src = page && page.thumbnail && page.thumbnail.source;
+      if(!src) continue;
+      await new Promise((resolve, reject)=>{
+        const img = new Image();
+        img.onload = ()=>{
+          el.style.backgroundImage = `url("${src}")`;
+          const skel = el.querySelector('.dso-skel');
+          if(skel) skel.remove();
+          resolve();
+        };
+        img.onerror = reject;
+        img.src = src;
+      });
+      return;
+    }catch(err){ /* try next fallback title */ }
+  }
+  console.warn('DSO image fetch failed for all titles:', titles);
+}
+
+let galaxiesLoaded = false, nebulaeLoaded = false;
+document.querySelectorAll('#starmapTabs .scope-tab').forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    document.querySelectorAll('#starmapTabs .scope-tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    const key = tab.dataset.smtab;
+    document.querySelectorAll('.sm-view').forEach(v=>v.classList.remove('active'));
+    document.getElementById('sm-'+key).classList.add('active');
+    if(key==='galaxies' && !galaxiesLoaded){ galaxiesLoaded = true; renderDsoGrid('galaxyGrid', GALAXIES); }
+    if(key==='nebulae' && !nebulaeLoaded){ nebulaeLoaded = true; renderDsoGrid('nebulaGrid', NEBULAE); }
+  });
+});
 </script>
 <script>
 /* =============================================================
@@ -1344,11 +1643,21 @@ function renderScopePanel(key){
   `;
 }
 renderScopePanel('refractor');
-document.querySelectorAll('.scope-tab').forEach(tab=>{
+document.querySelectorAll('#scopeTabs .scope-tab').forEach(tab=>{
   tab.addEventListener('click', ()=>{
-    document.querySelectorAll('.scope-tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('#scopeTabs .scope-tab').forEach(t=>t.classList.remove('active'));
     tab.classList.add('active');
     renderScopePanel(tab.dataset.scope);
+  });
+});
+
+document.querySelectorAll('#academyTabs .scope-tab').forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    document.querySelectorAll('#academyTabs .scope-tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    const key = tab.dataset.academy;
+    document.querySelectorAll('.academy-section').forEach(s=>s.classList.remove('active'));
+    document.getElementById('academy-'+key).classList.add('active');
   });
 });
 
@@ -1490,13 +1799,11 @@ document.querySelectorAll('.sim-presets .btn').forEach(btn=>{
 });
 computeAndRender();
 
-/* re-render Saturn (and constellation svg sizing) whenever their pane becomes visible,
-   since canvases drawn while display:none report zero size */
-const _origShowPane = showPane;
-showPane = function(target){
-  _origShowPane(target);
-  if(target==='simulator'){ resizeSimCanvas(); computeAndRender(); }
-};
+/* re-render Saturn whenever its sub-tab becomes visible, since canvases drawn
+   while display:none report zero size */
+document.querySelector('#academyTabs [data-academy="simulator"]').addEventListener('click', ()=>{
+  resizeSimCanvas(); computeAndRender();
+});
 </script>
 <script>
 /* =============================================================
