@@ -225,7 +225,6 @@ header#topnav{
     border-right: none;
   }
 }
-}
 .photo-banner > *{position:relative; z-index:1;}
 .photo-banner .pane-head{margin-bottom:0; max-width:680px;}
 .photo-banner .pb-credit{
@@ -435,6 +434,45 @@ footer.site-footer{
 .gallery-card-body .meta{font-family:var(--font-mono); font-size:0.68rem; color:var(--starlight-dim);}
 .gallery-empty, .gallery-loading{grid-column:1/-1; text-align:center; padding:3.5rem 1rem; color:var(--starlight-dim); border:1px dashed var(--panel-border);}
 .gallery-empty h4{color:var(--starlight); margin-bottom:0.5rem; font-family:var(--font-display);}
+
+/* auth */
+.gallery-auth{display:flex; align-items:center; gap:0.8rem;}
+.auth-btn{
+  display:inline-flex; align-items:center; gap:0.6em; background:var(--starlight); color:#1a1a1a; border:none;
+  padding:0.65em 1.2em; font-size:0.85rem; font-weight:600; border-radius:20px; transition:transform .15s ease, box-shadow .15s ease;
+  font-family:var(--font-body);
+}
+.auth-btn:hover{transform:translateY(-1px); box-shadow:0 4px 14px rgba(245,243,236,0.15);}
+.user-chip{display:flex; align-items:center; gap:0.6rem;}
+.user-chip img{width:30px; height:30px; border-radius:50%; border:1px solid var(--panel-border);}
+.user-chip .uname{font-size:0.82rem; color:var(--starlight-dim);}
+.user-chip .btn{padding:0.5em 0.9em; font-size:0.76rem;}
+
+/* card footer: uploader + ascend */
+.gallery-card-foot{display:flex; align-items:center; justify-content:space-between; margin-top:0.9rem; padding-top:0.8rem; border-top:1px solid var(--panel-border);}
+.gallery-user{display:flex; align-items:center; gap:0.5rem; min-width:0;}
+.gallery-avatar{width:20px; height:20px; border-radius:50%; flex-shrink:0; background:var(--void-softer); object-fit:cover;}
+.gallery-user span{font-size:0.74rem; color:var(--starlight-dim); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.ascend-btn{
+  display:inline-flex; align-items:center; gap:0.4em; background:transparent; border:1px solid var(--panel-border);
+  color:var(--starlight-dim); padding:0.35em 0.8em; border-radius:20px; font-size:0.78rem; font-family:var(--font-mono);
+  transition:all .15s ease; flex-shrink:0;
+}
+.ascend-btn:hover{border-color:var(--gold-dim); color:var(--starlight);}
+.ascend-btn.ascended{background:rgba(232,176,75,0.14); border-color:var(--gold); color:var(--gold); font-weight:600;}
+
+/* upload progress */
+.upload-progress-wrap{margin-top:1rem; display:flex; align-items:center; gap:0.8rem;}
+.upload-progress-track{flex-grow:1; height:5px; background:var(--void-softer); border-radius:10px; overflow:hidden;}
+.upload-progress-fill{height:100%; width:0%; background:var(--gold); transition:width .2s ease;}
+#uploadProgressLabel{font-size:0.7rem; color:var(--starlight-dim); white-space:nowrap;}
+
+/* lightbox extras */
+.lightbox-user{display:flex; align-items:center; gap:0.6rem; margin-bottom:1rem;}
+.lightbox-user img{width:26px; height:26px; border-radius:50%; border:1px solid var(--panel-border);}
+.lightbox-user span{font-size:0.82rem; color:var(--starlight-dim);}
+.lightbox-actions{display:flex; gap:0.8rem; align-items:center; margin-top:1.2rem; flex-wrap:wrap;}
+.lightbox-actions .ascend-btn{font-size:0.85rem; padding:0.55em 1em;}
 
 .modal-overlay{position:fixed; inset:0; background:rgba(2,3,7,0.85); backdrop-filter:blur(4px); display:none; align-items:center; justify-content:center; z-index:200; padding:1.5rem;}
 .modal-overlay.open{display:flex;}
@@ -714,12 +752,12 @@ footer.site-footer{
           <h2>What we've actually seen</h2>
           <p>Real captures from real member setups — with the details that make astrophotography a technical hobby, not just a pretty picture.</p>
         </div>
-        <button class="btn solid" id="openUploadBtn">+ Add your photo</button>
+        <div class="gallery-auth" id="galleryAuth"></div>
       </div>
       <span class="pb-credit"></span>
       </div>
-      <p class="shared-note">📡 This gallery is shared — photos you add here are visible to everyone who opens this page.</p>
-      <div id="galleryGrid" class="gallery-grid"></div>
+      <p class="shared-note">📡 This gallery is shared and live — sign in with Google to post a photo or ascend one you like.</p>
+      <div id="galleryGrid" class="gallery-grid"><div class="gallery-loading">Loading the feed…</div></div>
     </div>
 
     <div class="modal-overlay" id="uploadOverlay">
@@ -732,23 +770,35 @@ footer.site-footer{
           <label class="field-label">Image file</label>
           <input type="file" id="fieldFile" accept="image/*" required>
           <div id="filePreviewWrap" style="display:none;"><img id="filePreview" alt="preview"></div>
+
+          <label class="field-label">Title</label>
+          <input type="text" id="fieldTitle" placeholder="e.g. First light on the Orion Nebula" required>
+
           <label class="field-label">What is it?</label>
           <input type="text" id="fieldObject" placeholder="e.g. M42 — The Orion Nebula" required>
+
           <div class="field-row">
             <div>
               <label class="field-label">Date captured</label>
               <input type="date" id="fieldDate" required>
             </div>
             <div>
-              <label class="field-label">Exposure / stacking (optional)</label>
-              <input type="text" id="fieldExposure" placeholder="e.g. 40× 30s subs">
+              <label class="field-label">Camera</label>
+              <input type="text" id="fieldCamera" placeholder="e.g. ZWO ASI224MC">
             </div>
           </div>
-          <label class="field-label">Telescope / camera setup</label>
-          <input type="text" id="fieldSetup" placeholder="e.g. 150mm Newtonian, ZWO ASI224MC, EQ3-2 mount" required>
-          <label class="field-label">Notes (optional)</label>
+
+          <label class="field-label">Telescope / setup</label>
+          <input type="text" id="fieldSetup" placeholder="e.g. 150mm Newtonian, EQ3-2 mount" required>
+
+          <label class="field-label">Description (optional)</label>
           <textarea id="fieldNotes" rows="3" placeholder="Conditions, processing, what to look for…"></textarea>
+
           <div id="uploadError" class="upload-error" style="display:none;"></div>
+          <div id="uploadProgressWrap" class="upload-progress-wrap" style="display:none;">
+            <div class="upload-progress-track"><div class="upload-progress-fill" id="uploadProgressFill"></div></div>
+            <span class="mono" id="uploadProgressLabel">Uploading… 0%</span>
+          </div>
           <button type="submit" class="btn solid" id="submitUploadBtn" style="width:100%; justify-content:center; margin-top:0.6rem;">Add to gallery</button>
         </form>
       </div>
@@ -761,8 +811,12 @@ footer.site-footer{
         <div class="lightbox-info">
           <h3 id="lightboxTitle"></h3>
           <div class="lightbox-meta" id="lightboxMeta"></div>
+          <div class="lightbox-user" id="lightboxUser"></div>
           <p id="lightboxNotes"></p>
-          <button class="btn" id="deleteEntryBtn" style="margin-top:1rem;">Remove this photo</button>
+          <div class="lightbox-actions">
+            <button class="ascend-btn" id="lightboxAscendBtn">▲ <span id="lightboxAscendCount">0</span> Ascend</button>
+            <button class="btn" id="deleteEntryBtn" style="display:none;">Remove this photo</button>
+          </div>
         </div>
       </div>
     </div>
@@ -1805,151 +1859,318 @@ document.querySelector('#academyTabs [data-academy="simulator"]').addEventListen
   resizeSimCanvas(); computeAndRender();
 });
 </script>
-<script>
+
+<script type="module">
 /* =============================================================
-   MEMBER GALLERY — shared persistent storage across visitors.
+   MEMBER GALLERY — live Reddit-style astrophotography feed
+   Backend: Firebase (Auth + Firestore) for accounts/metadata/votes,
+   Cloudinary (unsigned upload) for image hosting.
+
+   ⚠ SETUP NEEDED — fill in your Cloudinary Cloud Name below.
+   Everything else (Firebase config, upload preset) is already wired
+   in from what you provided.
 ============================================================= */
-const GALLERY_KEY = 'skypage-gallery-entries';
-let galleryEntries = [];
-let pendingImageData = null;
-let activeEntryId = null;
+const CLOUDINARY_CLOUD_NAME = 'othk5duf';
+const CLOUDINARY_UPLOAD_PRESET = 'astrx_uploads';
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-analytics.js";
+import {
+  getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import {
+  getFirestore, collection, addDoc, doc, deleteDoc, updateDoc,
+  onSnapshot, query, orderBy, serverTimestamp, arrayUnion, arrayRemove
+} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAECeW0FH30xCwanp9QAaP0_JCvZFdxYNo",
+  authDomain: "astrx-club.firebaseapp.com",
+  projectId: "astrx-club",
+  storageBucket: "astrx-club.firebasestorage.app",
+  messagingSenderId: "592483676844",
+  appId: "1:592483676844:web:e21ab779b69b0cdccaa509",
+  measurementId: "G-8MHHLRB8L4"
+};
+
+const app = initializeApp(firebaseConfig);
+try{ getAnalytics(app); }catch(err){ /* analytics can silently fail (e.g. ad-blockers) without affecting the rest of the app */ }
+const auth = getAuth(app);
+const db = getFirestore(app);
+const googleProvider = new GoogleAuthProvider();
+
+let currentUser = null;
+let posts = [];
+let pendingImageFile = null;
+let activePostId = null;
+
 const galleryGrid = document.getElementById('galleryGrid');
+const galleryAuthEl = document.getElementById('galleryAuth');
+
+/* ---------- auth ---------- */
+function renderAuthUI(){
+  if(currentUser){
+    galleryAuthEl.innerHTML = `
+      <div class="user-chip">
+        <img src="${currentUser.photoURL || ''}" alt="">
+        <span class="uname">${escapeHtml(currentUser.displayName || 'Member')}</span>
+        <button class="btn" id="signOutBtn">Sign out</button>
+      </div>
+      <button class="btn solid" id="openUploadBtn">+ Add your photo</button>
+    `;
+    document.getElementById('signOutBtn').addEventListener('click', ()=>signOut(auth));
+    document.getElementById('openUploadBtn').addEventListener('click', openUploadModal);
+  }else{
+    galleryAuthEl.innerHTML = `
+      <button class="auth-btn" id="signInBtn">
+        <svg width="16" height="16" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.91c1.7-1.57 2.69-3.87 2.69-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.91-2.26c-.81.54-1.85.86-3.05.86-2.35 0-4.34-1.58-5.05-3.71H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.95 10.71a5.4 5.4 0 0 1 0-3.42V4.96H.96a9 9 0 0 0 0 8.08l2.99-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.51.46 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .96 4.96l2.99 2.33C4.66 5.16 6.65 3.58 9 3.58z"/></svg>
+        Sign in with Google
+      </button>
+    `;
+    document.getElementById('signInBtn').addEventListener('click', ()=>{
+      signInWithPopup(auth, googleProvider).catch(err=>{
+        console.error('Sign-in failed', err);
+        alert("Sign-in didn't go through — try again.");
+      });
+    });
+  }
+}
+
+onAuthStateChanged(auth, (user)=>{
+  currentUser = user;
+  renderAuthUI();
+  renderGallery(); // re-render so ascend button states reflect the current user
+});
+
+/* ---------- load posts (live) ---------- */
+function subscribeToPosts(){
+  const q = query(collection(db, 'posts'), orderBy('createdAt', 'desc'));
+  onSnapshot(q, (snapshot)=>{
+    posts = snapshot.docs.map(d=>({id:d.id, ...d.data()}));
+    renderGallery();
+  }, (err)=>{
+    console.error('Feed subscription failed', err);
+    galleryGrid.innerHTML = `<div class="gallery-empty"><h4>Couldn't load the feed</h4>Check your Firestore setup and connection, then reload.</div>`;
+  });
+}
+subscribeToPosts();
+
+/* ---------- render ---------- */
+function escapeHtml(s){ const d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
 
 function renderGallery(){
-  if(galleryEntries.length === 0){
+  if(posts.length === 0){
     galleryGrid.innerHTML = `<div class="gallery-empty"><h4>No photos yet</h4>Be the first to add one — every capture starts the archive.</div>`;
     return;
   }
-  galleryGrid.innerHTML = galleryEntries.slice().reverse().map(e=>`
-    <div class="gallery-card" data-id="${e.id}">
-      <div class="gallery-thumb-wrap"><img class="gallery-thumb" src="${e.imageData}" alt="${escapeHtml(e.object)}"></div>
+  galleryGrid.innerHTML = posts.map(p=>{
+    const ascendedBy = p.ascendedBy || [];
+    const isAscended = currentUser && ascendedBy.includes(currentUser.uid);
+    return `
+    <div class="gallery-card" data-id="${p.id}">
+      <div class="gallery-thumb-wrap"><img class="gallery-thumb" src="${p.imageUrl}" alt="${escapeHtml(p.object)}" loading="lazy"></div>
       <div class="gallery-card-body">
-        <h4>${escapeHtml(e.object)}</h4>
-        <div class="meta">${e.date} · ${escapeHtml(e.setup)}</div>
+        <h4>${escapeHtml(p.title || p.object)}</h4>
+        <div class="meta">${escapeHtml(p.object)}${p.capturedDate ? ' · '+p.capturedDate : ''}</div>
+        <div class="meta">${escapeHtml(p.telescope || '')}</div>
+        <div class="gallery-card-foot">
+          <div class="gallery-user">
+            <img class="gallery-avatar" src="${p.userPhoto || ''}" alt="">
+            <span>${escapeHtml(p.userName || 'Member')}</span>
+          </div>
+          <button class="ascend-btn${isAscended?' ascended':''}" data-ascend-id="${p.id}">▲ <span>${ascendedBy.length}</span></button>
+        </div>
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
+
   document.querySelectorAll('.gallery-card').forEach(card=>{
-    card.addEventListener('click', ()=>openLightbox(card.dataset.id));
+    card.addEventListener('click', (e)=>{
+      if(e.target.closest('.ascend-btn')) return; // handled separately below
+      openLightbox(card.dataset.id);
+    });
   });
-}
-function escapeHtml(s){ const d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
+  document.querySelectorAll('[data-ascend-id]').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      toggleAscend(btn.dataset.ascendId);
+    });
+  });
 
-async function loadGallery(){
-  galleryGrid.innerHTML = `<div class="gallery-loading">Loading the archive…</div>`;
-  try{
-    const result = await window.storage.get(GALLERY_KEY, true);
-    galleryEntries = result && result.value ? JSON.parse(result.value) : [];
-  }catch(err){
-    galleryEntries = [];
-  }
-  renderGallery();
-}
-async function saveGallery(){
-  let payload = JSON.stringify(galleryEntries);
-  while(payload.length > 4.3*1024*1024 && galleryEntries.length > 1){
-    galleryEntries.shift();
-    payload = JSON.stringify(galleryEntries);
-  }
-  try{
-    const result = await window.storage.set(GALLERY_KEY, payload, true);
-    if(!result) throw new Error('Storage returned no result');
-    return true;
-  }catch(err){
-    console.error('Gallery save failed:', err);
-    return false;
+  // keep an open lightbox in sync with live updates (e.g. someone else ascending the same post)
+  if(activePostId && document.getElementById('lightboxOverlay').classList.contains('open')){
+    refreshLightboxAscendState(activePostId);
   }
 }
-loadGallery();
 
+function refreshLightboxAscendState(postId){
+  const p = posts.find(x=>x.id===postId);
+  if(!p) return;
+  const ascendedBy = p.ascendedBy || [];
+  const isAscended = currentUser && ascendedBy.includes(currentUser.uid);
+  const ascendBtn = document.getElementById('lightboxAscendBtn');
+  if(ascendBtn) ascendBtn.className = 'ascend-btn' + (isAscended ? ' ascended' : '');
+  const countEl = document.getElementById('lightboxAscendCount');
+  if(countEl) countEl.textContent = ascendedBy.length;
+}
+
+/* ---------- ascend (upvote-only) ---------- */
+async function toggleAscend(postId){
+  if(!currentUser){ alert('Sign in with Google to ascend a photo.'); return; }
+  const post = posts.find(p=>p.id===postId);
+  if(!post) return;
+  const ascendedBy = post.ascendedBy || [];
+  const already = ascendedBy.includes(currentUser.uid);
+  try{
+    await updateDoc(doc(db, 'posts', postId), {
+      ascendedBy: already ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid)
+    });
+  }catch(err){
+    console.error('Ascend failed', err);
+    alert("Couldn't register that — try again.");
+  }
+}
+
+/* ---------- upload modal ---------- */
 const uploadOverlay = document.getElementById('uploadOverlay');
-document.getElementById('openUploadBtn').addEventListener('click', ()=>{
+function openUploadModal(){
+  if(!currentUser){ alert('Sign in with Google first.'); return; }
   uploadOverlay.classList.add('open');
   document.getElementById('fieldDate').valueAsDate = new Date();
-});
+}
 document.getElementById('closeUploadBtn').addEventListener('click', ()=>uploadOverlay.classList.remove('open'));
 uploadOverlay.addEventListener('click', (e)=>{ if(e.target===uploadOverlay) uploadOverlay.classList.remove('open'); });
 
 document.getElementById('fieldFile').addEventListener('change', (e)=>{
   const file = e.target.files[0];
   if(!file) return;
+  if(file.size > 10*1024*1024){
+    alert('That image is over 10MB — pick a smaller file.');
+    e.target.value = '';
+    return;
+  }
+  pendingImageFile = file;
   const reader = new FileReader();
   reader.onload = (ev)=>{
-    compressImage(ev.target.result, 900, 0.72).then(dataUrl=>{
-      pendingImageData = dataUrl;
-      document.getElementById('filePreview').src = dataUrl;
-      document.getElementById('filePreviewWrap').style.display='block';
-    });
+    document.getElementById('filePreview').src = ev.target.result;
+    document.getElementById('filePreviewWrap').style.display='block';
   };
   reader.readAsDataURL(file);
 });
-function compressImage(srcDataUrl, maxWidth, quality){
-  return new Promise((resolve)=>{
-    const img = new Image();
-    img.onload = ()=>{
-      const scale = Math.min(1, maxWidth/img.width);
-      const w = Math.round(img.width*scale), h = Math.round(img.height*scale);
-      const c = document.createElement('canvas'); c.width=w; c.height=h;
-      c.getContext('2d').drawImage(img,0,0,w,h);
-      resolve(c.toDataURL('image/jpeg', quality));
+
+function uploadToCloudinary(file, onProgress){
+  return new Promise((resolve, reject)=>{
+    if(!CLOUDINARY_CLOUD_NAME || CLOUDINARY_CLOUD_NAME === 'YOUR_CLOUD_NAME'){
+      reject(new Error('Cloudinary cloud name is not set — open the page source and fill in CLOUDINARY_CLOUD_NAME.'));
+      return;
+    }
+    const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', url);
+    xhr.upload.onprogress = (e)=>{ if(e.lengthComputable && onProgress) onProgress(Math.round(e.loaded/e.total*100)); };
+    xhr.onload = ()=>{
+      if(xhr.status>=200 && xhr.status<300){ resolve(JSON.parse(xhr.responseText).secure_url); }
+      else reject(new Error('Cloudinary upload failed (' + xhr.status + ')'));
     };
-    img.src = srcDataUrl;
+    xhr.onerror = ()=>reject(new Error('Network error during upload'));
+    xhr.send(formData);
   });
 }
+
 document.getElementById('uploadForm').addEventListener('submit', async (e)=>{
   e.preventDefault();
   const errEl = document.getElementById('uploadError');
-  errEl.style.display='none';
-  if(!pendingImageData){ errEl.textContent='Choose an image file first.'; errEl.style.display='block'; return; }
+  errEl.style.display = 'none';
+  if(!currentUser){ errEl.textContent = 'Sign in with Google first.'; errEl.style.display='block'; return; }
+  if(!pendingImageFile){ errEl.textContent = 'Choose an image file first.'; errEl.style.display='block'; return; }
+
   const submitBtn = document.getElementById('submitUploadBtn');
-  submitBtn.disabled = true; submitBtn.textContent = 'Saving…';
-  const entry = {
-    id: 'g'+Date.now()+Math.random().toString(36).slice(2,7),
-    imageData: pendingImageData,
-    object: document.getElementById('fieldObject').value.trim(),
-    date: document.getElementById('fieldDate').value,
-    exposure: document.getElementById('fieldExposure').value.trim(),
-    setup: document.getElementById('fieldSetup').value.trim(),
-    notes: document.getElementById('fieldNotes').value.trim(),
-  };
-  galleryEntries.push(entry);
-  const ok = await saveGallery();
-  submitBtn.disabled = false; submitBtn.textContent = 'Add to gallery';
-  if(ok){
-    renderGallery();
+  const progressWrap = document.getElementById('uploadProgressWrap');
+  const progressFill = document.getElementById('uploadProgressFill');
+  const progressLabel = document.getElementById('uploadProgressLabel');
+  submitBtn.disabled = true; submitBtn.textContent = 'Uploading…';
+  progressWrap.style.display = 'flex';
+
+  try{
+    const imageUrl = await uploadToCloudinary(pendingImageFile, (pct)=>{
+      progressFill.style.width = pct + '%';
+      progressLabel.textContent = `Uploading… ${pct}%`;
+    });
+
+    submitBtn.textContent = 'Saving…';
+    await addDoc(collection(db, 'posts'), {
+      imageUrl,
+      title: document.getElementById('fieldTitle').value.trim(),
+      object: document.getElementById('fieldObject').value.trim(),
+      capturedDate: document.getElementById('fieldDate').value,
+      camera: document.getElementById('fieldCamera').value.trim(),
+      telescope: document.getElementById('fieldSetup').value.trim(),
+      description: document.getElementById('fieldNotes').value.trim(),
+      userId: currentUser.uid,
+      userName: currentUser.displayName || 'Member',
+      userPhoto: currentUser.photoURL || '',
+      ascendedBy: [],
+      createdAt: serverTimestamp(),
+    });
+
     uploadOverlay.classList.remove('open');
     e.target.reset();
     document.getElementById('filePreviewWrap').style.display='none';
-    pendingImageData = null;
-  }else{
-    galleryEntries.pop();
-    errEl.textContent = "Couldn't save — check your connection and try again.";
-    errEl.style.display='block';
+    pendingImageFile = null;
+  }catch(err){
+    console.error('Upload failed', err);
+    errEl.textContent = err.message || "Couldn't post — check your connection and try again.";
+    errEl.style.display = 'block';
+  }finally{
+    submitBtn.disabled = false; submitBtn.textContent = 'Add to gallery';
+    progressWrap.style.display = 'none';
+    progressFill.style.width = '0%';
   }
 });
 
+/* ---------- lightbox ---------- */
 const lightboxOverlay = document.getElementById('lightboxOverlay');
 function openLightbox(id){
-  const e = galleryEntries.find(x=>x.id===id);
-  if(!e) return;
-  activeEntryId = id;
-  document.getElementById('lightboxImg').src = e.imageData;
-  document.getElementById('lightboxTitle').textContent = e.object;
-  document.getElementById('lightboxMeta').textContent = `${e.date}${e.exposure ? ' · '+e.exposure : ''} · ${e.setup}`;
-  document.getElementById('lightboxNotes').textContent = e.notes || 'No additional notes.';
+  const p = posts.find(x=>x.id===id);
+  if(!p) return;
+  activePostId = id;
+  document.getElementById('lightboxImg').src = p.imageUrl;
+  document.getElementById('lightboxTitle').textContent = p.title || p.object;
+  document.getElementById('lightboxMeta').textContent = `${escapeHtml(p.object)}${p.capturedDate ? ' · '+p.capturedDate : ''}${p.camera ? ' · '+p.camera : ''} · ${escapeHtml(p.telescope||'')}`;
+  document.getElementById('lightboxUser').innerHTML = `<img src="${p.userPhoto||''}" alt=""><span>Posted by ${escapeHtml(p.userName||'Member')}</span>`;
+  document.getElementById('lightboxNotes').textContent = p.description || 'No additional notes.';
+
+  const ascendedBy = p.ascendedBy || [];
+  const isAscended = currentUser && ascendedBy.includes(currentUser.uid);
+  const ascendBtn = document.getElementById('lightboxAscendBtn');
+  ascendBtn.className = 'ascend-btn' + (isAscended ? ' ascended' : '');
+  document.getElementById('lightboxAscendCount').textContent = ascendedBy.length;
+
+  const deleteBtn = document.getElementById('deleteEntryBtn');
+  deleteBtn.style.display = (currentUser && currentUser.uid === p.userId) ? 'inline-flex' : 'none';
+
   lightboxOverlay.classList.add('open');
 }
 document.getElementById('closeLightboxBtn').addEventListener('click', ()=>lightboxOverlay.classList.remove('open'));
 lightboxOverlay.addEventListener('click', (e)=>{ if(e.target===lightboxOverlay) lightboxOverlay.classList.remove('open'); });
+document.getElementById('lightboxAscendBtn').addEventListener('click', ()=>{ if(activePostId) toggleAscend(activePostId); });
+
 document.getElementById('deleteEntryBtn').addEventListener('click', async ()=>{
-  if(!activeEntryId) return;
+  if(!activePostId || !currentUser) return;
   if(!confirm('Remove this photo from the shared gallery for everyone?')) return;
-  const backup = galleryEntries;
-  galleryEntries = galleryEntries.filter(x=>x.id!==activeEntryId);
-  const ok = await saveGallery();
-  if(ok){ renderGallery(); lightboxOverlay.classList.remove('open'); }
-  else{ galleryEntries = backup; alert("Couldn't remove the photo — try again."); }
+  try{
+    await deleteDoc(doc(db, 'posts', activePostId));
+    lightboxOverlay.classList.remove('open');
+  }catch(err){
+    console.error('Delete failed', err);
+    alert("Couldn't remove the photo — try again.");
+  }
 });
+
+renderAuthUI();
 </script>
 </body>
 </html>
