@@ -410,6 +410,32 @@ footer.site-footer{
 }
 .starmap-legend span{display:flex; align-items:center; gap:0.5em;}
 .starmap-legend i{width:8px; height:8px; border-radius:50%; display:inline-block;}
+
+/* Below the starmap-grid breakpoint the canvas shrinks to a small square while
+   the legend stayed a fixed size — it ended up sitting on top of stars (e.g.
+   Rigel/Saiph in Orion), blocking taps on whatever was underneath it. Below
+   that same breakpoint, drop the legend out of the diagram and flow it beneath
+   the canvas instead, so nothing overlaps and every star stays tappable. */
+@media(max-width:900px){
+  .starmap-canvas-wrap{
+    aspect-ratio:auto;
+    overflow:visible;
+    display:flex;
+    flex-direction:column;
+  }
+  #constSvg{
+    aspect-ratio:1/1;
+    height:auto;
+  }
+  .starmap-legend{
+    position:static;
+    flex-direction:row;
+    flex-wrap:wrap;
+    gap:0.5rem 1rem;
+    margin-top:1rem;
+    width:100%;
+  }
+}
 .starmap-info{border:1px solid var(--panel-border); background:var(--void-soft); padding:2rem; min-height:340px;}
 .starmap-info h3{font-size:1.4rem; margin:0.6rem 0 1rem;}
 .starmap-info .stat-row{display:flex; justify-content:space-between; padding:0.6rem 0; border-top:1px solid var(--panel-border); font-size:0.86rem;}
@@ -928,8 +954,8 @@ html.intro-pending footer.site-footer{opacity:0;}
 <div class="pane" id="pane-home">
       <div class="photo-banner hero-banner" id="banner-home">
       <div class="eyebrow">Est. <span id="estDate">—</span> — open to every stargazer</div>
-      <h1 class="home-h1">We study the dark<br>so the sky makes <em>sense.</em></h1>
-      <p class="home-sub">SkyPage is a student astronomy club for anyone who has ever looked up and wanted to know more — observers, astrophotographers, telescope tinkerers, and the just-plain-curious. Use the menu above to jump straight to what you're after.</p>
+      <h1 class="home-h1">The Night Sky <br>Rewards the <em>Curious.</em></h1>
+      <p class="home-sub">SkyPage is a website for Astrx astronomy club for anyone who has ever looked up and wanted to know more — observers, astrophotographers, telescope tinkerers, and the just-plain-curious. Use the menu above to jump straight to what you're after.</p>
       <div class="home-cta">
         <a href="#" class="btn solid" data-target="starmap">Open the Heavens</a>
         <a href="#" class="btn" data-target="academy">Learn the equipment</a>
@@ -1233,7 +1259,7 @@ html.intro-pending footer.site-footer{opacity:0;}
   </div>
   <div class="footbar">
     <span>© <span id="yearNow"></span> SkyPage — Astrx Club. Look up more often.</span>
-    <span>Designed &amp; built by <b>Sujal Sharma</b></span>
+    <span>Designed &amp; built by <b>kael</b></span>
   </div>
 </footer>
 
