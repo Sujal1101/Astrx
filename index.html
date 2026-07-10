@@ -3,7 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SkyPage — Astronomy Club</title>
+<title>SkyPage — Astrx Club</title>
+<script>
+/* Decide BEFORE first paint whether the hyperspace intro should run this visit —
+   avoids any flash of the real page underneath. Skips for reduced-motion users
+   and for anyone who has already seen it once this browser session. */
+(function(){
+  try{
+    var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if(!reduceMotion && !sessionStorage.getItem('skypage-intro-seen')){
+      document.documentElement.classList.add('intro-pending');
+    }
+  }catch(err){ /* sessionStorage blocked (e.g. locked-down private mode) — just skip the pre-hide, page renders normally */ }
+})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -44,7 +57,11 @@ body.night-vision{
 }
 body.night-vision img,
 body.night-vision .apod-image,
-body.night-vision .gallery-thumb{
+body.night-vision .gallery-thumb,
+body.night-vision .dso-photo,
+body.night-vision .dso-illustration,
+body.night-vision .news-photo,
+body.night-vision .photo-banner{
   filter: grayscale(1) sepia(1) saturate(4) hue-rotate(-50deg) brightness(0.65);
 }
 
@@ -289,6 +306,20 @@ footer.site-footer{
 .apod-info h3{font-size:1.4rem; margin:0.9rem 0 0.8rem;}
 .apod-info p{color:var(--starlight-dim);}
 
+/* dispatches / news panel below APOD */
+.news-panel{border:1px solid var(--panel-border); background:var(--void-soft); padding:1.7rem; margin-top:2.8rem;}
+.news-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:1.2rem;}
+@media(max-width:860px){.news-grid{grid-template-columns:1fr;}}
+.news-card{border:1px solid var(--panel-border); background:var(--void-softer); display:flex; flex-direction:column; min-height:220px; text-decoration:none; color:inherit; transition:border-color .2s ease, transform .2s ease; overflow:hidden;}
+.news-card:hover{border-color:var(--gold-dim); transform:translateY(-2px);}
+.news-card .news-photo{aspect-ratio:16/9; background:var(--void-soft) center/cover no-repeat;}
+.news-card .news-body{padding:1rem 1.1rem 1.2rem; display:flex; flex-direction:column; flex:1;}
+.news-card .news-source{font-family:var(--font-mono); font-size:0.66rem; text-transform:uppercase; letter-spacing:0.04em; color:var(--teal); margin-bottom:0.5rem;}
+.news-card h4{font-size:0.95rem; line-height:1.35; margin-bottom:0.5rem;}
+.news-card .news-time{font-family:var(--font-mono); font-size:0.66rem; color:var(--starlight-dim); margin-top:auto; padding-top:0.6rem;}
+.skel-card{min-height:220px; background:linear-gradient(100deg, var(--void-softer) 30%, var(--void-soft) 50%, var(--void-softer) 70%); background-size:200% 100%; animation:shimmer 1.6s infinite;}
+.news-empty{grid-column:1/-1; text-align:center; padding:2.4rem 1rem; color:var(--starlight-dim); border:1px dashed var(--panel-border);}
+
 /* ============================= SKY EVENTS ============================= */
 .upcoming-row{display:grid; grid-template-columns:repeat(3,1fr); gap:1.3rem; margin-bottom:3rem;}
 @media(max-width:900px){.upcoming-row{grid-template-columns:1fr;}}
@@ -320,6 +351,35 @@ footer.site-footer{
 .live-links{display:flex; gap:1rem; flex-wrap:wrap;}
 .live-links .btn{flex-direction:column; align-items:flex-start; gap:0.15rem; padding:0.8em 1.2em;}
 .live-links .btn span{font-family:var(--font-mono); font-size:0.64rem; color:var(--starlight-dim);}
+
+/* launch manifest (rocket launches) */
+.launch-manifest{margin-bottom:2.8rem;}
+.manifest-sub{color:var(--starlight-dim); font-size:0.86rem; margin-bottom:1.4rem; max-width:70ch;}
+.launch-list{display:flex; flex-direction:column; gap:0.9rem;}
+.launch-card{
+  display:grid; grid-template-columns:64px 1fr auto; gap:1.2rem; align-items:center;
+  border:1px solid var(--panel-border); background:var(--void-softer); padding:1.1rem 1.3rem;
+}
+.launch-card.skel-card{grid-template-columns:1fr; min-height:76px;}
+.launch-countdown{text-align:center; font-family:var(--font-mono);}
+.launch-countdown .t{font-size:1.3rem; color:var(--gold); font-weight:600; line-height:1;}
+.launch-countdown .u{font-size:0.6rem; color:var(--starlight-dim); text-transform:uppercase; letter-spacing:0.04em;}
+.launch-main h4{font-size:0.98rem; margin-bottom:0.35rem;}
+.launch-meta{display:flex; flex-wrap:wrap; gap:0.5rem 1rem; font-size:0.78rem; color:var(--starlight-dim);}
+.launch-meta b{color:var(--starlight); font-weight:500;}
+.launch-mission{font-size:0.8rem; color:var(--starlight-dim); margin-top:0.5rem; max-width:64ch;}
+.launch-status{
+  font-family:var(--font-mono); font-size:0.66rem; text-transform:uppercase; letter-spacing:0.03em;
+  padding:0.35em 0.8em; border-radius:20px; border:1px solid var(--panel-border); white-space:nowrap; justify-self:end;
+}
+.launch-status.go{color:var(--teal); border-color:rgba(93,217,193,0.3); background:rgba(93,217,193,0.08);}
+.launch-status.tbd{color:var(--starlight-dim);}
+.launch-status.hold{color:var(--hydrogen); border-color:rgba(255,93,93,0.3); background:rgba(255,93,93,0.08);}
+@media(max-width:700px){
+  .launch-card{grid-template-columns:52px 1fr; grid-template-areas:"countdown main" "countdown main" ". status"; row-gap:0.6rem;}
+  .launch-countdown{grid-area:countdown;} .launch-main{grid-area:main;} .launch-status{grid-area:status; justify-self:start;}
+}
+.launch-empty{text-align:center; padding:2rem 1rem; color:var(--starlight-dim); border:1px dashed var(--panel-border);}
 
 /* ============================= STAR MAP (2D constellations) ============================= */
 .const-chips{display:flex; gap:0.6rem; flex-wrap:wrap; margin-bottom:2rem;}
@@ -370,6 +430,17 @@ footer.site-footer{
 .dso-body p{color:var(--starlight-dim); font-size:0.85rem; margin-top:0.7rem;}
 .dso-stats{display:flex; gap:0.6rem; flex-wrap:wrap; margin-top:0.9rem;}
 .dso-stats span{font-family:var(--font-mono); font-size:0.68rem; color:var(--starlight-dim); border:1px solid var(--panel-border); padding:0.2em 0.55em; border-radius:20px;}
+
+/* The Unseen — illustrated (non-photographic) cards */
+.unseen-intro{color:var(--starlight-dim); font-size:0.9rem; max-width:80ch; margin-bottom:1.6rem; line-height:1.6;}
+.dso-illustration{aspect-ratio:4/3; background:radial-gradient(ellipse at 50% 40%, #0d1424 0%, var(--void-softer) 75%); position:relative; overflow:hidden;}
+.dso-illustration svg{width:100%; height:100%; display:block;}
+.illustration-tag{
+  position:absolute; bottom:0.6rem; right:0.7rem; font-family:var(--font-mono); font-size:0.6rem;
+  color:var(--starlight-dim); background:rgba(2,3,7,0.55); border:1px solid var(--panel-border);
+  padding:0.25em 0.6em; border-radius:20px; letter-spacing:0.02em;
+}
+.unseen-fact{font-style:italic; border-top:1px dashed var(--panel-border); padding-top:0.7rem; margin-top:0.9rem !important;}
 
 /* ============================= TELESCOPE ACADEMY ============================= */
 .academy-section{display:none;}
@@ -468,21 +539,126 @@ footer.site-footer{
 #uploadProgressLabel{font-size:0.7rem; color:var(--starlight-dim); white-space:nowrap;}
 
 /* lightbox extras */
-.lightbox-user{display:flex; align-items:center; gap:0.6rem; margin-bottom:1rem;}
-.lightbox-user img{width:26px; height:26px; border-radius:50%; border:1px solid var(--panel-border);}
-.lightbox-user span{font-size:0.82rem; color:var(--starlight-dim);}
-.lightbox-actions{display:flex; gap:0.8rem; align-items:center; margin-top:1.2rem; flex-wrap:wrap;}
-.lightbox-actions .ascend-btn{font-size:0.85rem; padding:0.55em 1em;}
+.lightbox-user{display:flex; align-items:center; gap:0.6rem;}
+.lightbox-user img{width:30px; height:30px; border-radius:50%; border:1px solid var(--panel-border); object-fit:cover; background:var(--void-softer);}
+.lightbox-user span{font-size:0.84rem; color:var(--starlight);}
 
 .modal-overlay{position:fixed; inset:0; background:rgba(2,3,7,0.85); backdrop-filter:blur(4px); display:none; align-items:center; justify-content:center; z-index:200; padding:1.5rem;}
 .modal-overlay.open{display:flex;}
+body.modal-open{overflow:hidden;}
 .modal-box{background:var(--void-soft); border:1px solid var(--panel-border); max-width:520px; width:100%; padding:2rem; max-height:88vh; overflow-y:auto; position:relative;}
-.lightbox-box{max-width:640px;}
-.lightbox-box img{width:100%; border:1px solid var(--panel-border); margin-bottom:1.2rem;}
+.modal-shell{position:relative; width:100%; max-width:640px;}
+.modal-close.lightbox-close{
+  position:absolute; top:-0.9rem; right:-0.9rem; z-index:5;
+  width:34px; height:34px; border-radius:50%;
+  background:var(--void-soft); border:1px solid var(--panel-border);
+  display:flex; align-items:center; justify-content:center;
+}
+.modal-close.lightbox-close:hover{color:var(--starlight); border-color:var(--gold-dim);}
 .modal-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:1.4rem;}
 .modal-head h3{font-size:1.15rem;}
 .modal-close{position:absolute; top:1.2rem; right:1.2rem; background:none; border:none; color:var(--starlight-dim); font-size:1rem;}
 .modal-close:hover{color:var(--starlight);}
+
+/* ============================= LIGHTBOX (two-panel: chat/info left, photo right) ============================= */
+.lightbox-shell{max-width:1060px;}
+.lightbox-box{
+  display:grid; grid-template-columns:minmax(300px,1fr) minmax(360px,1.3fr); grid-template-areas:"panel photo";
+  max-width:1060px; padding:0; overflow:hidden; height:min(82vh,700px); max-height:82vh; background:var(--void-soft);
+}
+.lb-panel{grid-area:panel; display:flex; flex-direction:column; min-height:0; min-width:0;}
+.lb-photo{grid-area:photo; background:#000; position:relative; overflow:hidden; min-height:0;}
+.lb-photo img{width:100%; height:100%; object-fit:contain; display:block;}
+
+.lb-head{display:flex; align-items:center; justify-content:space-between; padding:1.1rem 1.3rem; border-bottom:1px solid var(--panel-border); flex-shrink:0;}
+.lb-remove{background:none; border:none; color:var(--starlight-dim); cursor:pointer; font-size:0.95rem; opacity:0.7; transition:all .15s ease;}
+.lb-remove:hover{color:var(--hydrogen); opacity:1;}
+
+.lb-scroll{flex:1; min-height:0; overflow-y:auto; padding:1.2rem 1.3rem;}
+.lb-caption{padding-bottom:1.1rem; margin-bottom:1.1rem; border-bottom:1px solid var(--panel-border);}
+.lb-caption h3{font-size:1.15rem; margin-bottom:0.5rem;}
+.lb-caption p{color:var(--starlight-dim); font-size:0.86rem; margin-top:0.7rem; line-height:1.55;}
+
+.lb-comments{display:flex; flex-direction:column; gap:1rem;}
+.lb-comments-empty{color:var(--starlight-dim); font-size:0.82rem; font-style:italic; text-align:center; padding:1.6rem 0;}
+.lb-comment{display:flex; gap:0.6rem; align-items:flex-start;}
+.lb-comment img{width:24px; height:24px; border-radius:50%; flex-shrink:0; border:1px solid var(--panel-border); object-fit:cover; background:var(--void-softer); margin-top:0.15rem;}
+.lb-comment-body{flex:1; min-width:0;}
+.lb-comment-body .cname{font-size:0.8rem; font-weight:600; color:var(--starlight); margin-right:0.5em;}
+.lb-comment-body .ctext{font-size:0.85rem; color:var(--starlight-dim); line-height:1.45; word-break:break-word;}
+.lb-comment-body .ctime{font-family:var(--font-mono); font-size:0.63rem; color:var(--starlight-dim); opacity:0.6; margin-top:0.3rem; display:block;}
+
+.lb-actionbar{display:flex; align-items:center; gap:0.7rem; padding:0.9rem 1.3rem; border-top:1px solid var(--panel-border); flex-shrink:0; position:relative;}
+
+/* star (ascend) button + burst animation */
+.star-btn{
+  position:relative; display:inline-flex; align-items:center; gap:0.4em; background:none; border:none;
+  color:var(--starlight-dim); font-family:var(--font-mono); font-size:0.85rem; cursor:pointer; padding:0.3em;
+}
+.star-svg{width:22px; height:22px; fill:none; stroke:var(--starlight-dim); stroke-width:1.4; stroke-linejoin:round; transition:stroke .2s ease, fill .2s ease;}
+.star-btn:hover .star-svg{stroke:var(--gold);}
+.star-btn.ascended{color:var(--gold);}
+.star-btn.ascended .star-svg{fill:var(--gold); stroke:var(--gold);}
+.star-btn.burst .star-svg{animation:starPop .5s ease;}
+@keyframes starPop{
+  0%{transform:scale(1);}
+  35%{transform:scale(1.55) rotate(-8deg);}
+  60%{transform:scale(0.88) rotate(5deg);}
+  100%{transform:scale(1) rotate(0);}
+}
+.star-burst-wrap{position:absolute; inset:0; pointer-events:none;}
+.star-spark{
+  position:absolute; top:50%; left:50%; width:4px; height:4px; border-radius:50%;
+  background:var(--gold); box-shadow:0 0 6px 1px var(--gold); transform:translate(-50%,-50%);
+  animation:sparkFly .65s ease-out forwards; animation-delay:var(--delay,0s);
+}
+@keyframes sparkFly{
+  0%{transform:translate(-50%,-50%) rotate(var(--angle)) translateX(0) scale(1); opacity:1;}
+  100%{transform:translate(-50%,-50%) rotate(var(--angle)) translateX(28px) scale(0); opacity:0;}
+}
+
+/* beam (share) button */
+.beam-btn{
+  background:none; border:none; color:var(--starlight-dim); cursor:pointer; padding:0.3em;
+  display:inline-flex; align-items:center; transition:color .2s ease, transform .2s ease;
+}
+.beam-btn:hover{color:var(--teal); transform:translateX(2px);}
+.beam-svg{width:20px; height:20px;}
+.beam-toast{
+  position:absolute; bottom:100%; right:1.3rem; margin-bottom:0.7rem;
+  background:var(--void-softer); border:1px solid var(--gold-dim); color:var(--gold);
+  font-family:var(--font-mono); font-size:0.7rem; padding:0.45em 0.9em; border-radius:20px;
+  opacity:0; transform:translateY(4px); transition:opacity .25s ease, transform .25s ease;
+  pointer-events:none; white-space:nowrap;
+}
+.beam-toast.show{opacity:1; transform:translateY(0);}
+
+.lb-comment-form{display:flex; gap:0.7rem; padding:0 1.3rem 1.2rem; flex-shrink:0;}
+.lb-comment-form input{
+  flex:1; background:var(--void-softer); border:1px solid var(--panel-border); color:var(--starlight);
+  padding:0.6em 0.9em; font-family:var(--font-body); font-size:0.85rem; border-radius:20px;
+}
+.lb-comment-form input:disabled{opacity:0.5;}
+.lb-comment-form button{
+  background:none; border:1px solid var(--panel-border); color:var(--gold); font-family:var(--font-mono);
+  font-size:0.76rem; padding:0.5em 1.1em; border-radius:20px; transition:all .15s ease;
+}
+.lb-comment-form button:hover{border-color:var(--gold); background:rgba(232,176,75,0.08);}
+
+@media(max-width:860px){
+  .lightbox-box{grid-template-columns:1fr; grid-template-areas:"photo" "panel"; height:auto; max-height:88vh; overflow-y:auto;}
+  .lb-photo{height:42vh;}
+  .lb-scroll{max-height:none;}
+}
+
+/* gallery sort chips */
+.gallery-sort{display:flex; gap:0.6rem; margin-bottom:1.4rem;}
+.sort-chip{
+  background:none; border:1px solid var(--panel-border); color:var(--starlight-dim); font-family:var(--font-mono);
+  font-size:0.72rem; padding:0.5em 1em; border-radius:20px; letter-spacing:0.02em; transition:all .15s ease;
+}
+.sort-chip:hover{color:var(--starlight); border-color:var(--gold-dim);}
+.sort-chip.active{color:var(--gold); border-color:var(--gold); background:rgba(232,176,75,0.1); font-weight:600;}
 .field-label{display:block; font-family:var(--font-mono); font-size:0.68rem; text-transform:uppercase; letter-spacing:0.04em; color:var(--starlight-dim); margin:1.1rem 0 0.4rem;}
 .field-label:first-of-type{margin-top:0;}
 #uploadForm input[type=text], #uploadForm input[type=date], #uploadForm textarea, #uploadForm input[type=file]{
@@ -496,7 +672,6 @@ footer.site-footer{
 #filePreviewWrap img{width:100%; max-height:180px; object-fit:cover; border:1px solid var(--panel-border);}
 .upload-error{color:var(--hydrogen); font-size:0.82rem; margin-top:1rem;}
 .lightbox-meta{font-family:var(--font-mono); font-size:0.76rem; color:var(--teal); margin-bottom:0.9rem;}
-.lightbox-info p{color:var(--starlight-dim); font-size:0.9rem;}
 
 /* ============================= GEAR GUIDE ============================= */
 .gear-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:1.4rem;}
@@ -509,21 +684,234 @@ footer.site-footer{
 @media(prefers-reduced-motion: reduce){
   *{animation-duration:0.001ms !important; transition-duration:0.001ms !important;}
 }
+/* ============================= HYPERSPACE INTRO ============================= */
+/* Real content stays invisible only while html carries .intro-pending — a class
+   set synchronously in <head>, before first paint, so there is never a flash of
+   the page underneath. If JS never runs (disabled) this class never gets added
+   and the site behaves exactly as it did before this feature existed. */
+html.intro-pending body{overflow:hidden;}
+html.intro-pending #topnav,
+html.intro-pending #content,
+html.intro-pending footer.site-footer{opacity:0;}
+
+#hyperspaceIntro{
+  position:fixed; inset:0; z-index:9999; background:var(--void);
+  display:flex; align-items:center; justify-content:center;
+  opacity:1; transition:opacity 1.05s ease; overflow:hidden;
+}
+#hyperspaceIntro.hs-fade-out{opacity:0; pointer-events:none;}
+#hyperspaceCanvas{position:absolute; inset:0; width:100%; height:100%;}
+.hs-flash{
+  position:absolute; inset:0; pointer-events:none; opacity:0;
+  background:radial-gradient(circle, rgba(245,243,236,0.9) 0%, rgba(232,176,75,0.3) 35%, transparent 70%);
+  transition:opacity .35s ease;
+}
+.hs-flash.hs-on{opacity:1; transition:opacity .12s ease;}
+.hs-content{position:relative; z-index:2; text-align:center; padding:0 1.5rem;}
+.hs-icon{width:56px; height:56px; margin:0 auto 1.1rem; opacity:0; transform:scale(0.85); transition:opacity 1s ease, transform 1s ease;}
+.hs-icon.hs-show{opacity:1; transform:scale(1);}
+.hs-logo{
+  font-family:var(--font-display); font-weight:700; letter-spacing:0.12em;
+  font-size:clamp(1.9rem,7vw,4rem); color:var(--gold);
+  text-shadow:0 0 30px rgba(232,176,75,0.45), 0 0 70px rgba(232,176,75,0.2);
+  opacity:0; transform:scale(0.92);
+  transition:opacity 1s ease, transform 1s ease, letter-spacing .9s ease;
+}
+.hs-logo.hs-show{opacity:1; transform:scale(1);}
+.hs-logo.hs-stretch{letter-spacing:0.3em;}
+.hs-status{
+  margin-top:1rem; font-family:var(--font-mono); font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase;
+  color:var(--starlight-dim); opacity:0; transition:opacity .6s ease; min-height:1.2em;
+}
+.hs-status.hs-show{opacity:1;}
+#hsSkip{
+  position:absolute; bottom:1.6rem; right:1.6rem; z-index:3; background:transparent;
+  border:1px solid var(--panel-border); color:var(--starlight-dim); font-family:var(--font-mono);
+  font-size:0.68rem; letter-spacing:0.05em; text-transform:uppercase; padding:0.55em 1.1em;
+  border-radius:20px; opacity:0; transition:opacity .5s ease, border-color .2s ease, color .2s ease;
+}
+#hsSkip.hs-show{opacity:1;}
+#hsSkip:hover{border-color:var(--gold); color:var(--gold);}
+#hsSkip:focus-visible{outline:2px solid var(--gold); outline-offset:2px;}
+@media(max-width:600px){
+  #hsSkip{bottom:1.1rem; right:1.1rem; font-size:0.62rem; padding:0.5em 0.9em;}
+}
 </style>
 </head>
 <body>
+
+<div id="hyperspaceIntro">
+  <canvas id="hyperspaceCanvas"></canvas>
+  <div class="hs-flash" id="hsFlash"></div>
+  <div class="hs-content">
+    <svg class="hs-icon" id="hsIcon" viewBox="0 0 40 40" fill="none" aria-hidden="true"><circle cx="20" cy="20" r="1.6" fill="var(--gold)"/><circle cx="8" cy="12" r="1.3" fill="var(--starlight)"/><circle cx="30" cy="10" r="1.1" fill="var(--starlight)"/><circle cx="33" cy="26" r="1.6" fill="var(--gold)"/><circle cx="12" cy="31" r="1.1" fill="var(--starlight)"/><path d="M8 12 L20 20 L30 10 M20 20 L33 26 M20 20 L12 31" stroke="var(--gold-dim)" stroke-width="0.7"/></svg>
+    <div class="hs-logo" id="hsLogo">SKYPAGE</div>
+    <div class="hs-status" id="hsStatus">Plotting a course through the dark…</div>
+  </div>
+  <button id="hsSkip" type="button">Skip intro →</button>
+</div>
+<noscript><style>#hyperspaceIntro{display:none !important;}</style></noscript>
+<script>
+/* ---------- hyperspace intro: accelerate → peak/flash → decelerate → reveal ---------- */
+(function(){
+  var overlay = document.getElementById('hyperspaceIntro');
+  if(!overlay) return;
+
+  // <head> already decided if this visit gets the intro at all.
+  if(!document.documentElement.classList.contains('intro-pending')){
+    overlay.remove();
+    return;
+  }
+
+  var canvas = document.getElementById('hyperspaceCanvas');
+  var ctx = canvas.getContext('2d');
+  var icon = document.getElementById('hsIcon');
+  var logo = document.getElementById('hsLogo');
+  var status = document.getElementById('hsStatus');
+  var flash = document.getElementById('hsFlash');
+  var skipBtn = document.getElementById('hsSkip');
+
+  var finished = false;
+
+  // topnav / content / footer don't exist yet this early in parsing — grab and
+  // lock them (unclickable, untabbable) once the document is fully parsed.
+  var lockedEls = [];
+  document.addEventListener('DOMContentLoaded', function(){
+    if(finished) return;
+    lockedEls = [document.getElementById('topnav'), document.getElementById('content'), document.querySelector('footer.site-footer')].filter(Boolean);
+    lockedEls.forEach(function(el){ el.inert = true; });
+  });
+
+  var w, h, cx, cy, streaks = [];
+  function resize(){
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+    cx = w/2; cy = h/2;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  // same starlight palette as the site's ambient starfield, plus a gold streak here and there
+  var COLORS = ['245,243,236','220,230,255','255,243,218','232,176,75'];
+  function makeStreak(){
+    return {
+      angle: Math.random()*Math.PI*2,
+      radius: Math.random()*Math.max(w,h)*0.06,
+      speed: 0.4 + Math.random()*0.6,
+      color: COLORS[Math.random()<0.82 ? Math.floor(Math.random()*3) : 3]
+    };
+  }
+  var COUNT = Math.min(300, Math.floor((w*h)/4000)) || 120;
+  for(var i=0;i<COUNT;i++){ streaks.push(makeStreak()); }
+
+  var ACCEL = 1600, PEAK = 800, DECEL = 1000;
+  var start = performance.now();
+  var raf = null;
+
+  function ease(t){ t = t<0?0:(t>1?1:t); return t*t*(3-2*t); }
+  function warpFactorAt(elapsed){
+    if(elapsed < ACCEL) return ease(elapsed/ACCEL);
+    if(elapsed < ACCEL+PEAK) return 1;
+    if(elapsed < ACCEL+PEAK+DECEL) return 1-ease((elapsed-ACCEL-PEAK)/DECEL);
+    return 0;
+  }
+
+  function frame(now){
+    var elapsed = now - start;
+    var wf = warpFactorAt(elapsed);
+    var maxR = Math.hypot(w,h)/2 + 40;
+
+    // a translucent fill (rather than a full clear) leaves soft motion trails
+    ctx.fillStyle = 'rgba(5,7,13,' + (0.3 + (1-wf)*0.22) + ')';
+    ctx.fillRect(0,0,w,h);
+
+    for(var i=0;i<streaks.length;i++){
+      var s = streaks[i];
+      var dx = Math.cos(s.angle), dy = Math.sin(s.angle);
+      var speedPx = (1 + s.speed*22) * (0.02 + wf*wf*1.4);
+      var prevR = s.radius;
+      s.radius += speedPx;
+      if(s.radius > maxR){
+        s.radius = Math.random()*maxR*0.05;
+        prevR = s.radius;
+        s.angle = Math.random()*Math.PI*2;
+      }
+      var x1 = cx + dx*prevR, y1 = cy + dy*prevR;
+      var x2 = cx + dx*s.radius, y2 = cy + dy*s.radius;
+      var alpha = Math.min(1, 0.22 + wf*0.78);
+      ctx.strokeStyle = 'rgba('+s.color+','+alpha+')';
+      ctx.lineWidth = 0.6 + wf*1.6;
+      ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    }
+
+    // central glow that builds with speed, like a tunnel opening up
+    var glowR = 40 + wf*170;
+    var grad = ctx.createRadialGradient(cx,cy,0,cx,cy,glowR);
+    grad.addColorStop(0, 'rgba(232,176,75,'+(0.2*wf)+')');
+    grad.addColorStop(1, 'rgba(232,176,75,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath(); ctx.arc(cx,cy,glowR,0,Math.PI*2); ctx.fill();
+
+    if(!finished){ raf = requestAnimationFrame(frame); }
+  }
+  raf = requestAnimationFrame(frame);
+
+  requestAnimationFrame(function(){
+    icon.classList.add('hs-show');
+    logo.classList.add('hs-show');
+    status.classList.add('hs-show');
+  });
+
+  var timers = [];
+  function later(fn, ms){ timers.push(setTimeout(fn, ms)); }
+
+  later(function(){ skipBtn.classList.add('hs-show'); }, 300);
+  later(function(){ logo.classList.add('hs-stretch'); }, ACCEL*0.55);
+  later(function(){ flash.classList.add('hs-on'); }, ACCEL + PEAK*0.2);
+  later(function(){ flash.classList.remove('hs-on'); }, ACCEL + PEAK*0.2 + 140);
+  later(function(){
+    icon.classList.remove('hs-show');
+    logo.classList.remove('hs-show');
+    status.classList.remove('hs-show');
+  }, ACCEL + PEAK*0.75);
+  later(function(){
+    status.textContent = 'Welcome aboard.';
+    status.classList.add('hs-show');
+  }, ACCEL + PEAK + DECEL*0.5);
+
+  function finishIntro(){
+    if(finished) return;
+    finished = true;
+    timers.forEach(clearTimeout);
+    if(raf) cancelAnimationFrame(raf);
+    overlay.classList.add('hs-fade-out');
+    document.documentElement.classList.remove('intro-pending');
+    lockedEls.forEach(function(el){ el.inert = false; });
+    try{ sessionStorage.setItem('skypage-intro-seen', '1'); }catch(err){ /* private-mode storage can throw — harmless, intro just replays next visit */ }
+    setTimeout(function(){ overlay.remove(); }, 1100);
+  }
+
+  later(finishIntro, ACCEL+PEAK+DECEL+150);
+  later(finishIntro, 6500); // hard failsafe — guarantees the site is never stuck hidden
+
+  overlay.addEventListener('click', finishIntro); // clicking anywhere in the overlay skips (canvas covers the full area, so this catches it all)
+  document.addEventListener('keydown', function escSkip(e){
+    if(e.key === 'Escape'){ finishIntro(); document.removeEventListener('keydown', escSkip); }
+  });
+})();
+</script>
 
 <canvas id="starfield"></canvas>
 
 <header id="topnav">
   <div class="sb-logo">
     <svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="1.6" fill="var(--gold)"/><circle cx="8" cy="12" r="1.3" fill="var(--starlight)"/><circle cx="30" cy="10" r="1.1" fill="var(--starlight)"/><circle cx="33" cy="26" r="1.6" fill="var(--gold)"/><circle cx="12" cy="31" r="1.1" fill="var(--starlight)"/><path d="M8 12 L20 20 L30 10 M20 20 L33 26 M20 20 L12 31" stroke="var(--gold-dim)" stroke-width="0.7"/></svg>
-    <span>SKYPAGE<span class="sub">ASTRONOMY CLUB</span></span>
+    <span>SKYPAGE<span class="sub">ASTRX CLUB</span></span>
   </div>
 
   <nav class="sidebar-nav" id="sidebarNav">
     <a class="nav-item" data-target="home">Home</a>
-    <a class="nav-item" data-target="apod">NASA Picture of the Day</a>
+    <a class="nav-item" data-target="apod">Space Today</a>
     <a class="nav-item" data-target="events">Sky Events</a>
     <a class="nav-item" data-target="starmap">Heavens</a>
     <a class="nav-item" data-target="academy">Telescope Academy</a>
@@ -539,7 +927,7 @@ footer.site-footer{
   <main id="content">
 <div class="pane" id="pane-home">
       <div class="photo-banner hero-banner" id="banner-home">
-      <div class="eyebrow">Est. today — open to every stargazer</div>
+      <div class="eyebrow">Est. <span id="estDate">—</span> — open to every stargazer</div>
       <h1 class="home-h1">We study the dark<br>so the sky makes <em>sense.</em></h1>
       <p class="home-sub">SkyPage is a student astronomy club for anyone who has ever looked up and wanted to know more — observers, astrophotographers, telescope tinkerers, and the just-plain-curious. Use the menu above to jump straight to what you're after.</p>
       <div class="home-cta">
@@ -558,7 +946,7 @@ footer.site-footer{
       <div class="home-shortcuts">
         <div class="eyebrow" style="margin-bottom:1.1rem;">Jump in</div>
         <div class="shortcut-grid">
-          <a href="#" class="shortcut-card" data-target="apod"><span class="tag">Sky Today</span><h4>NASA Picture of the Day</h4><p>A new image and its story, fetched live.</p></a>
+          <a href="#" class="shortcut-card" data-target="apod"><span class="tag">Sky Today</span><h4>Space Today</h4><p>NASA's picture of the day, plus today's top space headlines.</p></a>
           <a href="#" class="shortcut-card" data-target="starmap"><span class="tag">Interactive</span><h4>Heavens</h4><p>Click through real constellations, star by star.</p></a>
           <a href="#" class="shortcut-card" data-target="academy" data-subtab="simulator"><span class="tag">Interactive</span><h4>Optics Simulator</h4><p>Build a telescope, watch Saturn respond.</p></a>
           <a href="#" class="shortcut-card" data-target="gallery"><span class="tag">Community</span><h4>Member Gallery</h4><p>Real captures, real setups, real details.</p></a>
@@ -570,8 +958,8 @@ footer.site-footer{
       <div class="photo-banner" id="banner-apod">
       <div class="pane-head">
         <div class="eyebrow">The Sky Today</div>
-        <h2>NASA's picture of the day</h2>
-        <p>Pulled live from NASA's Astronomy Picture of the Day archive — a new image, and the story behind it, every 24 hours.</p>
+        <h2>Space Today</h2>
+        <p>NASA's Astronomy Picture of the Day, plus today's top headlines from across the space beat — a new snapshot every time you load this page.</p>
       </div>
       <span class="pb-credit"></span>
       </div>
@@ -586,9 +974,21 @@ footer.site-footer{
           <h3 id="apodTitle">Fetching today's image…</h3>
           <p id="apodExplain">Reaching out to api.nasa.gov.</p>
           <div id="apodError" style="display:none;">
-            <p style="color:var(--starlight-dim);">Live fetch didn't come through this time — NASA's demo API key is shared and rate-limited across every visitor using it. You can still browse the full archive directly:</p>
+            <p style="color:var(--starlight-dim);">Live fetch didn't come through this time — NASA's demo API key is shared and rate-limited across every visitor using it worldwide. You can still browse the full archive directly, or if you run this site, grab a free personal key at api.nasa.gov (instant, 1,000 requests/hour) to fix this for good:</p>
           </div>
           <a href="https://apod.nasa.gov/apod/archivepix.html" target="_blank" rel="noopener" class="btn" style="margin-top:1.2rem;">Open the full APOD Archive ↗</a>
+        </div>
+      </div>
+
+      <div class="news-panel">
+        <div class="events-panel-head">
+          <h3>Dispatches from the beat</h3>
+          <span class="tag">Top 3, right now</span>
+        </div>
+        <div class="news-grid" id="newsGrid">
+          <div class="news-card skel-card"></div>
+          <div class="news-card skel-card"></div>
+          <div class="news-card skel-card"></div>
         </div>
       </div>
     </div>
@@ -611,6 +1011,19 @@ footer.site-footer{
           <span class="tag" id="almanacRange">—</span>
         </div>
         <div id="almanacList" class="almanac-list"></div>
+      </div>
+
+      <div class="events-panel launch-manifest">
+        <div class="events-panel-head">
+          <h3>🚀 Launch manifest</h3>
+          <span class="tag">Next liftoffs, worldwide</span>
+        </div>
+        <p class="manifest-sub">Every confirmed and tentative launch on the near-term schedule — who's flying, what's aboard, and from where. Live from The Space Devs' Launch Library.</p>
+        <div class="launch-list" id="launchList">
+          <div class="launch-card skel-card"></div>
+          <div class="launch-card skel-card"></div>
+          <div class="launch-card skel-card"></div>
+        </div>
       </div>
 
       <div class="live-tools">
@@ -641,6 +1054,7 @@ footer.site-footer{
         <button class="scope-tab active" data-smtab="constellations">Constellations</button>
         <button class="scope-tab" data-smtab="galaxies">Galaxies</button>
         <button class="scope-tab" data-smtab="nebulae">Nebulae</button>
+        <button class="scope-tab" data-smtab="unseen">The Unseen</button>
       </div>
 
       <div class="sm-view active" id="sm-constellations">
@@ -671,6 +1085,11 @@ footer.site-footer{
 
       <div class="sm-view" id="sm-nebulae">
         <div class="dso-grid" id="nebulaGrid"></div>
+      </div>
+
+      <div class="sm-view" id="sm-unseen">
+        <p class="unseen-intro">These are things we're scientifically confident exist — the math and the evidence both check out — but that no camera has ever captured, or ever could, the way it captures a galaxy. What you'll see below is our best physical model of each: not a photo, an informed reconstruction.</p>
+        <div class="dso-grid" id="unseenGrid"></div>
       </div>
     </div>
 
@@ -757,68 +1176,11 @@ footer.site-footer{
       <span class="pb-credit"></span>
       </div>
       <p class="shared-note">📡 This gallery is shared and live — sign in with Google to post a photo or ascend one you like.</p>
+      <div class="gallery-sort" id="gallerySort">
+        <button class="sort-chip active" data-sort="latest">✧ Fresh Signals</button>
+        <button class="sort-chip" data-sort="popular">▲ Highest Ascension</button>
+      </div>
       <div id="galleryGrid" class="gallery-grid"><div class="gallery-loading">Loading the feed…</div></div>
-    </div>
-
-    <div class="modal-overlay" id="uploadOverlay">
-      <div class="modal-box">
-        <div class="modal-head">
-          <h3>Add a photo to the gallery</h3>
-          <button class="modal-close" id="closeUploadBtn">✕</button>
-        </div>
-        <form id="uploadForm">
-          <label class="field-label">Image file</label>
-          <input type="file" id="fieldFile" accept="image/*" required>
-          <div id="filePreviewWrap" style="display:none;"><img id="filePreview" alt="preview"></div>
-
-          <label class="field-label">Title</label>
-          <input type="text" id="fieldTitle" placeholder="e.g. First light on the Orion Nebula" required>
-
-          <label class="field-label">What is it?</label>
-          <input type="text" id="fieldObject" placeholder="e.g. M42 — The Orion Nebula" required>
-
-          <div class="field-row">
-            <div>
-              <label class="field-label">Date captured</label>
-              <input type="date" id="fieldDate" required>
-            </div>
-            <div>
-              <label class="field-label">Camera</label>
-              <input type="text" id="fieldCamera" placeholder="e.g. ZWO ASI224MC">
-            </div>
-          </div>
-
-          <label class="field-label">Telescope / setup</label>
-          <input type="text" id="fieldSetup" placeholder="e.g. 150mm Newtonian, EQ3-2 mount" required>
-
-          <label class="field-label">Description (optional)</label>
-          <textarea id="fieldNotes" rows="3" placeholder="Conditions, processing, what to look for…"></textarea>
-
-          <div id="uploadError" class="upload-error" style="display:none;"></div>
-          <div id="uploadProgressWrap" class="upload-progress-wrap" style="display:none;">
-            <div class="upload-progress-track"><div class="upload-progress-fill" id="uploadProgressFill"></div></div>
-            <span class="mono" id="uploadProgressLabel">Uploading… 0%</span>
-          </div>
-          <button type="submit" class="btn solid" id="submitUploadBtn" style="width:100%; justify-content:center; margin-top:0.6rem;">Add to gallery</button>
-        </form>
-      </div>
-    </div>
-
-    <div class="modal-overlay" id="lightboxOverlay">
-      <div class="modal-box lightbox-box">
-        <button class="modal-close" id="closeLightboxBtn">✕</button>
-        <img id="lightboxImg" alt="">
-        <div class="lightbox-info">
-          <h3 id="lightboxTitle"></h3>
-          <div class="lightbox-meta" id="lightboxMeta"></div>
-          <div class="lightbox-user" id="lightboxUser"></div>
-          <p id="lightboxNotes"></p>
-          <div class="lightbox-actions">
-            <button class="ascend-btn" id="lightboxAscendBtn">▲ <span id="lightboxAscendCount">0</span> Ascend</button>
-            <button class="btn" id="deleteEntryBtn" style="display:none;">Remove this photo</button>
-          </div>
-        </div>
-      </div>
     </div>
   </main>
 
@@ -870,13 +1232,109 @@ footer.site-footer{
     </div>
   </div>
   <div class="footbar">
-    <span>© <span id="yearNow"></span> SkyPage Astronomy Club. Look up more often.</span>
+    <span>© <span id="yearNow"></span> SkyPage — Astrx Club. Look up more often.</span>
     <span>Designed &amp; built by <b>Sujal Sharma</b></span>
   </div>
 </footer>
 
+<div class="modal-overlay" id="uploadOverlay">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>Add a photo to the gallery</h3>
+      <button class="modal-close" id="closeUploadBtn">✕</button>
+    </div>
+    <form id="uploadForm">
+      <label class="field-label">Image file</label>
+      <input type="file" id="fieldFile" accept="image/*" required>
+      <div id="filePreviewWrap" style="display:none;"><img id="filePreview" alt="preview"></div>
+
+      <label class="field-label">Title</label>
+      <input type="text" id="fieldTitle" placeholder="e.g. First light on the Orion Nebula" required>
+
+      <label class="field-label">What is it?</label>
+      <input type="text" id="fieldObject" placeholder="e.g. M42 — The Orion Nebula" required>
+
+      <div class="field-row">
+        <div>
+          <label class="field-label">Date captured</label>
+          <input type="date" id="fieldDate" required>
+        </div>
+        <div>
+          <label class="field-label">Camera</label>
+          <input type="text" id="fieldCamera" placeholder="e.g. ZWO ASI224MC">
+        </div>
+      </div>
+
+      <label class="field-label">Telescope / setup</label>
+      <input type="text" id="fieldSetup" placeholder="e.g. 150mm Newtonian, EQ3-2 mount" required>
+
+      <label class="field-label">Description (optional)</label>
+      <textarea id="fieldNotes" rows="3" placeholder="Conditions, processing, what to look for…"></textarea>
+
+      <div id="uploadError" class="upload-error" style="display:none;"></div>
+      <div id="uploadProgressWrap" class="upload-progress-wrap" style="display:none;">
+        <div class="upload-progress-track"><div class="upload-progress-fill" id="uploadProgressFill"></div></div>
+        <span class="mono" id="uploadProgressLabel">Uploading… 0%</span>
+      </div>
+      <button type="submit" class="btn solid" id="submitUploadBtn" style="width:100%; justify-content:center; margin-top:0.6rem;">Add to gallery</button>
+    </form>
+  </div>
+</div>
+
+<div class="modal-overlay" id="lightboxOverlay">
+  <div class="modal-shell lightbox-shell">
+    <button class="modal-close lightbox-close" id="closeLightboxBtn">✕</button>
+    <div class="modal-box lightbox-box">
+      <div class="lb-panel">
+        <div class="lb-head">
+          <div class="lightbox-user" id="lightboxUser"></div>
+          <button class="lb-remove" id="deleteEntryBtn" style="display:none;" title="Remove this photo">🗑</button>
+        </div>
+
+        <div class="lb-scroll">
+          <div class="lb-caption">
+            <h3 id="lightboxTitle"></h3>
+            <div class="lightbox-meta" id="lightboxMeta"></div>
+            <p id="lightboxNotes"></p>
+          </div>
+          <div class="lb-comments" id="lightboxComments"></div>
+        </div>
+
+        <div class="lb-actionbar">
+          <button class="star-btn" id="lightboxAscendBtn" title="Ascend this photo">
+            <svg viewBox="0 0 24 24" class="star-svg"><path d="M12 2.4l2.85 6.53 7.15.63-5.4 4.74 1.63 7.06L12 17.77l-6.23 3.63 1.63-7.06-5.4-4.74 7.15-.63z"/></svg>
+            <span id="lightboxAscendCount">0</span>
+          </button>
+          <button class="beam-btn" id="lightboxShareBtn" title="Beam this to someone">
+            <svg viewBox="0 0 24 24" class="beam-svg" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+              <circle cx="4.5" cy="12" r="1.4" fill="currentColor" stroke="none"/>
+              <path d="M8.2 12c1.8-1.8 1.8-1.8 0-3.6M8.2 12c1.8 1.8 1.8 1.8 0 3.6"/>
+              <path d="M12.6 12c3-3 3-3 0-6M12.6 12c3 3 3 3 0 6"/>
+              <path d="M17 12c4.2-4.2 4.2-4.2 0-8.4M17 12c4.2 4.2 4.2 4.2 0 8.4"/>
+            </svg>
+          </button>
+          <span class="beam-toast" id="beamToast">Signal copied ✦</span>
+        </div>
+
+        <form class="lb-comment-form" id="lightboxCommentForm">
+          <input type="text" id="lightboxCommentInput" placeholder="Send a transmission…" maxlength="400" autocomplete="off">
+          <button type="submit">Send</button>
+        </form>
+      </div>
+
+      <div class="lb-photo">
+        <img id="lightboxImg" alt="">
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 document.getElementById('yearNow').textContent = new Date().getFullYear();
+const estDateEl = document.getElementById('estDate');
+if(estDateEl){
+  estDateEl.textContent = new Date().toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'});
+}
 
 /* =============================================================
    WIKIPEDIA REST API — page/summary endpoint (proven reachable),
@@ -912,7 +1370,7 @@ async function setPhotoBanner(bannerId, titles){
   console.warn('Photo banner fetch failed for all titles:', titles);
 }
 
-setPhotoBanner('banner-home', ['Hubble Deep Field', 'Hubble Ultra-Deep Field']);
+setPhotoBanner('banner-home', ["Webb's First Deep Field", 'Hubble Ultra-Deep Field']);
 setPhotoBanner('banner-apod', ['Andromeda Galaxy', 'Spiral galaxy']);
 setPhotoBanner('banner-events', ['Meteor shower', 'Perseids']);
 setPhotoBanner('banner-starmap', ['Milky Way', 'Night sky']);
@@ -953,6 +1411,17 @@ document.querySelectorAll('[data-target]').forEach(link=>{
 });
 const initialTarget = (location.hash || '#home').slice(1);
 showPane(document.getElementById('pane-'+initialTarget) ? initialTarget : 'home');
+
+/* lock page scroll while any modal (upload form, lightbox) is open — otherwise
+   the page keeps scrolling underneath the translucent overlay and the footer
+   bleeds through while you scroll inside the lightbox */
+function updateBodyScrollLock(){
+  const anyOpen = document.querySelector('.modal-overlay.open');
+  document.body.classList.toggle('modal-open', !!anyOpen);
+}
+document.querySelectorAll('.modal-overlay').forEach(el=>{
+  new MutationObserver(updateBodyScrollLock).observe(el, {attributes:true, attributeFilter:['class']});
+});
 
 /* ---------- starfield background: varied twinkle, subtle parallax, occasional shooting stars ---------- */
 (function(){
@@ -1072,21 +1541,26 @@ const QUOTES = [
   {q:"We have peered into a new world and have seen that it is more mysterious and more complex than we had imagined.", a:"Vera Rubin"},
   {q:"The Sun, with all the planets revolving around it, can still ripen a bunch of grapes as if it had nothing else in the universe to do.", a:"Galileo Galilei"},
   {q:"Finally we shall place the Sun himself at the center of the Universe.", a:"Nicolaus Copernicus"},
+  {q:"Look at the sky. We are not alone. The whole universe is friendly to us and conspires only to give the best to those who dream and work.", a:"APJ Abdul Kalam"},
+  {q:"We must be second to none in the application of advanced technologies to the real problems of man and society.", a:"Vikram Sarabhai"},
+  {q:"My success will not depend on what A or B thinks of me. My success will be what I make of my work.", a:"Homi J. Bhabha"},
+  {q:"When you look at the stars and the galaxy, you feel that you are not just from any particular piece of land, but from the solar system.", a:"Kalpana Chawla"},
+  {q:"I see Earth! It is so beautiful.", a:"Yuri Gagarin"},
 ];
 const FACTS = [
   "A day on Venus (243 Earth days) is longer than its year (225 Earth days).",
   "Neutron stars can spin up to 700 times per second.",
   "Footprints left on the Moon should last millions of years — there's no wind or water to erode them.",
   "One teaspoon of neutron-star material would weigh roughly a billion tonnes on Earth.",
-  "The Sun holds about 99.86% of all the mass in the solar system.",
-  "Sunlight takes about 8 minutes and 20 seconds to reach Earth.",
-  "There are more stars in the observable universe than grains of sand on every beach on Earth.",
+  "GPS satellite clocks run about 38 microseconds faster per day than clocks on the ground, purely from relativity — the correction is built into the system so your map doesn't drift.",
   "Saturn's moon Titan has lakes and rivers — made of liquid methane, not water.",
   "India's first satellite, Aryabhata, was named for the 5th-century astronomer who calculated Earth's rotation and the length of a year.",
   "A year on Mercury (88 Earth days) is shorter than a single Mercury day (176 Earth days).",
   "The largest known star, UY Scuti, is so big a plane would take roughly 1,100 years to fly around it.",
   "Jupiter's Great Red Spot is a storm that has raged for at least 350 years and is wider than Earth.",
-  "The ISS orbits Earth about every 90 minutes, travelling near 28,000 km/h.",
+  "Voyager 1, launched in 1977, is now over 24 billion kilometers from Earth and still transmitting data.",
+  "On the exoplanet WASP-76b, astronomers detected iron vapor condensing into rain on its permanent night side.",
+  "The Boomerang Nebula is the coldest known natural place in the universe — about 1 Kelvin, colder than deep space itself.",
 ];
 
 function paintQuote(){
@@ -1115,13 +1589,19 @@ paintQuote();
 <script>
 
 /* =============================================================
-   NASA APOD — fetched live from api.nasa.gov using the public
-   DEMO_KEY (shared/rate-limited — swap in a free personal key from
-   https://api.nasa.gov for real club use). Falls back to the
-   archive link on any failure.
+   NASA APOD — fetched live from api.nasa.gov.
+   ⚠ SWAP THIS BEFORE LAUNCH: DEMO_KEY is shared by every visitor to
+   every site that uses it worldwide, so it's capped at ~30 requests/
+   hour and 50/day — easy to blow through with real traffic.
+   Get your own free key at https://api.nasa.gov (just an email
+   address, delivered instantly) for 1,000 requests/hour, then paste
+   it below. There isn't a better free "picture of the day" source
+   than APOD itself — a personal key is the actual fix, not a
+   different provider.
+   Falls back to the archive link on any failure.
 ============================================================= */
 (function initAPOD(){
-  const NASA_KEY = 'DEMO_KEY';
+  const NASA_KEY = 'DEMO_KEY'; // 👉 replace with your own key from https://api.nasa.gov
   fetch(`https://api.nasa.gov/planetary/apod?api_key=${NASA_KEY}`)
     .then(r=>{ if(!r.ok) throw new Error('APOD unavailable'); return r.json(); })
     .then(data=>{
@@ -1147,6 +1627,39 @@ paintQuote();
       document.getElementById('apodDate').textContent = 'Archive';
     });
 })();
+
+/* =============================================================
+   DISPATCHES — top 3 space news stories, live from the Spaceflight
+   News API (api.spaceflightnewsapi.net). Free, no key required,
+   aggregates from NASA, ESA, SpaceX, and dozens of other outlets.
+============================================================= */
+(function initNews(){
+  const grid = document.getElementById('newsGrid');
+  fetch('https://api.spaceflightnewsapi.net/v4/articles/?limit=3&ordering=-published_at')
+    .then(r=>{ if(!r.ok) throw new Error('News unavailable'); return r.json(); })
+    .then(data=>{
+      const items = data.results || [];
+      if(items.length === 0){ throw new Error('No articles returned'); }
+      grid.innerHTML = items.map(a=>{
+        const when = new Date(a.published_at);
+        const stamp = isNaN(when) ? '' : when.toLocaleDateString('en-US', {month:'short', day:'numeric'});
+        const photo = a.image_url ? `style="background-image:url('${a.image_url}')"` : '';
+        return `
+        <a class="news-card" href="${a.url}" target="_blank" rel="noopener">
+          <div class="news-photo" ${photo}></div>
+          <div class="news-body">
+            <span class="news-source">${escapeAttr(a.news_site || 'Space news')}</span>
+            <h4>${escapeAttr(a.title || 'Untitled dispatch')}</h4>
+            <span class="news-time">${stamp}</span>
+          </div>
+        </a>`;
+      }).join('');
+    })
+    .catch(()=>{
+      grid.innerHTML = `<div class="news-empty">Couldn't pull today's headlines — <a href="https://www.nasaspaceflight.com" target="_blank" rel="noopener" style="color:var(--gold);">check NASASpaceflight.com directly ↗</a></div>`;
+    });
+})();
+function escapeAttr(s){ const d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
 </script>
 <script>
 /* =============================================================
@@ -1222,6 +1735,53 @@ const allEvents = [
     </div>
   `).join('');
   document.getElementById('almanacRange').textContent = `${fmtDate(allEvents[0].date)} → ${fmtDate(allEvents[allEvents.length-1].date)}`;
+})();
+
+/* =============================================================
+   LAUNCH MANIFEST — upcoming rocket launches, live from The Space
+   Devs' Launch Library 2 (ll.thespacedevs.com). Free, no key
+   required; rate-limited per visitor's own IP, not shared globally,
+   so normal browsing essentially never hits the ceiling.
+============================================================= */
+(function initLaunches(){
+  const list = document.getElementById('launchList');
+  fetch('https://ll.thespacedevs.com/2.3.0/launches/upcoming/?limit=5&mode=normal')
+    .then(r=>{ if(!r.ok) throw new Error('Launch Library unavailable'); return r.json(); })
+    .then(data=>{
+      const launches = data.results || [];
+      if(launches.length === 0){ throw new Error('No launches returned'); }
+      list.innerHTML = launches.map(l=>{
+        const net = new Date(l.net);
+        const days = isNaN(net) ? null : daysUntil(net);
+        const countdown = days===null ? '—' : days<=0 ? 'T-0' : days;
+        const dateStr = isNaN(net) ? 'Date TBD' : net.toLocaleDateString('en-US',{month:'short', day:'numeric'}) + ' · ' + net.toLocaleTimeString('en-US',{hour:'numeric', minute:'2-digit', timeZone:'UTC'}) + ' UTC';
+        const agency = l.launch_service_provider?.name || 'Unknown operator';
+        const rocket = l.rocket?.configuration?.full_name || l.rocket?.configuration?.name || '';
+        const site = l.pad?.location?.name || 'Location TBD';
+        const missionName = l.mission?.name || l.name || 'Mission details pending';
+        const missionDesc = l.mission?.description ? (l.mission.description.length>200 ? l.mission.description.slice(0,197)+'…' : l.mission.description) : 'No public mission description yet.';
+        const statusName = (l.status?.name || 'TBD');
+        const statusClass = /go/i.test(statusName) ? 'go' : /hold|failure/i.test(statusName) ? 'hold' : 'tbd';
+        return `
+        <div class="launch-card">
+          <div class="launch-countdown"><div class="t">${countdown}</div><div class="u">${days===null||days<=0 ? '' : 'days'}</div></div>
+          <div class="launch-main">
+            <h4>${escapeAttr(l.name || missionName)}</h4>
+            <div class="launch-meta">
+              <span>🛰 <b>${escapeAttr(agency)}</b></span>
+              ${rocket ? `<span>🚀 ${escapeAttr(rocket)}</span>` : ''}
+              <span>📍 ${escapeAttr(site)}</span>
+              <span>🗓 ${dateStr}</span>
+            </div>
+            <p class="launch-mission">${escapeAttr(missionDesc)}</p>
+          </div>
+          <span class="launch-status ${statusClass}">${escapeAttr(statusName)}</span>
+        </div>`;
+      }).join('');
+    })
+    .catch(()=>{
+      list.innerHTML = `<div class="launch-empty">Couldn't reach the Launch Library right now — <a href="https://nextspaceflight.com/launches/" target="_blank" rel="noopener" style="color:var(--gold);">see the full schedule at NextSpaceflight ↗</a></div>`;
+    });
 })();
 </script>
 <script>
@@ -1307,8 +1867,11 @@ const CONSTELLATIONS = {
       {n:'Zeta UMi', ra:15.734, dec:77.79, dist:369, mag:4.29, spec:'A3V'},
       {n:'Kochab', ra:14.845, dec:74.16, dist:126, mag:2.08, spec:'K4III'},
       {n:'Pherkad', ra:15.346, dec:71.83, dist:487, mag:3.05, spec:'A3II'},
+      {n:'Eta UMi', ra:16.292, dec:75.76, dist:97, mag:4.95, spec:'F5V'},
     ],
-    lines:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,2]]
+    // handle: Polaris → Yildun → Epsilon → Zeta, then the bowl as a proper
+    // 4-star loop (Zeta–Eta–Pherkad–Kochab–Zeta) instead of a 3-star triangle
+    lines:[[0,1],[1,2],[2,3],[3,6],[6,5],[5,4],[4,3]]
   },
   cassiopeia: {
     label:'Cassiopeia — The Seated Queen',
@@ -1331,7 +1894,7 @@ const CONSTELLATIONS = {
       {n:'Shaula', ra:17.560, dec:-37.10, dist:570, mag:1.63, spec:'B1.5IV'},
       {n:'Lesath', ra:17.513, dec:-37.29, dist:520, mag:2.70, spec:'B2IV'},
     ],
-    lines:[[0,1],[1,2],[2,3],[3,4],[4,5]]
+    lines:[[0,1],[1,2],[2,3],[3,5],[5,4]]
   },
   leo: {
     label:'Leo — The Lion',
@@ -1344,7 +1907,10 @@ const CONSTELLATIONS = {
       {n:'Chertan', ra:11.237, dec:15.42, dist:165, mag:3.34, spec:'A2V'},
       {n:'Denebola', ra:11.818, dec:14.57, dist:36, mag:2.14, spec:'A3V'},
     ],
-    lines:[[0,1],[1,2],[2,3],[2,4],[4,5],[5,6],[0,5]]
+    // sickle (head/mane): Regulus→Eta→Algieba→Adhafera
+    // body: Regulus→Chertan connects the sickle to the hindquarters
+    // hindquarter triangle, fully closed: Zosma–Chertan–Denebola–Zosma
+    lines:[[0,1],[1,2],[2,3],[0,5],[4,5],[5,6],[4,6]]
   },
   cygnus: {
     label:'Cygnus — The Swan',
@@ -1366,7 +1932,7 @@ const CONSTELLATIONS = {
       {n:'Zeta Tauri', ra:5.628, dec:21.14, dist:440, mag:3.00, spec:'B4III'},
       {n:'Elnath', ra:5.438, dec:28.61, dist:134, mag:1.65, spec:'B7III'},
     ],
-    lines:[[1,0],[0,2],[0,3],[3,4]]
+    lines:[[0,1],[0,2],[1,4],[2,3]]
   },
   crux: {
     label:'Crux — The Southern Cross',
@@ -1473,6 +2039,23 @@ function renderConstChips(){
   });
 }
 
+// Pushes a label away from whichever neighboring stars are closest, instead of
+// always placing it to the right. Close neighbors (e.g. Orion's three belt
+// stars) pull harder, so each label is nudged clear of the star(s) it would
+// otherwise collide with.
+function labelDirection(i, stars){
+  let vx=0, vy=0;
+  stars.forEach((s,j)=>{
+    if(j===i) return;
+    const dx = stars[i].x - s.x, dy = stars[i].y - s.y;
+    const d = Math.max(Math.hypot(dx,dy), 0.7);
+    const w = d*d*d; // cubic falloff: the single nearest star dominates, not just the crowd average
+    vx += dx/w; vy += dy/w;
+  });
+  const len = Math.hypot(vx,vy);
+  return len > 0.0001 ? {x:vx/len, y:vy/len} : {x:1, y:0};
+}
+
 function drawConstellation(key){
   const c = CONSTELLATIONS[key];
   document.getElementById('constTitle').textContent = c.label;
@@ -1487,7 +2070,14 @@ function drawConstellation(key){
     const r = magSize(s.mag);
     const col = specColor(s.spec);
     markup += `<circle class="star-dot" data-idx="${i}" cx="${s.x.toFixed(2)}" cy="${s.y.toFixed(2)}" r="${r}" fill="${col}" style="filter:drop-shadow(0 0 ${r}px ${col})"/>`;
-    markup += `<text class="star-label" x="${(s.x+r+1.2).toFixed(2)}" y="${(s.y+1).toFixed(2)}">${s.n}</text>`;
+
+    const dir = labelDirection(i, projected);
+    const dist = r + 2.6;
+    const lx = s.x + dir.x*dist;
+    const ly = s.y + dir.y*dist;
+    const anchor = dir.x > 0.25 ? 'start' : dir.x < -0.25 ? 'end' : 'middle';
+    const dy = dir.y > 0.4 ? 2.4 : dir.y < -0.4 ? -1.2 : 0.9;
+    markup += `<text class="star-label" x="${lx.toFixed(2)}" y="${(ly+dy).toFixed(2)}" text-anchor="${anchor}">${s.n}</text>`;
   });
   svg.innerHTML = markup;
   svg.querySelectorAll('.star-dot').forEach(dot=>{
@@ -1605,7 +2195,179 @@ async function fetchDsoImage(elId, titles){
   console.warn('DSO image fetch failed for all titles:', titles);
 }
 
-let galaxiesLoaded = false, nebulaeLoaded = false;
+/* =============================================================
+   THE UNSEEN — objects we're scientifically confident exist, with
+   no real photograph to show (or, for black holes, a photograph so
+   different from the popular image of one that an illustration
+   teaches the physics better). Every SVG below is a hand-built,
+   physics-informed impression — not a photo, not a fetched image.
+============================================================= */
+function exoplanetSVG(id, oceanColor, landColor, hostColor, cloudy){
+  return `<svg viewBox="0 0 240 180" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="${id}Glow" cx="18%" cy="22%" r="30%">
+        <stop offset="0%" stop-color="${hostColor}" stop-opacity="0.95"/>
+        <stop offset="100%" stop-color="${hostColor}" stop-opacity="0"/>
+      </radialGradient>
+      <radialGradient id="${id}Sphere" cx="38%" cy="34%" r="68%">
+        <stop offset="0%" stop-color="${oceanColor}"/>
+        <stop offset="100%" stop-color="#060b12"/>
+      </radialGradient>
+    </defs>
+    <circle cx="38" cy="30" r="46" fill="url(#${id}Glow)"/>
+    <circle cx="120" cy="92" r="44" fill="url(#${id}Sphere)"/>
+    <path d="M97 68 q16 -11 32 -2 q11 6 4 17 q-9 10 -23 6 q-15 -4 -13 -21 Z" fill="${landColor}" opacity="0.85"/>
+    <path d="M112 108 q19 4 23 17 q2 8 -11 8 q-16 0 -19 -13 q-1 -8 7 -12 Z" fill="${landColor}" opacity="0.7"/>
+    ${cloudy ? `<path d="M84 82 q20 -6 36 2" stroke="#fff" stroke-width="3" opacity="0.18" fill="none" stroke-linecap="round"/><path d="M96 112 q22 6 34 -2" stroke="#fff" stroke-width="3" opacity="0.15" fill="none" stroke-linecap="round"/>` : ''}
+    <circle cx="120" cy="92" r="44" fill="none" stroke="#fff" stroke-width="0.5" opacity="0.2"/>
+  </svg>`;
+}
+
+const UNSEEN = [
+  {
+    name:'Black Hole', cat:'Stellar-mass & supermassive', type:'Gravitational object',
+    desc:"A region where gravity is so extreme that not even light can escape. We've never photographed a stellar-mass one — the kind left behind when a massive star collapses — but the Event Horizon Telescope did image the silhouette of two supermassive ones (M87* and Sgr A*) by capturing the glowing, superheated gas swirling just outside the event horizon, bent into a ring by the black hole's own gravity.",
+    fact:"A stellar-mass black hole about 10x the Sun's mass would have an event horizon only ~60 km across.",
+    svg:`<svg viewBox="0 0 240 180" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="bhGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#fff7e0"/>
+          <stop offset="35%" stop-color="#e8b04b"/>
+          <stop offset="72%" stop-color="#8a3d1f" stop-opacity="0.65"/>
+          <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <ellipse cx="120" cy="90" rx="98" ry="22" fill="url(#bhGlow)"/>
+      <path d="M24 90 A96 40 0 0 0 216 90" fill="none" stroke="#fff7e0" stroke-width="2" opacity="0.5"/>
+      <circle cx="120" cy="90" r="34" fill="#000"/>
+      <circle cx="120" cy="90" r="34" fill="none" stroke="#e8b04b" stroke-width="0.6" opacity="0.35"/>
+    </svg>`
+  },
+  {
+    name:'Neutron Star (Pulsar)', cat:'Collapsed stellar core', type:'Stellar remnant',
+    desc:"What's left when a massive star's core collapses in a supernova, crushing more mass than the Sun into a sphere about the size of a city. Many spin fast and beam radiation from their magnetic poles — if that beam sweeps past Earth, we detect it as a pulsar, a clock-like flash repeating up to hundreds of times a second.",
+    fact:"A sugar-cube of neutron star material would weigh about as much as a mountain.",
+    svg:`<svg viewBox="0 0 240 180" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="nsCore" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#ffffff"/>
+          <stop offset="45%" stop-color="#bcd9ff"/>
+          <stop offset="100%" stop-color="#3a6bb0" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="nsBeam" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#bcd9ff" stop-opacity="0.8"/>
+          <stop offset="100%" stop-color="#bcd9ff" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <g transform="rotate(20 120 90)">
+        <path d="M120 90 L98 -20 L142 -20 Z" fill="url(#nsBeam)"/>
+        <path d="M120 90 L98 200 L142 200 Z" fill="url(#nsBeam)"/>
+      </g>
+      <circle cx="120" cy="90" r="24" fill="url(#nsCore)"/>
+      <circle cx="120" cy="90" r="6" fill="#fff"/>
+    </svg>`
+  },
+  {
+    name:'Magnetar', cat:'Extreme-field neutron star', type:'Stellar remnant',
+    desc:"A neutron star with the most powerful magnetic fields known to exist — trillions of times stronger than Earth's. A magnetar's field is so intense it would distort atoms into thin rods and could wipe a credit card from beyond the Moon. Occasional 'starquakes' in its crust release some of the brightest bursts of radiation ever recorded.",
+    fact:"A magnetar's field could theoretically erase a hard drive from over 100,000 km away.",
+    svg:`<svg viewBox="0 0 240 180" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="magCore" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#ffffff"/>
+          <stop offset="45%" stop-color="#c9a8ff"/>
+          <stop offset="100%" stop-color="#6a3fa0" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <g fill="none" stroke="#c9a8ff" stroke-width="1.3" opacity="0.65">
+        <path d="M120 90 C78 42 78 18 120 18 C162 18 162 42 120 90"/>
+        <path d="M120 90 C58 55 52 12 106 6"/>
+        <path d="M120 90 C182 55 188 12 134 6"/>
+        <path d="M120 90 C78 138 78 162 120 162 C162 162 162 138 120 90"/>
+      </g>
+      <circle cx="120" cy="90" r="20" fill="url(#magCore)"/>
+    </svg>`
+  },
+  {
+    name:'White Dwarf', cat:'Sun-like stellar remnant', type:'Stellar remnant',
+    desc:"The dense, slowly-cooling core left behind after a Sun-like star sheds its outer layers at the end of its life. Roughly Earth-sized but as massive as the Sun, a white dwarf is so dense a teaspoon of it would weigh several tonnes. Given enough time — far longer than the universe has existed so far — theory says it should crystallize as it cools.",
+    fact:"Our own Sun will end its life as a white dwarf, in about 5 billion years.",
+    svg:`<svg viewBox="0 0 240 180" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="wdCore" cx="42%" cy="38%" r="62%">
+          <stop offset="0%" stop-color="#ffffff"/>
+          <stop offset="55%" stop-color="#dce8ff"/>
+          <stop offset="100%" stop-color="#7fa0d6"/>
+        </radialGradient>
+      </defs>
+      <circle cx="120" cy="90" r="46" fill="url(#wdCore)"/>
+      <circle cx="120" cy="90" r="46" fill="none" stroke="#fff" stroke-width="0.6" opacity="0.5"/>
+      <path d="M96 70 L112 86 M132 76 L146 96 M100 106 L121 116" stroke="#aac4ee" stroke-width="1" opacity="0.35"/>
+    </svg>`
+  },
+  {
+    name:'Rogue Planet', cat:'Starless wanderer', type:'Free-floating planet',
+    desc:"A planet with no star at all — either flung out of its home system by a gravitational encounter, or formed alone in the dark from a collapsing cloud of gas. With no sunlight, any warmth it has comes only from its own leftover internal heat. Some estimates suggest rogue planets could outnumber stars in the Milky Way.",
+    fact:"Without starlight to reflect, a rogue planet can only be found by the way its gravity briefly bends light from a star behind it.",
+    svg:`<svg viewBox="0 0 240 180" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="rpCore" cx="35%" cy="35%" r="72%">
+          <stop offset="0%" stop-color="#4a4f5c"/>
+          <stop offset="60%" stop-color="#20222b"/>
+          <stop offset="100%" stop-color="#0a0b10"/>
+        </radialGradient>
+      </defs>
+      <circle cx="34" cy="26" r="1" fill="#fff" opacity="0.6"/>
+      <circle cx="196" cy="138" r="1.3" fill="#fff" opacity="0.5"/>
+      <circle cx="204" cy="42" r="0.9" fill="#fff" opacity="0.4"/>
+      <circle cx="58" cy="150" r="1" fill="#fff" opacity="0.4"/>
+      <circle cx="170" cy="30" r="0.7" fill="#fff" opacity="0.3"/>
+      <circle cx="120" cy="92" r="42" fill="url(#rpCore)"/>
+      <circle cx="120" cy="92" r="42" fill="none" stroke="#3a3d4a" stroke-width="0.6"/>
+    </svg>`
+  },
+  {
+    name:'Proxima Centauri b', cat:'Nearest known exoplanet', type:'Habitable-zone candidate',
+    desc:"Orbiting Proxima Centauri, the closest star to our Sun, this world sits in its star's habitable zone — the distance where liquid water could exist. It's likely tidally locked, with one face in permanent day and one in permanent night, and it takes stellar flares from its small, active red-dwarf sun far harsher than anything Earth experiences.",
+    fact:"At 4.24 light-years away, it's the closest potentially habitable world we know of.",
+    svg: exoplanetSVG('pcb', '#2c5f7c', '#5c4a35', '#ff6a4d', true)
+  },
+  {
+    name:'TRAPPIST-1e', cat:'One of seven Earth-sized worlds', type:'Habitable-zone candidate',
+    desc:"Part of the remarkable TRAPPIST-1 system — seven roughly Earth-sized planets orbiting one small, cool star. TRAPPIST-1e is considered one of the strongest candidates for habitability in the system, with a similar size, mass, and estimated density to Earth, and it sits comfortably in the star's habitable zone.",
+    fact:"All seven TRAPPIST-1 planets could fit within the orbit of Mercury.",
+    svg: exoplanetSVG('t1e', '#234a68', '#4a5c3a', '#ff8a5c', true)
+  },
+  {
+    name:'Kepler-186f', cat:'First Earth-size habitable-zone find', type:'Habitable-zone candidate',
+    desc:"The first Earth-size planet discovered in the habitable zone of another star. It orbits a red dwarf roughly 500 light-years away, receiving about a third of the sunlight Earth gets from the Sun — enough, models suggest, for liquid water to exist under the right atmospheric conditions.",
+    fact:"If it has an atmosphere at all, its sky may look reddish-orange rather than blue.",
+    svg: exoplanetSVG('k186f', '#2f5a4a', '#6b5a3a', '#ff7a52', true)
+  },
+  {
+    name:'K2-18b', cat:'Candidate ocean world', type:'Habitable-zone candidate',
+    desc:"A 'sub-Neptune' about 8.6x Earth's mass, orbiting a red dwarf in its habitable zone. Some models suggest it could be a 'Hycean' world — a deep global ocean under a hydrogen-rich atmosphere. JWST observations picked up tentative hints of gases sometimes associated with biological activity, but this is still contested and far from confirmed.",
+    fact:"If K2-18b is a true Hycean world, its entire surface could be one continuous ocean.",
+    svg: exoplanetSVG('k218b', '#1f6b5c', '#2f5a4a', '#ffb347', false)
+  },
+];
+
+function renderUnseenGrid(){
+  const el = document.getElementById('unseenGrid');
+  el.innerHTML = UNSEEN.map(u=>`
+    <div class="dso-card unseen-card">
+      <div class="dso-illustration">${u.svg}<span class="illustration-tag">Illustration — not a photograph</span></div>
+      <div class="dso-body">
+        <span class="dso-type">${u.type}</span>
+        <h4>${u.name} <span class="mono" style="color:var(--starlight-dim); font-weight:400; font-size:0.8rem;">${u.cat}</span></h4>
+        <p>${u.desc}</p>
+        <p class="unseen-fact">✦ ${u.fact}</p>
+      </div>
+    </div>
+  `).join('');
+}
+
+let galaxiesLoaded = false, nebulaeLoaded = false, unseenLoaded = false;
 document.querySelectorAll('#starmapTabs .scope-tab').forEach(tab=>{
   tab.addEventListener('click', ()=>{
     document.querySelectorAll('#starmapTabs .scope-tab').forEach(t=>t.classList.remove('active'));
@@ -1615,6 +2377,7 @@ document.querySelectorAll('#starmapTabs .scope-tab').forEach(tab=>{
     document.getElementById('sm-'+key).classList.add('active');
     if(key==='galaxies' && !galaxiesLoaded){ galaxiesLoaded = true; renderDsoGrid('galaxyGrid', GALAXIES); }
     if(key==='nebulae' && !nebulaeLoaded){ nebulaeLoaded = true; renderDsoGrid('nebulaGrid', NEBULAE); }
+    if(key==='unseen' && !unseenLoaded){ unseenLoaded = true; renderUnseenGrid(); }
   });
 });
 </script>
@@ -1625,7 +2388,7 @@ document.querySelectorAll('#starmapTabs .scope-tab').forEach(tab=>{
 const SCOPES = {
   refractor: {
     title:'Refractor',
-    svg:`<svg viewBox="0 0 300 180"><rect x="30" y="80" width="220" height="20" fill="none" stroke="var(--starlight-dim)" stroke-width="1.4"/>
+    svg:`<svg viewBox="0 0 300 180"><rect x="30" y="70" width="220" height="40" fill="none" stroke="var(--starlight-dim)" stroke-width="1.4"/>
       <path d="M40 76 L40 104" stroke="var(--gold)" stroke-width="4" stroke-linecap="round"/>
       <line x1="40" y1="82" x2="180" y2="90" stroke="var(--gold)" stroke-width="1"/>
       <line x1="40" y1="98" x2="180" y2="90" stroke="var(--gold)" stroke-width="1"/>
@@ -1644,19 +2407,19 @@ const SCOPES = {
   },
   reflector: {
     title:'Reflector (Newtonian)',
-    svg:`<svg viewBox="0 0 300 180"><rect x="30" y="70" width="200" height="40" fill="none" stroke="var(--starlight-dim)" stroke-width="1.4"/>
+    svg:`<svg viewBox="0 0 300 180"><rect x="30" y="70" width="208" height="40" fill="none" stroke="var(--starlight-dim)" stroke-width="1.4"/>
       <path d="M225 70 Q235 90 225 110" fill="none" stroke="var(--gold)" stroke-width="2.4"/>
-      <line x1="40" y1="76" x2="222" y2="86" stroke="var(--gold)" stroke-width="1"/>
-      <line x1="222" y1="86" x2="120" y2="90" stroke="var(--gold)" stroke-width="1"/>
-      <line x1="40" y1="104" x2="222" y2="94" stroke="var(--gold)" stroke-width="1"/>
-      <line x1="222" y1="94" x2="120" y2="90" stroke="var(--gold)" stroke-width="1"/>
-      <rect x="112" y="82" width="14" height="4" fill="var(--gold)" transform="rotate(-45 119 84)"/>
+      <line x1="40" y1="76" x2="230" y2="86" stroke="var(--gold)" stroke-width="1"/>
+      <line x1="230" y1="86" x2="120" y2="90" stroke="var(--gold)" stroke-width="1"/>
+      <line x1="40" y1="104" x2="230" y2="94" stroke="var(--gold)" stroke-width="1"/>
+      <line x1="230" y1="94" x2="120" y2="90" stroke="var(--gold)" stroke-width="1"/>
+      <rect x="113" y="88" width="14" height="4" fill="var(--gold)" transform="rotate(45 120 90)"/>
       <line x1="120" y1="90" x2="120" y2="40" stroke="var(--gold)" stroke-width="1" stroke-dasharray="2 3"/>
-      <rect x="112" y="26" width="14" height="14" fill="none" stroke="var(--starlight-dim)" stroke-width="1.2"/>
+      <rect x="113" y="26" width="14" height="14" fill="none" stroke="var(--starlight-dim)" stroke-width="1.2"/>
       <text x="30" y="130" fill="var(--starlight-dim)" font-size="9" font-family="monospace">OPEN TUBE</text>
       <text x="195" y="130" fill="var(--starlight-dim)" font-size="9" font-family="monospace">PRIMARY MIRROR</text>
       <text x="128" y="50" fill="var(--starlight-dim)" font-size="9" font-family="monospace">EYEPIECE</text>
-      <text x="95" y="75" fill="var(--gold)" font-size="9" font-family="monospace">SECONDARY</text></svg>`,
+      <text x="96" y="80" fill="var(--gold)" font-size="9" font-family="monospace">SECONDARY</text></svg>`,
     desc:"Light travels down an open tube to a curved primary mirror at the back, which reflects it forward to a small flat secondary mirror angled at 45°, kicking the focus out through the side of the tube.",
     good:"Deep-sky objects — galaxies, nebulae, star clusters. Best aperture-per-rupee of any design.",
     watch:"Mirrors drift out of alignment (collimation) and need periodic adjustment. Open tube means more cooldown time and dust exposure.",
@@ -1668,9 +2431,9 @@ const SCOPES = {
       <line x1="46" y1="72" x2="46" y2="108" stroke="var(--teal)" stroke-width="3"/>
       <path d="M228 72 Q238 90 228 108" fill="none" stroke="var(--gold)" stroke-width="2.4"/>
       <circle cx="46" cy="90" r="4" fill="var(--teal)"/>
-      <line x1="46" y1="90" x2="226" y2="90" stroke="var(--gold)" stroke-width="1"/>
-      <line x1="226" y1="90" x2="46" y2="82" stroke="var(--gold)" stroke-width="1"/>
-      <line x1="46" y1="82" x2="200" y2="90" stroke="var(--gold)" stroke-width="1" stroke-dasharray="2 3"/>
+      <line x1="46" y1="90" x2="233" y2="90" stroke="var(--gold)" stroke-width="1"/>
+      <line x1="233" y1="90" x2="46" y2="87" stroke="var(--gold)" stroke-width="1"/>
+      <line x1="46" y1="87" x2="200" y2="90" stroke="var(--gold)" stroke-width="1" stroke-dasharray="2 3"/>
       <rect x="196" y="83" width="10" height="14" fill="none" stroke="var(--starlight-dim)" stroke-width="1"/>
       <line x1="206" y1="90" x2="255" y2="90" stroke="var(--gold)" stroke-width="1" stroke-dasharray="2 3"/>
       <rect x="255" y="83" width="12" height="14" fill="none" stroke="var(--starlight-dim)" stroke-width="1.2"/>
@@ -1858,6 +2621,23 @@ computeAndRender();
 document.querySelector('#academyTabs [data-academy="simulator"]').addEventListener('click', ()=>{
   resizeSimCanvas(); computeAndRender();
 });
+
+/* Belt-and-braces fix for mobile: however the simulator pane ends up on
+   screen (home shortcut card, direct tab tap, browser back/forward, hash
+   link), catch the moment the canvas actually enters the viewport and
+   re-measure then. Covers cases where the tab's own click listener never
+   fires (e.g. the pane is switched programmatically). */
+if('IntersectionObserver' in window){
+  const simVisibilityObserver = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting){ resizeSimCanvas(); computeAndRender(); }
+    });
+  }, {threshold:0.05});
+  simVisibilityObserver.observe(canvas);
+}
+window.addEventListener('orientationchange', ()=>{
+  setTimeout(()=>{ resizeSimCanvas(); computeAndRender(); }, 200);
+});
 </script>
 
 <script type="module">
@@ -1884,6 +2664,13 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
 const firebaseConfig = {
+  // Note: this apiKey is NOT a secret — Firebase web API keys are meant to
+  // be public in client code (they just identify the project; they don't
+  // grant data access). GitHub's secret scanner flags it anyway because it
+  // pattern-matches "AIza..." strings. Real access control lives in your
+  // Firestore Security Rules (Firebase console → Firestore → Rules) — make
+  // sure those aren't left at the "allow read, write: if true" default.
+  // See: https://firebase.google.com/docs/projects/api-keys
   apiKey: "AIzaSyAECeW0FH30xCwanp9QAaP0_JCvZFdxYNo",
   authDomain: "astrx-club.firebaseapp.com",
   projectId: "astrx-club",
@@ -1903,6 +2690,14 @@ let currentUser = null;
 let posts = [];
 let pendingImageFile = null;
 let activePostId = null;
+let currentSort = 'latest'; // 'latest' | 'popular'
+let currentComments = [];
+let unsubscribeComments = null;
+let sharedPostAttempted = false;
+
+/* Note: comments live in a `posts/{postId}/comments` subcollection — if you
+   lock down Firestore Security Rules, remember to allow signed-in users to
+   read that subcollection and create (not edit/delete others') docs in it. */
 
 const galleryGrid = document.getElementById('galleryGrid');
 const galleryAuthEl = document.getElementById('galleryAuth');
@@ -1940,6 +2735,7 @@ onAuthStateChanged(auth, (user)=>{
   currentUser = user;
   renderAuthUI();
   renderGallery(); // re-render so ascend button states reflect the current user
+  updateCommentFormState();
 });
 
 /* ---------- load posts (live) ---------- */
@@ -1948,22 +2744,52 @@ function subscribeToPosts(){
   onSnapshot(q, (snapshot)=>{
     posts = snapshot.docs.map(d=>({id:d.id, ...d.data()}));
     renderGallery();
+    attemptOpenSharedPost();
   }, (err)=>{
     console.error('Feed subscription failed', err);
     galleryGrid.innerHTML = `<div class="gallery-empty"><h4>Couldn't load the feed</h4>Check your Firestore setup and connection, then reload.</div>`;
   });
+}
+
+/* open a post directly if the page was loaded from a beamed (shared) link */
+function attemptOpenSharedPost(){
+  if(sharedPostAttempted) return;
+  const wanted = new URLSearchParams(location.search).get('post');
+  if(!wanted) return;
+  const target = posts.find(p=>p.id===wanted);
+  if(target){
+    sharedPostAttempted = true;
+    if(typeof showPane === 'function') showPane('gallery');
+    openLightbox(wanted);
+  }
 }
 subscribeToPosts();
 
 /* ---------- render ---------- */
 function escapeHtml(s){ const d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
 
+function getSortedPosts(){
+  const arr = [...posts];
+  if(currentSort === 'popular'){
+    arr.sort((a,b) => (b.ascendedBy?.length||0) - (a.ascendedBy?.length||0));
+  }
+  return arr; // 'latest' already arrives newest-first from the Firestore query
+}
+
+document.querySelectorAll('.sort-chip').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    currentSort = chip.dataset.sort;
+    document.querySelectorAll('.sort-chip').forEach(c=>c.classList.toggle('active', c===chip));
+    renderGallery();
+  });
+});
+
 function renderGallery(){
   if(posts.length === 0){
     galleryGrid.innerHTML = `<div class="gallery-empty"><h4>No photos yet</h4>Be the first to add one — every capture starts the archive.</div>`;
     return;
   }
-  galleryGrid.innerHTML = posts.map(p=>{
+  galleryGrid.innerHTML = getSortedPosts().map(p=>{
     const ascendedBy = p.ascendedBy || [];
     const isAscended = currentUser && ascendedBy.includes(currentUser.uid);
     return `
@@ -2009,18 +2835,36 @@ function refreshLightboxAscendState(postId){
   const ascendedBy = p.ascendedBy || [];
   const isAscended = currentUser && ascendedBy.includes(currentUser.uid);
   const ascendBtn = document.getElementById('lightboxAscendBtn');
-  if(ascendBtn) ascendBtn.className = 'ascend-btn' + (isAscended ? ' ascended' : '');
+  if(ascendBtn) ascendBtn.classList.toggle('ascended', !!isAscended);
   const countEl = document.getElementById('lightboxAscendCount');
   if(countEl) countEl.textContent = ascendedBy.length;
 }
 
+/* small burst of sparks radiating from the star, on ascend only (not un-ascend) */
+function burstStar(btn){
+  const wrap = document.createElement('div');
+  wrap.className = 'star-burst-wrap';
+  for(let i=0; i<7; i++){
+    const s = document.createElement('span');
+    s.className = 'star-spark';
+    const angle = (i/7)*360 + (Math.random()*20-10);
+    s.style.setProperty('--angle', angle+'deg');
+    s.style.setProperty('--delay', (i*0.02)+'s');
+    wrap.appendChild(s);
+  }
+  btn.appendChild(wrap);
+  btn.classList.add('burst');
+  setTimeout(()=>{ wrap.remove(); btn.classList.remove('burst'); }, 700);
+}
+
 /* ---------- ascend (upvote-only) ---------- */
-async function toggleAscend(postId){
+async function toggleAscend(postId, btnEl){
   if(!currentUser){ alert('Sign in with Google to ascend a photo.'); return; }
   const post = posts.find(p=>p.id===postId);
   if(!post) return;
   const ascendedBy = post.ascendedBy || [];
   const already = ascendedBy.includes(currentUser.uid);
+  if(!already && btnEl) burstStar(btnEl);
   try{
     await updateDoc(doc(db, 'posts', postId), {
       ascendedBy: already ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid)
@@ -2146,27 +2990,137 @@ function openLightbox(id){
   const ascendedBy = p.ascendedBy || [];
   const isAscended = currentUser && ascendedBy.includes(currentUser.uid);
   const ascendBtn = document.getElementById('lightboxAscendBtn');
-  ascendBtn.className = 'ascend-btn' + (isAscended ? ' ascended' : '');
+  ascendBtn.classList.toggle('ascended', !!isAscended);
   document.getElementById('lightboxAscendCount').textContent = ascendedBy.length;
 
   const deleteBtn = document.getElementById('deleteEntryBtn');
   deleteBtn.style.display = (currentUser && currentUser.uid === p.userId) ? 'inline-flex' : 'none';
 
+  subscribeToComments(id);
+  updateCommentFormState();
+
+  try{ history.replaceState(null, '', `?post=${id}#gallery`); }catch(err){ /* non-fatal */ }
   lightboxOverlay.classList.add('open');
 }
-document.getElementById('closeLightboxBtn').addEventListener('click', ()=>lightboxOverlay.classList.remove('open'));
-lightboxOverlay.addEventListener('click', (e)=>{ if(e.target===lightboxOverlay) lightboxOverlay.classList.remove('open'); });
-document.getElementById('lightboxAscendBtn').addEventListener('click', ()=>{ if(activePostId) toggleAscend(activePostId); });
+
+function closeLightbox(){
+  lightboxOverlay.classList.remove('open');
+  if(unsubscribeComments){ unsubscribeComments(); unsubscribeComments = null; }
+  currentComments = [];
+  activePostId = null;
+  try{ history.replaceState(null, '', location.pathname + '#gallery'); }catch(err){ /* non-fatal */ }
+}
+document.getElementById('closeLightboxBtn').addEventListener('click', closeLightbox);
+lightboxOverlay.addEventListener('click', (e)=>{ if(e.target===lightboxOverlay) closeLightbox(); });
+document.getElementById('lightboxAscendBtn').addEventListener('click', (e)=>{ if(activePostId) toggleAscend(activePostId, e.currentTarget); });
 
 document.getElementById('deleteEntryBtn').addEventListener('click', async ()=>{
   if(!activePostId || !currentUser) return;
   if(!confirm('Remove this photo from the shared gallery for everyone?')) return;
   try{
     await deleteDoc(doc(db, 'posts', activePostId));
-    lightboxOverlay.classList.remove('open');
+    closeLightbox();
   }catch(err){
     console.error('Delete failed', err);
     alert("Couldn't remove the photo — try again.");
+  }
+});
+
+/* ---------- comments (live subcollection: posts/{id}/comments) ---------- */
+function timeAgo(ts){
+  if(!ts || !ts.toDate) return 'just now';
+  const diffMs = Date.now() - ts.toDate().getTime();
+  const mins = Math.floor(diffMs/60000);
+  if(mins < 1) return 'just now';
+  if(mins < 60) return mins+'m ago';
+  const hrs = Math.floor(mins/60);
+  if(hrs < 24) return hrs+'h ago';
+  return Math.floor(hrs/24)+'d ago';
+}
+
+function subscribeToComments(postId){
+  if(unsubscribeComments){ unsubscribeComments(); unsubscribeComments = null; }
+  const commentsEl = document.getElementById('lightboxComments');
+  commentsEl.innerHTML = `<div class="lb-comments-empty">Loading transmissions…</div>`;
+  const q = query(collection(db, 'posts', postId, 'comments'), orderBy('createdAt', 'asc'));
+  unsubscribeComments = onSnapshot(q, (snapshot)=>{
+    currentComments = snapshot.docs.map(d=>({id:d.id, ...d.data()}));
+    renderComments();
+  }, (err)=>{
+    console.error('Comments subscription failed', err);
+    commentsEl.innerHTML = `<div class="lb-comments-empty">Couldn't load the conversation.</div>`;
+  });
+}
+
+function renderComments(){
+  const commentsEl = document.getElementById('lightboxComments');
+  if(currentComments.length === 0){
+    commentsEl.innerHTML = `<div class="lb-comments-empty">No transmissions yet — be the first to send one.</div>`;
+    return;
+  }
+  commentsEl.innerHTML = currentComments.map(c => `
+    <div class="lb-comment">
+      <img src="${c.userPhoto||''}" alt="">
+      <div class="lb-comment-body">
+        <span class="cname">${escapeHtml(c.userName||'Member')}</span>
+        <span class="ctext">${escapeHtml(c.text)}</span>
+        <span class="ctime">${timeAgo(c.createdAt)}</span>
+      </div>
+    </div>`).join('');
+}
+
+function updateCommentFormState(){
+  const input = document.getElementById('lightboxCommentInput');
+  if(!input) return;
+  input.disabled = !currentUser;
+  input.placeholder = currentUser ? 'Send a transmission…' : 'Sign in to join the conversation';
+}
+
+document.getElementById('lightboxCommentForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  if(!currentUser){ alert('Sign in with Google to send a transmission.'); return; }
+  if(!activePostId) return;
+  const input = document.getElementById('lightboxCommentInput');
+  const text = input.value.trim();
+  if(!text) return;
+  input.value = '';
+  try{
+    await addDoc(collection(db, 'posts', activePostId, 'comments'), {
+      text,
+      userId: currentUser.uid,
+      userName: currentUser.displayName || 'Member',
+      userPhoto: currentUser.photoURL || '',
+      createdAt: serverTimestamp()
+    });
+  }catch(err){
+    console.error('Comment failed', err);
+    alert("Couldn't send that — try again.");
+    input.value = text;
+  }
+});
+
+/* ---------- beam (share) ---------- */
+document.getElementById('lightboxShareBtn').addEventListener('click', async ()=>{
+  if(!activePostId) return;
+  const p = posts.find(x=>x.id===activePostId);
+  const shareUrl = `${location.origin}${location.pathname}?post=${activePostId}#gallery`;
+  const shareData = {
+    title: p?.title || 'A find from Astrx Club',
+    text: `Check out "${p?.title || p?.object || 'this find'}" on the Astrx Club sky gallery`,
+    url: shareUrl
+  };
+  if(navigator.share){
+    try{ await navigator.share(shareData); }
+    catch(err){ /* user cancelled the native share sheet — nothing to do */ }
+    return;
+  }
+  try{
+    await navigator.clipboard.writeText(shareUrl);
+    const toast = document.getElementById('beamToast');
+    toast.classList.add('show');
+    setTimeout(()=>toast.classList.remove('show'), 1800);
+  }catch(err){
+    prompt('Copy this link to share it:', shareUrl);
   }
 });
 
