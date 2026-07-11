@@ -462,9 +462,9 @@ footer.site-footer{
 .dso-illustration{aspect-ratio:4/3; background:radial-gradient(ellipse at 50% 40%, #0d1424 0%, var(--void-softer) 75%); position:relative; overflow:hidden;}
 .dso-illustration svg{width:100%; height:100%; display:block;}
 .illustration-tag{
-  position:absolute; bottom:0.6rem; right:0.7rem; font-family:var(--font-mono); font-size:0.6rem;
-  color:var(--starlight-dim); background:rgba(2,3,7,0.55); border:1px solid var(--panel-border);
-  padding:0.25em 0.6em; border-radius:20px; letter-spacing:0.02em;
+  position:absolute; bottom:0; left:0; right:0; font-family:var(--font-mono); font-size:0.62rem; line-height:1.4;
+  color:var(--starlight-dim); background:linear-gradient(to top, rgba(2,3,7,0.88), rgba(2,3,7,0));
+  padding:1.4em 0.7em 0.45em; letter-spacing:0.01em;
 }
 .unseen-fact{font-style:italic; border-top:1px dashed var(--panel-border); padding-top:0.7rem; margin-top:0.9rem !important;}
 
@@ -658,6 +658,49 @@ body.modal-open{overflow:hidden;}
   pointer-events:none; white-space:nowrap;
 }
 .beam-toast.show{opacity:1; transform:translateY(0);}
+
+/* ---- Hidden extras: toast, black-hole vignette, pale-dot overlay ---- */
+.egg-toast{
+  position:fixed; left:50%; bottom:2.2rem; transform:translate(-50%, 12px);
+  background:var(--void-softer); border:1px solid var(--gold-dim); color:var(--gold);
+  font-family:var(--font-mono); font-size:0.78rem; line-height:1.5; text-align:center;
+  padding:0.7em 1.3em; border-radius:24px; max-width:min(86vw, 460px);
+  box-shadow:0 8px 30px rgba(0,0,0,0.45);
+  opacity:0; z-index:10000; pointer-events:none;
+  transition:opacity .3s ease, transform .3s ease;
+}
+.egg-toast.show{opacity:1; transform:translate(-50%, 0);}
+
+.bh-vignette{
+  position:fixed; inset:0; z-index:9990; pointer-events:none;
+  background:radial-gradient(circle at 50% 50%, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 30%, rgba(2,3,7,0.97) 100%);
+  opacity:0; transform:scale(1.4);
+  transition:opacity .35s ease, transform 1.1s cubic-bezier(.7,0,.3,1);
+}
+.bh-vignette.bh-active{
+  opacity:1; transform:scale(0.7);
+  transition:opacity .15s ease, transform 1.3s cubic-bezier(.2,.9,.3,1);
+}
+
+.egg-overlay{
+  position:fixed; inset:0; z-index:9995; background:rgba(2,3,7,0.96);
+  display:flex; align-items:center; justify-content:center; padding:2rem;
+  opacity:0; pointer-events:none; transition:opacity .4s ease;
+}
+.egg-overlay.show{opacity:1; pointer-events:auto;}
+.egg-close{
+  position:absolute; top:1.4rem; right:1.6rem; background:transparent; border:1px solid var(--panel-border);
+  color:var(--starlight-dim); width:2.2rem; height:2.2rem; border-radius:50%; cursor:pointer;
+  font-size:1rem; line-height:1; transition:color .2s ease, border-color .2s ease;
+}
+.egg-close:hover{color:var(--gold); border-color:var(--gold-dim);}
+.egg-dot-field{max-width:52ch; text-align:center; position:relative;}
+.egg-dot{
+  display:block; width:3px; height:3px; border-radius:50%; background:#dce6ff;
+  margin:0 auto 2rem; box-shadow:0 0 6px 1px rgba(220,230,255,0.8);
+}
+.egg-dot-text{color:var(--starlight); font-size:1rem; line-height:1.75; font-family:var(--font-serif, inherit);}
+.egg-dot-sub{color:var(--starlight-dim); font-family:var(--font-mono); font-size:0.72rem; margin-top:1.6rem; letter-spacing:0.02em;}
 
 .lb-comment-form{display:flex; gap:0.7rem; padding:0 1.3rem 1.2rem; flex-shrink:0;}
 .lb-comment-form input{
@@ -1114,7 +1157,7 @@ html.intro-pending footer.site-footer{opacity:0;}
       </div>
 
       <div class="sm-view" id="sm-unseen">
-        <p class="unseen-intro">These are things we're scientifically confident exist — the math and the evidence both check out — but that no camera has ever captured, or ever could, the way it captures a galaxy. What you'll see below is our best physical model of each: not a photo, an informed reconstruction.</p>
+        <p class="unseen-intro">These are things we're scientifically confident exist — the math and the evidence both check out — but that few cameras have ever captured the way one captures a galaxy. The black hole below is the one exception: since 2019 we do have a real photograph, taken by the Event Horizon Telescope. For everything else here, no telescope can resolve the object itself, so what you'll see is the most accurate visualization NASA and ESA have released for it — built directly from the mission data, not guesswork.</p>
         <div class="dso-grid" id="unseenGrid"></div>
       </div>
     </div>
@@ -1543,6 +1586,138 @@ document.querySelectorAll('.modal-overlay').forEach(el=>{
     requestAnimationFrame(draw);
   }
   requestAnimationFrame(draw);
+
+  // Exposed hook: let other features (like an easter egg) trigger a burst
+  // of meteors on demand, reusing this same rendering pipeline.
+  window.__spawnMeteorShower = function(count){
+    for(let i=0;i<count;i++){
+      const startX = Math.random()*w;
+      const angle = Math.PI/4 + (Math.random()*0.5-0.25);
+      meteors.push({
+        x:startX, y:-20 - Math.random()*200, angle,
+        speed: 10 + Math.random()*8,
+        life: 1,
+        len: 90 + Math.random()*70
+      });
+    }
+  };
+})();
+</script>
+<script>
+/* =============================================================
+   HIDDEN EXTRAS — small discoverable surprises for people who go
+   looking. None of these are required for normal use of the site;
+   they're just here for anyone who pokes around.
+============================================================= */
+(function(){
+  // Shared toast — visually matches the site (mono font, gold border)
+  // but fixed to the viewport so it can appear regardless of scroll.
+  function showEggToast(html, ms){
+    let t = document.getElementById('eggToast');
+    if(!t){
+      t = document.createElement('div');
+      t.id = 'eggToast';
+      t.className = 'egg-toast';
+      document.body.appendChild(t);
+    }
+    t.innerHTML = html;
+    // restart the transition even if a toast is already showing
+    t.classList.remove('show'); void t.offsetWidth;
+    t.classList.add('show');
+    clearTimeout(t._hideTimer);
+    t._hideTimer = setTimeout(()=>t.classList.remove('show'), ms || 3200);
+  }
+
+  /* ---- 1) Konami code -> meteor shower ---- */
+  const KONAMI = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+  let konamiPos = 0;
+  /* ---- 2) Type the name of a real black hole anywhere on the page ---- */
+  const BH_NAMES = ['m87', 'sgra', 'sagittariusa'];
+  let typedBuffer = '';
+
+  window.addEventListener('keydown', (e)=>{
+    // Konami tracking (arrow keys + b/a)
+    const k = e.key;
+    if(k === KONAMI[konamiPos]) konamiPos++;
+    else konamiPos = (k === KONAMI[0]) ? 1 : 0;
+    if(konamiPos === KONAMI.length){
+      konamiPos = 0;
+      if(window.__spawnMeteorShower) window.__spawnMeteorShower(24);
+      showEggToast('✦ Wish granted. <span style="color:var(--starlight-dim)">(You know the Konami code.)</span>', 3600);
+    }
+
+    // Typed black-hole name (letters only, ignore modifier/nav keys)
+    if(k.length === 1 && /[a-zA-Z]/.test(k)){
+      typedBuffer = (typedBuffer + k.toLowerCase()).slice(-12);
+      for(const name of BH_NAMES){
+        if(typedBuffer.endsWith(name)){
+          typedBuffer = '';
+          triggerBlackHoleVignette();
+          break;
+        }
+      }
+    }
+  });
+
+  function triggerBlackHoleVignette(){
+    let v = document.getElementById('bhVignette');
+    if(!v){
+      v = document.createElement('div');
+      v.id = 'bhVignette';
+      v.className = 'bh-vignette';
+      document.body.appendChild(v);
+    }
+    v.classList.remove('bh-active'); void v.offsetWidth;
+    v.classList.add('bh-active');
+    showEggToast('✦ You just fell past the event horizon. <span style="color:var(--starlight-dim)">(Don\u2019t worry — you\u2019re spaghettified, but fine.)</span>', 3600);
+    setTimeout(()=>v.classList.remove('bh-active'), 2200);
+  }
+
+  /* ---- 3) Click the logo 7 times fast -> a small original reflection, not a photo ---- */
+  const logo = document.querySelector('#topnav .sb-logo');
+  let logoClicks = 0, logoTimer = null;
+  if(logo){
+    logo.style.cursor = 'pointer';
+    logo.addEventListener('click', ()=>{
+      logoClicks++;
+      clearTimeout(logoTimer);
+      logoTimer = setTimeout(()=>{ logoClicks = 0; }, 2500);
+      if(logoClicks >= 7){
+        logoClicks = 0;
+        openDotOverlay();
+      }
+    });
+  }
+  function openDotOverlay(){
+    let o = document.getElementById('dotOverlay');
+    if(!o){
+      o = document.createElement('div');
+      o.id = 'dotOverlay';
+      o.className = 'egg-overlay';
+      o.innerHTML = `
+        <button class="egg-close" id="dotOverlayClose" aria-label="Close">✕</button>
+        <div class="egg-dot-field">
+          <span class="egg-dot"></span>
+          <p class="egg-dot-text">Every person you've ever loved, every argument, every war, every telescope ever built — all of it happened on a single pale point of light, seen from far enough away. Voyager 1 turned its camera around in 1990, from beyond Neptune, and took a picture of home. Earth was less than a pixel.</p>
+          <p class="egg-dot-sub">You found this by clicking the logo seven times. Reasonable use of your time, honestly.</p>
+        </div>`;
+      document.body.appendChild(o);
+      document.getElementById('dotOverlayClose').addEventListener('click', closeDotOverlay);
+      o.addEventListener('click', (e)=>{ if(e.target === o) closeDotOverlay(); });
+    }
+    requestAnimationFrame(()=>o.classList.add('show'));
+  }
+  function closeDotOverlay(){
+    const o = document.getElementById('dotOverlay');
+    if(o) o.classList.remove('show');
+  }
+  document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') closeDotOverlay(); });
+
+  /* ---- 4) A note for anyone who opens devtools ---- */
+  const art = "%c✦ %cSKYPAGE";
+  console.log(art, 'color:#e8b04b', 'color:#f5f3ec; font-weight:bold; font-size:1.1em;');
+  console.log('%cLooking at the source instead of the sky? Respectable.', 'color:#8b8fa3; font-style:italic;');
+  console.log('%cThere are a couple of things hidden on this page. One of them shares a name with the first black hole ever photographed.', 'color:#8b8fa3;');
 })();
 </script>
 <script>
@@ -2222,159 +2397,75 @@ async function fetchDsoImage(elId, titles){
 }
 
 /* =============================================================
-   THE UNSEEN — objects we're scientifically confident exist, with
-   no real photograph to show (or, for black holes, a photograph so
-   different from the popular image of one that an illustration
-   teaches the physics better). Every SVG below is a hand-built,
-   physics-informed impression — not a photo, not a fetched image.
+   THE UNSEEN — objects we're scientifically confident exist.
+   The black hole below is a real photograph (Event Horizon
+   Telescope, 2019). Every other image is the most accurate
+   official visualization NASA/ESA has released for that object —
+   built from real mission data, credited to its source below.
 ============================================================= */
-function exoplanetSVG(id, oceanColor, landColor, hostColor, cloudy){
-  return `<svg viewBox="0 0 240 180" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <radialGradient id="${id}Glow" cx="18%" cy="22%" r="30%">
-        <stop offset="0%" stop-color="${hostColor}" stop-opacity="0.95"/>
-        <stop offset="100%" stop-color="${hostColor}" stop-opacity="0"/>
-      </radialGradient>
-      <radialGradient id="${id}Sphere" cx="38%" cy="34%" r="68%">
-        <stop offset="0%" stop-color="${oceanColor}"/>
-        <stop offset="100%" stop-color="#060b12"/>
-      </radialGradient>
-    </defs>
-    <circle cx="38" cy="30" r="46" fill="url(#${id}Glow)"/>
-    <circle cx="120" cy="92" r="44" fill="url(#${id}Sphere)"/>
-    <path d="M97 68 q16 -11 32 -2 q11 6 4 17 q-9 10 -23 6 q-15 -4 -13 -21 Z" fill="${landColor}" opacity="0.85"/>
-    <path d="M112 108 q19 4 23 17 q2 8 -11 8 q-16 0 -19 -13 q-1 -8 7 -12 Z" fill="${landColor}" opacity="0.7"/>
-    ${cloudy ? `<path d="M84 82 q20 -6 36 2" stroke="#fff" stroke-width="3" opacity="0.18" fill="none" stroke-linecap="round"/><path d="M96 112 q22 6 34 -2" stroke="#fff" stroke-width="3" opacity="0.15" fill="none" stroke-linecap="round"/>` : ''}
-    <circle cx="120" cy="92" r="44" fill="none" stroke="#fff" stroke-width="0.5" opacity="0.2"/>
-  </svg>`;
-}
-
 const UNSEEN = [
   {
     name:'Black Hole', cat:'Stellar-mass & supermassive', type:'Gravitational object',
     desc:"A region where gravity is so extreme that not even light can escape. We've never photographed a stellar-mass one — the kind left behind when a massive star collapses — but the Event Horizon Telescope did image the silhouette of two supermassive ones (M87* and Sgr A*) by capturing the glowing, superheated gas swirling just outside the event horizon, bent into a ring by the black hole's own gravity.",
     fact:"A stellar-mass black hole about 10x the Sun's mass would have an event horizon only ~60 km across.",
-    svg:`<svg viewBox="0 0 240 180" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <radialGradient id="bhGlow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stop-color="#fff7e0"/>
-          <stop offset="35%" stop-color="#e8b04b"/>
-          <stop offset="72%" stop-color="#8a3d1f" stop-opacity="0.65"/>
-          <stop offset="100%" stop-color="#000" stop-opacity="0"/>
-        </radialGradient>
-      </defs>
-      <ellipse cx="120" cy="90" rx="98" ry="22" fill="url(#bhGlow)"/>
-      <path d="M24 90 A96 40 0 0 0 216 90" fill="none" stroke="#fff7e0" stroke-width="2" opacity="0.5"/>
-      <circle cx="120" cy="90" r="34" fill="#000"/>
-      <circle cx="120" cy="90" r="34" fill="none" stroke="#e8b04b" stroke-width="0.6" opacity="0.35"/>
-    </svg>`
+    photo:'https://assets.science.nasa.gov/dynamicimage/assets/science/psd/solar/2023/09/b/blackhole_1600.jpg?w=1600&h=932&fit=clip&crop=faces%2Cfocalpoint',
+    real:true, credit:'Event Horizon Telescope Collaboration, 2019 — first direct image of a black hole (M87*)'
   },
   {
     name:'Neutron Star (Pulsar)', cat:'Collapsed stellar core', type:'Stellar remnant',
     desc:"What's left when a massive star's core collapses in a supernova, crushing more mass than the Sun into a sphere about the size of a city. Many spin fast and beam radiation from their magnetic poles — if that beam sweeps past Earth, we detect it as a pulsar, a clock-like flash repeating up to hundreds of times a second.",
     fact:"A sugar-cube of neutron star material would weigh about as much as a mountain.",
-    svg:`<svg viewBox="0 0 240 180" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <radialGradient id="nsCore" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stop-color="#ffffff"/>
-          <stop offset="45%" stop-color="#bcd9ff"/>
-          <stop offset="100%" stop-color="#3a6bb0" stop-opacity="0"/>
-        </radialGradient>
-        <linearGradient id="nsBeam" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#bcd9ff" stop-opacity="0.8"/>
-          <stop offset="100%" stop-color="#bcd9ff" stop-opacity="0"/>
-        </linearGradient>
-      </defs>
-      <g transform="rotate(20 120 90)">
-        <path d="M120 90 L98 -20 L142 -20 Z" fill="url(#nsBeam)"/>
-        <path d="M120 90 L98 200 L142 200 Z" fill="url(#nsBeam)"/>
-      </g>
-      <circle cx="120" cy="90" r="24" fill="url(#nsCore)"/>
-      <circle cx="120" cy="90" r="6" fill="#fff"/>
-    </svg>`
+    photo:'https://astronomy.swin.edu.au/cms/cpg15x/albums/userpics/neutronstar1.jpg?w=1200',
+    real:false, credit:'NASA/CXC/ASU/J. Hester et al. — The Crab pulsar'
   },
   {
     name:'Magnetar', cat:'Extreme-field neutron star', type:'Stellar remnant',
     desc:"A neutron star with the most powerful magnetic fields known to exist — trillions of times stronger than Earth's. A magnetar's field is so intense it would distort atoms into thin rods and could wipe a credit card from beyond the Moon. Occasional 'starquakes' in its crust release some of the brightest bursts of radiation ever recorded.",
     fact:"A magnetar's field could theoretically erase a hard drive from over 100,000 km away.",
-    svg:`<svg viewBox="0 0 240 180" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <radialGradient id="magCore" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stop-color="#ffffff"/>
-          <stop offset="45%" stop-color="#c9a8ff"/>
-          <stop offset="100%" stop-color="#6a3fa0" stop-opacity="0"/>
-        </radialGradient>
-      </defs>
-      <g fill="none" stroke="#c9a8ff" stroke-width="1.3" opacity="0.65">
-        <path d="M120 90 C78 42 78 18 120 18 C162 18 162 42 120 90"/>
-        <path d="M120 90 C58 55 52 12 106 6"/>
-        <path d="M120 90 C182 55 188 12 134 6"/>
-        <path d="M120 90 C78 138 78 162 120 162 C162 162 162 138 120 90"/>
-      </g>
-      <circle cx="120" cy="90" r="20" fill="url(#magCore)"/>
-    </svg>`
+    photo:'https://assets.science.nasa.gov/content/dam/science/missions/hubble/releases/2025/04/STScI-01JQSDXJ6079K1HM6D6FRER23B.tif/jcr:content/renditions/Quarter%20Res.jpg',
+    real:false, credit:'ESA/Hubble — official magnetar visualization, 2025'
   },
   {
     name:'White Dwarf', cat:'Sun-like stellar remnant', type:'Stellar remnant',
     desc:"The dense, slowly-cooling core left behind after a Sun-like star sheds its outer layers at the end of its life. Roughly Earth-sized but as massive as the Sun, a white dwarf is so dense a teaspoon of it would weigh several tonnes. Given enough time — far longer than the universe has existed so far — theory says it should crystallize as it cools.",
     fact:"Our own Sun will end its life as a white dwarf, in about 5 billion years.",
-    svg:`<svg viewBox="0 0 240 180" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <radialGradient id="wdCore" cx="42%" cy="38%" r="62%">
-          <stop offset="0%" stop-color="#ffffff"/>
-          <stop offset="55%" stop-color="#dce8ff"/>
-          <stop offset="100%" stop-color="#7fa0d6"/>
-        </radialGradient>
-      </defs>
-      <circle cx="120" cy="90" r="46" fill="url(#wdCore)"/>
-      <circle cx="120" cy="90" r="46" fill="none" stroke="#fff" stroke-width="0.6" opacity="0.5"/>
-      <path d="M96 70 L112 86 M132 76 L146 96 M100 106 L121 116" stroke="#aac4ee" stroke-width="1" opacity="0.35"/>
-    </svg>`
+    photo:'https://assets.science.nasa.gov/content/dam/science/missions/hubble/releases/2025/09/STScI-01K4FHRVYTEF017J1HWGE8TPSF.tif/jcr:content/renditions/Half%20Res.jpg',
+    real:false, credit:'NASA, Tim Pyle (NASA/JPL-Caltech) — official white dwarf visualization, 2025'
   },
   {
     name:'Rogue Planet', cat:'Starless wanderer', type:'Free-floating planet',
     desc:"A planet with no star at all — either flung out of its home system by a gravitational encounter, or formed alone in the dark from a collapsing cloud of gas. With no sunlight, any warmth it has comes only from its own leftover internal heat. Some estimates suggest rogue planets could outnumber stars in the Milky Way.",
     fact:"Without starlight to reflect, a rogue planet can only be found by the way its gravity briefly bends light from a star behind it.",
-    svg:`<svg viewBox="0 0 240 180" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <radialGradient id="rpCore" cx="35%" cy="35%" r="72%">
-          <stop offset="0%" stop-color="#4a4f5c"/>
-          <stop offset="60%" stop-color="#20222b"/>
-          <stop offset="100%" stop-color="#0a0b10"/>
-        </radialGradient>
-      </defs>
-      <circle cx="34" cy="26" r="1" fill="#fff" opacity="0.6"/>
-      <circle cx="196" cy="138" r="1.3" fill="#fff" opacity="0.5"/>
-      <circle cx="204" cy="42" r="0.9" fill="#fff" opacity="0.4"/>
-      <circle cx="58" cy="150" r="1" fill="#fff" opacity="0.4"/>
-      <circle cx="170" cy="30" r="0.7" fill="#fff" opacity="0.3"/>
-      <circle cx="120" cy="92" r="42" fill="url(#rpCore)"/>
-      <circle cx="120" cy="92" r="42" fill="none" stroke="#3a3d4a" stroke-width="0.6"/>
-    </svg>`
+    photo:'https://assets.iflscience.com/assets/articleNo/73976/aImg/75867/rogue-t.webp',
+    real:false, credit:'rogue planet '
   },
   {
     name:'Proxima Centauri b', cat:'Nearest known exoplanet', type:'Habitable-zone candidate',
     desc:"Orbiting Proxima Centauri, the closest star to our Sun, this world sits in its star's habitable zone — the distance where liquid water could exist. It's likely tidally locked, with one face in permanent day and one in permanent night, and it takes stellar flares from its small, active red-dwarf sun far harsher than anything Earth experiences.",
     fact:"At 4.24 light-years away, it's the closest potentially habitable world we know of.",
-    svg: exoplanetSVG('pcb', '#2c5f7c', '#5c4a35', '#ff6a4d', true)
+    photo:'https://assets.science.nasa.gov/dynamicimage/assets/science/astro/exo-explore/2023/09/p/Proximasurfacelarge900h.jpg?w=1280&h=720&fit=clip&crop=faces%2Cfocalpoint',
+    real:false, credit:'ESO/M. Kornmesser — official artist impression'
   },
   {
     name:'TRAPPIST-1e', cat:'One of seven Earth-sized worlds', type:'Habitable-zone candidate',
     desc:"Part of the remarkable TRAPPIST-1 system — seven roughly Earth-sized planets orbiting one small, cool star. TRAPPIST-1e is considered one of the strongest candidates for habitability in the system, with a similar size, mass, and estimated density to Earth, and it sits comfortably in the star's habitable zone.",
     fact:"All seven TRAPPIST-1 planets could fit within the orbit of Mercury.",
-    svg: exoplanetSVG('t1e', '#234a68', '#4a5c3a', '#ff8a5c', true)
+    photo:'https://assets.science.nasa.gov/dynamicimage/assets/science/missions/webb/science/2025/09/STScI-01K1V61D55HJV2956SNSEN15GN.tif?w=1400',
+    real:false, credit:'NASA, ESA, CSA, STScI, Joseph Olmsted (STScI) — official JWST visualization, 2025'
   },
   {
     name:'Kepler-186f', cat:'First Earth-size habitable-zone find', type:'Habitable-zone candidate',
     desc:"The first Earth-size planet discovered in the habitable zone of another star. It orbits a red dwarf roughly 500 light-years away, receiving about a third of the sunlight Earth gets from the Sun — enough, models suggest, for liquid water to exist under the right atmospheric conditions.",
     fact:"If it has an atmosphere at all, its sky may look reddish-orange rather than blue.",
-    svg: exoplanetSVG('k186f', '#2f5a4a', '#6b5a3a', '#ff7a52', true)
+    photo:'https://assets.science.nasa.gov/dynamicimage/assets/science/astro/exo-explore/2023/09/PIA17999S.jpg?w=1280&h=720&fit=clip&crop=faces%2Cfocalpoint',
+    real:false, credit:'NASA Ames/SETI Institute/JPL-Caltech — official artist concept'
   },
   {
     name:'K2-18b', cat:'Candidate ocean world', type:'Habitable-zone candidate',
     desc:"A 'sub-Neptune' about 8.6x Earth's mass, orbiting a red dwarf in its habitable zone. Some models suggest it could be a 'Hycean' world — a deep global ocean under a hydrogen-rich atmosphere. JWST observations picked up tentative hints of gases sometimes associated with biological activity, but this is still contested and far from confirmed.",
     fact:"If K2-18b is a true Hycean world, its entire surface could be one continuous ocean.",
-    svg: exoplanetSVG('k218b', '#1f6b5c', '#2f5a4a', '#ffb347', false)
+    photo:'https://assets.science.nasa.gov/content/dam/science/missions/webb/science/2023/09/STScI-01H9R8AEK6Y7QR03MGN9V9P6ZJ.jpg/jcr:content/renditions/1920x1080.jpg',
+    real:false, credit:'NASA, ESA, CSA, Joseph Olmsted (STScI) — official JWST visualization, 2023'
   },
 ];
 
@@ -2382,7 +2473,9 @@ function renderUnseenGrid(){
   const el = document.getElementById('unseenGrid');
   el.innerHTML = UNSEEN.map(u=>`
     <div class="dso-card unseen-card">
-      <div class="dso-illustration">${u.svg}<span class="illustration-tag">Illustration — not a photograph</span></div>
+      <div class="dso-photo" style="background-image:url('${u.photo}')">
+        <span class="illustration-tag">${u.real ? 'Real photograph' : 'Official visualization'} — ${u.credit}</span>
+      </div>
       <div class="dso-body">
         <span class="dso-type">${u.type}</span>
         <h4>${u.name} <span class="mono" style="color:var(--starlight-dim); font-weight:400; font-size:0.8rem;">${u.cat}</span></h4>
@@ -2414,18 +2507,24 @@ document.querySelectorAll('#starmapTabs .scope-tab').forEach(tab=>{
 const SCOPES = {
   refractor: {
     title:'Refractor',
-    svg:`<svg viewBox="0 0 300 180"><rect x="30" y="70" width="220" height="40" fill="none" stroke="var(--starlight-dim)" stroke-width="1.4"/>
-      <path d="M40 76 L40 104" stroke="var(--gold)" stroke-width="4" stroke-linecap="round"/>
-      <line x1="40" y1="82" x2="180" y2="90" stroke="var(--gold)" stroke-width="1"/>
-      <line x1="40" y1="98" x2="180" y2="90" stroke="var(--gold)" stroke-width="1"/>
-      <line x1="40" y1="86" x2="180" y2="90" stroke="var(--gold)" stroke-width="1" opacity="0.6"/>
-      <line x1="40" y1="94" x2="180" y2="90" stroke="var(--gold)" stroke-width="1" opacity="0.6"/>
-      <circle cx="180" cy="90" r="2.6" fill="var(--gold)"/>
-      <rect x="248" y="83" width="14" height="14" fill="none" stroke="var(--starlight-dim)" stroke-width="1.2"/>
-      <line x1="196" y1="90" x2="248" y2="90" stroke="var(--gold)" stroke-width="1" stroke-dasharray="2 3"/>
-      <text x="40" y="130" fill="var(--starlight-dim)" font-size="9" font-family="monospace">OBJECTIVE LENS</text>
-      <text x="230" y="130" fill="var(--starlight-dim)" font-size="9" font-family="monospace">EYEPIECE</text>
-      <text x="150" y="65" fill="var(--gold)" font-size="9" font-family="monospace" text-anchor="middle">FOCAL POINT</text></svg>`,
+    svg:`<svg viewBox="0 0 300 180">
+      <path d="M20,64 H175 M20,116 H175" stroke="var(--starlight-dim)" stroke-width="1.4" fill="none"/>
+      <path d="M175,64 L175,76 M175,104 L175,116" stroke="var(--starlight-dim)" stroke-width="1.4" fill="none"/>
+      <path d="M175,76 H215 M175,104 H215" stroke="var(--starlight-dim)" stroke-width="1.4" fill="none"/>
+      <path d="M35,68 Q41,90 35,112 Q29,90 35,68 Z" fill="var(--starlight)" opacity="0.9" stroke="var(--starlight-dim)" stroke-width="0.6"/>
+      <path d="M200,79 Q203,90 200,101 Q197,90 200,79 Z" fill="var(--starlight)" opacity="0.9" stroke="var(--starlight-dim)" stroke-width="0.6"/>
+      <line x1="0" y1="68" x2="35" y2="68" stroke="var(--gold)" stroke-width="1"/>
+      <line x1="0" y1="112" x2="35" y2="112" stroke="var(--gold)" stroke-width="1"/>
+      <line x1="35" y1="68" x2="200" y2="101" stroke="var(--gold)" stroke-width="1"/>
+      <line x1="35" y1="112" x2="200" y2="79" stroke="var(--gold)" stroke-width="1"/>
+      <circle cx="145" cy="90" r="2.2" fill="var(--gold)"/>
+      <line x1="200" y1="101" x2="245" y2="90" stroke="var(--gold)" stroke-width="1"/>
+      <line x1="200" y1="79" x2="245" y2="90" stroke="var(--gold)" stroke-width="1"/>
+      <path d="M237,90 Q245,82 253,90 Q245,98 237,90 Z" fill="none" stroke="var(--starlight)" stroke-width="1.2"/>
+      <circle cx="245" cy="90" r="2.4" fill="var(--starlight)"/>
+      <text x="35" y="132" fill="var(--starlight-dim)" font-size="8.5" font-family="monospace" text-anchor="middle">OBJECTIVE LENS</text>
+      <text x="200" y="132" fill="var(--starlight-dim)" font-size="8.5" font-family="monospace" text-anchor="middle">EYEPIECE</text>
+      <text x="145" y="55" fill="var(--gold)" font-size="8.5" font-family="monospace" text-anchor="middle">FOCAL POINT</text></svg>`,
     desc:"Light passes straight through a curved glass lens at the front, which bends (refracts) it to a focus. No obstructions in the light path, which means crisp, high-contrast views — the classic 'spyglass' shape.",
     good:"Planets, the Moon, double stars. Zero maintenance — nothing to align.",
     watch:"Gets expensive fast at large apertures; big lenses are heavy and pricey to make well.",
@@ -2433,19 +2532,27 @@ const SCOPES = {
   },
   reflector: {
     title:'Reflector (Newtonian)',
-    svg:`<svg viewBox="0 0 300 180"><rect x="30" y="70" width="208" height="40" fill="none" stroke="var(--starlight-dim)" stroke-width="1.4"/>
-      <path d="M225 70 Q235 90 225 110" fill="none" stroke="var(--gold)" stroke-width="2.4"/>
-      <line x1="40" y1="76" x2="230" y2="86" stroke="var(--gold)" stroke-width="1"/>
-      <line x1="230" y1="86" x2="120" y2="90" stroke="var(--gold)" stroke-width="1"/>
-      <line x1="40" y1="104" x2="230" y2="94" stroke="var(--gold)" stroke-width="1"/>
-      <line x1="230" y1="94" x2="120" y2="90" stroke="var(--gold)" stroke-width="1"/>
-      <rect x="113" y="88" width="14" height="4" fill="var(--gold)" transform="rotate(45 120 90)"/>
-      <line x1="120" y1="90" x2="120" y2="40" stroke="var(--gold)" stroke-width="1" stroke-dasharray="2 3"/>
-      <rect x="113" y="26" width="14" height="14" fill="none" stroke="var(--starlight-dim)" stroke-width="1.2"/>
-      <text x="30" y="130" fill="var(--starlight-dim)" font-size="9" font-family="monospace">OPEN TUBE</text>
-      <text x="195" y="130" fill="var(--starlight-dim)" font-size="9" font-family="monospace">PRIMARY MIRROR</text>
-      <text x="128" y="50" fill="var(--starlight-dim)" font-size="9" font-family="monospace">EYEPIECE</text>
-      <text x="96" y="80" fill="var(--gold)" font-size="9" font-family="monospace">SECONDARY</text></svg>`,
+    svg:`<svg viewBox="0 0 300 180">
+      <path d="M20,64 H162 M180,64 H232 M20,116 H232" stroke="var(--starlight-dim)" stroke-width="1.4" fill="none"/>
+      <path d="M162,64 V24 M180,64 V24" stroke="var(--starlight-dim)" stroke-width="1.4" fill="none"/>
+      <path d="M230,64 Q240,90 230,116" fill="none" stroke="var(--starlight)" stroke-width="2.4"/>
+      <line x1="165" y1="83" x2="178" y2="97" stroke="var(--starlight)" stroke-width="3" stroke-linecap="round"/>
+      <path d="M163,27 Q171,32 179,27 Q171,37 163,27 Z" fill="var(--starlight)" opacity="0.9" stroke="var(--starlight-dim)" stroke-width="0.6"/>
+      <line x1="8" y1="73" x2="231" y2="73" stroke="var(--gold)" stroke-width="1"/>
+      <line x1="8" y1="107" x2="231" y2="107" stroke="var(--gold)" stroke-width="1"/>
+      <line x1="231" y1="73" x2="168" y2="86" stroke="var(--gold)" stroke-width="1"/>
+      <line x1="231" y1="107" x2="175" y2="93" stroke="var(--gold)" stroke-width="1"/>
+      <line x1="168" y1="86" x2="179" y2="32" stroke="var(--gold)" stroke-width="1"/>
+      <line x1="175" y1="93" x2="163" y2="32" stroke="var(--gold)" stroke-width="1"/>
+      <circle cx="171" cy="72" r="2" fill="var(--gold)"/>
+      <line x1="179" y1="32" x2="171" y2="14" stroke="var(--gold)" stroke-width="1"/>
+      <line x1="163" y1="32" x2="171" y2="14" stroke="var(--gold)" stroke-width="1"/>
+      <path d="M162,14 Q171,6 180,14 Q171,22 162,14 Z" fill="none" stroke="var(--starlight)" stroke-width="1.1"/>
+      <circle cx="171" cy="14" r="2.2" fill="var(--starlight)"/>
+      <text x="60" y="132" fill="var(--starlight-dim)" font-size="8.5" font-family="monospace" text-anchor="middle">OPEN TUBE</text>
+      <text x="230" y="132" fill="var(--starlight-dim)" font-size="9" font-family="monospace" text-anchor="middle">PRIMARY MIRROR</text>
+      <text x="188" y="114" fill="var(--starlight-dim)" font-size="8" font-family="monospace" text-anchor="middle">SECONDARY</text>
+      <text x="203" y="30" fill="var(--starlight-dim)" font-size="8.5" font-family="monospace">EYEPIECE</text></svg>`,
     desc:"Light travels down an open tube to a curved primary mirror at the back, which reflects it forward to a small flat secondary mirror angled at 45°, kicking the focus out through the side of the tube.",
     good:"Deep-sky objects — galaxies, nebulae, star clusters. Best aperture-per-rupee of any design.",
     watch:"Mirrors drift out of alignment (collimation) and need periodic adjustment. Open tube means more cooldown time and dust exposure.",
@@ -2453,19 +2560,30 @@ const SCOPES = {
   },
   catadioptric: {
     title:'Catadioptric (SCT)',
-    svg:`<svg viewBox="0 0 300 180"><rect x="40" y="72" width="200" height="36" fill="none" stroke="var(--starlight-dim)" stroke-width="1.4"/>
-      <line x1="46" y1="72" x2="46" y2="108" stroke="var(--teal)" stroke-width="3"/>
-      <path d="M228 72 Q238 90 228 108" fill="none" stroke="var(--gold)" stroke-width="2.4"/>
-      <circle cx="46" cy="90" r="4" fill="var(--teal)"/>
-      <line x1="46" y1="90" x2="233" y2="90" stroke="var(--gold)" stroke-width="1"/>
-      <line x1="233" y1="90" x2="46" y2="87" stroke="var(--gold)" stroke-width="1"/>
-      <line x1="46" y1="87" x2="200" y2="90" stroke="var(--gold)" stroke-width="1" stroke-dasharray="2 3"/>
-      <rect x="196" y="83" width="10" height="14" fill="none" stroke="var(--starlight-dim)" stroke-width="1"/>
-      <line x1="206" y1="90" x2="255" y2="90" stroke="var(--gold)" stroke-width="1" stroke-dasharray="2 3"/>
-      <rect x="255" y="83" width="12" height="14" fill="none" stroke="var(--starlight-dim)" stroke-width="1.2"/>
-      <text x="34" y="130" fill="var(--teal)" font-size="9" font-family="monospace">CORRECTOR</text>
-      <text x="185" y="130" fill="var(--starlight-dim)" font-size="9" font-family="monospace">PRIMARY MIRROR</text>
-      <text x="235" y="60" fill="var(--starlight-dim)" font-size="9" font-family="monospace">EYEPIECE</text></svg>`,
+    svg:`<svg viewBox="0 0 300 180">
+      <path d="M40,64 H232 M40,116 H232" stroke="var(--starlight-dim)" stroke-width="1.4" fill="none"/>
+      <path d="M232,64 L232,82 M232,116 L232,98" stroke="var(--starlight-dim)" stroke-width="1.4" fill="none"/>
+      <path d="M232,82 H270 M232,98 H270" stroke="var(--starlight-dim)" stroke-width="1.4" fill="none"/>
+      <path d="M48,66 Q51,90 48,114" fill="none" stroke="var(--teal)" stroke-width="2.2"/>
+      <path d="M52,84 Q59,90 52,96" fill="none" stroke="var(--teal)" stroke-width="2.6" stroke-linecap="round"/>
+      <path d="M228,64 Q237,78 231,86" fill="none" stroke="var(--starlight)" stroke-width="2.4"/>
+      <path d="M231,94 Q237,102 228,116" fill="none" stroke="var(--starlight)" stroke-width="2.4"/>
+      <path d="M252,84 Q255,90 252,96 Q249,90 252,84 Z" fill="var(--starlight)" opacity="0.9" stroke="var(--starlight-dim)" stroke-width="0.6"/>
+      <line x1="10" y1="73" x2="226" y2="73" stroke="var(--gold)" stroke-width="1"/>
+      <line x1="10" y1="107" x2="226" y2="107" stroke="var(--gold)" stroke-width="1"/>
+      <line x1="226" y1="73" x2="57" y2="84" stroke="var(--gold)" stroke-width="1"/>
+      <line x1="226" y1="107" x2="57" y2="96" stroke="var(--gold)" stroke-width="1"/>
+      <line x1="57" y1="84" x2="252" y2="93" stroke="var(--gold)" stroke-width="1"/>
+      <line x1="57" y1="96" x2="252" y2="87" stroke="var(--gold)" stroke-width="1"/>
+      <circle cx="187" cy="90" r="1.8" fill="var(--gold)"/>
+      <line x1="252" y1="93" x2="285" y2="90" stroke="var(--gold)" stroke-width="1"/>
+      <line x1="252" y1="87" x2="285" y2="90" stroke="var(--gold)" stroke-width="1"/>
+      <path d="M279,90 Q285,84 291,90 Q285,96 279,90 Z" fill="none" stroke="var(--starlight)" stroke-width="1.1"/>
+      <circle cx="285" cy="90" r="1.9" fill="var(--starlight)"/>
+      <text x="48" y="132" fill="var(--teal)" font-size="8.5" font-family="monospace" text-anchor="middle">CORRECTOR</text>
+      <text x="52" y="55" fill="var(--teal)" font-size="8" font-family="monospace" text-anchor="middle">SECONDARY</text>
+      <text x="200" y="132" fill="var(--starlight-dim)" font-size="9" font-family="monospace" text-anchor="middle">PRIMARY MIRROR</text>
+      <text x="251" y="132" fill="var(--starlight-dim)" font-size="8.5" font-family="monospace" text-anchor="middle">EYEPIECE</text></svg>`,
     desc:"A thin corrector lens at the front pairs with a curved primary and a small secondary mirror on the back of that corrector. Light folds back on itself twice, packing a long focal length into a short, portable tube.",
     good:"A do-everything scope — planets, deep-sky, and astrophotography without a huge tube.",
     watch:"Costs more per inch of aperture than a Newtonian; longer to cool to ambient temperature.",
@@ -2509,9 +2627,13 @@ const GLOSSARY = [
   {t:'Focal Length (f)', f:'f = D × focal ratio', d:'The distance light travels inside the scope before it converges to a sharp point. Longer focal lengths mean more magnification for a given eyepiece.'},
   {t:'Focal Ratio (f/#)', f:'f/# = focal length ÷ D', d:'"Fast" scopes (low f/#, like f/4) show wide, bright fields — good for astrophotography. "Slow" scopes (high f/#, like f/10) give more magnification per eyepiece — good for planets.'},
   {t:'Magnification', f:'M = scope f ÷ eyepiece f', d:"How many times larger an object appears. Swapping to a shorter focal-length eyepiece increases magnification — but only up to what your aperture can resolve sharply."},
+  {t:'Maximum Useful Magnification', f:'≈ 2 × D(mm)  (or 50 × D in inches)', d:"The ceiling past which you're just enlarging a blur, not seeing more detail — 'empty magnification.' A 114mm scope tops out around 228×; cranking a cheap eyepiece past that only makes the image bigger and mushier, never sharper."},
+  {t:'Minimum Useful Magnification', f:'≈ D(mm) ÷ 7', d:"The floor below which your eye can't use all the light the scope is collecting. Go lower than this and the exit pupil exceeds ~7mm — the widest a young, dark-adapted eye can open — so the extra light spills around your pupil and is wasted."},
+  {t:'Exit Pupil', f:'D(mm) ÷ magnification', d:"The width of the light beam leaving the eyepiece, headed into your eye. Oversized (>7mm) wastes light your pupil can't accept; undersized (<0.5mm) spreads what little light there is so thin the image turns dim and soft. The sweet spot sits between the two."},
   {t:'Resolving Power', f:'116 ÷ D(mm) = arcsec', d:"The Dawes limit — the smallest angular separation between two points the scope can distinguish as separate. Smaller number = sharper detail on close double stars or planetary features."},
   {t:'Limiting Magnitude', f:'≈2.7 + 5×log₁₀(D in mm)', d:'The faintest star (by apparent magnitude) the scope can theoretically detect under dark skies. Every extra magnitude is a star roughly 2.5× fainter.'},
   {t:'True Field of View', f:'TFOV = AFOV ÷ magnification', d:"How much sky you actually see through the eyepiece, in degrees or arcminutes. Higher magnification always narrows the field — there's a real trade-off between zoom and context."},
+  {t:'True Field of View (from hardware)', f:'TFOV ≈ (field stop ÷ scope f) × 57.3°', d:"The same TFOV, derived a second way — straight from the eyepiece's physical field stop diameter rather than from magnification. This is the real, physics-based ceiling on how much sky an eyepiece can frame, independent of any apparent-field spec a manufacturer prints on the box."},
 ];
 document.getElementById('glossaryGrid').innerHTML = GLOSSARY.map(g=>`
   <div class="glossary-card">
