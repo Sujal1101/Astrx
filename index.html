@@ -673,14 +673,10 @@ body.modal-open{overflow:hidden;}
 
 .bh-vignette{
   position:fixed; inset:0; z-index:9990; pointer-events:none;
-  background:radial-gradient(circle at 50% 50%, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 30%, rgba(2,3,7,0.97) 100%);
-  opacity:0; transform:scale(1.4);
-  transition:opacity .35s ease, transform 1.1s cubic-bezier(.7,0,.3,1);
+  opacity:0; transition:opacity .4s ease;
 }
-.bh-vignette.bh-active{
-  opacity:1; transform:scale(0.7);
-  transition:opacity .15s ease, transform 1.3s cubic-bezier(.2,.9,.3,1);
-}
+.bh-vignette.bh-active{ opacity:1; }
+.bh-vignette canvas{ position:absolute; inset:0; width:100%; height:100%; }
 
 .egg-overlay{
   position:fixed; inset:0; z-index:9995; background:rgba(2,3,7,0.96);
@@ -701,6 +697,196 @@ body.modal-open{overflow:hidden;}
 }
 .egg-dot-text{color:var(--starlight); font-size:1rem; line-height:1.75; font-family:var(--font-serif, inherit);}
 .egg-dot-sub{color:var(--starlight-dim); font-family:var(--font-mono); font-size:0.72rem; margin-top:1.6rem; letter-spacing:0.02em;}
+
+/* =============================================================
+   SKY ID — the identification game (Heavens section)
+============================================================= */
+.skyid-launch{
+  margin-top:1.3rem; flex-direction:column; align-items:flex-start; gap:0.2em; text-align:left;
+}
+.skyid-launch span{ display:block; font-size:0.7rem; font-weight:400; color:var(--void); opacity:0.65; letter-spacing:0.01em; }
+.skyid-launch:hover span{ color:var(--void); }
+
+.skyid-overlay{
+  position:fixed; inset:0; z-index:9998; background:radial-gradient(ellipse at 50% 20%, #0d1220 0%, var(--void) 70%);
+  display:flex; align-items:center; justify-content:center; padding:2rem;
+  opacity:0; pointer-events:none; transition:opacity .35s ease;
+}
+.skyid-overlay.show{ opacity:1; pointer-events:auto; }
+.skyid-close{ position:fixed; top:1.4rem; right:1.6rem; z-index:2; }
+.skyid-quit-confirm{
+  position:fixed; inset:0; z-index:30; display:none; align-items:center; justify-content:center;
+  background:rgba(5,7,13,0.72);
+}
+.skyid-quit-confirm.show{ display:flex; }
+.skyid-quit-box{
+  background:var(--void-soft); border:1px solid var(--panel-border); border-radius:var(--radius);
+  padding:1.8rem 2.2rem; text-align:center; max-width:320px; animation:skyidFadeUp .25s ease;
+}
+.skyid-quit-box p{ margin:0 0 1.3rem; color:var(--starlight); line-height:1.5; }
+.skyid-quit-actions{ display:flex; gap:0.7rem; justify-content:center; flex-wrap:wrap; }
+.skyid-mute{
+  position:fixed; top:1.4rem; right:4.4rem; z-index:2; background:transparent; border:1px solid var(--panel-border);
+  color:var(--starlight-dim); width:2.2rem; height:2.2rem; border-radius:50%; cursor:pointer; font-size:0.95rem;
+  transition:color .2s ease, border-color .2s ease;
+}
+.skyid-mute:hover{ border-color:var(--gold-dim); color:var(--gold); }
+.skyid-mute.muted{ opacity:0.5; }
+
+.skyid-screen{ display:none; width:100%; max-width:640px; text-align:center; }
+.skyid-screen.active{ display:block; animation:skyidFadeUp .4s ease; }
+@keyframes skyidFadeUp{ from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
+
+.skyid-start h2, .skyid-levelend h2, .skyid-final h2{
+  font-family:var(--font-display); font-size:clamp(1.7rem,4vw,2.4rem); color:var(--starlight); margin:0.3em 0 0.7em;
+}
+.skyid-intro{ color:var(--starlight-dim); line-height:1.7; max-width:52ch; margin:0 auto 1.8rem; }
+.skyid-best{ font-family:var(--font-mono); font-size:0.78rem; color:var(--gold); margin-bottom:1.6rem; min-height:1.2em; }
+
+/* ---- start screen level-path preview ---- */
+.skyid-path{ display:flex; align-items:center; justify-content:center; gap:0.5rem; margin:0 auto 2rem; max-width:420px; }
+.skyid-path-node{ display:flex; flex-direction:column; align-items:center; gap:0.4em; flex:1; }
+.skyid-path-icon{
+  width:2.4rem; height:2.4rem; border-radius:50%; border:1px solid var(--panel-border); background:var(--void-softer);
+  display:flex; align-items:center; justify-content:center; font-size:1.1rem; color:var(--gold);
+}
+.skyid-path-label{ font-family:var(--font-mono); font-size:0.62rem; text-transform:uppercase; letter-spacing:0.04em; color:var(--starlight-dim); }
+.skyid-path-line{ height:1px; background:var(--panel-border); flex:0.6; margin-bottom:1.6em; }
+
+/* ---- round HUD ---- */
+.skyid-hud{ display:flex; justify-content:space-between; align-items:flex-end; gap:1rem; margin-bottom:1.4rem; text-align:left; }
+.skyid-level-tag{ font-family:var(--font-mono); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--starlight-dim); }
+.skyid-progress{ display:flex; gap:5px; margin-top:0.5rem; flex-wrap:wrap; max-width:280px; }
+.skyid-progress span{
+  width:9px; height:9px; border-radius:50%; background:var(--void-softer); border:1px solid var(--panel-border);
+  transition:background .25s ease, border-color .25s ease, transform .25s ease;
+}
+.skyid-progress span.done{ background:var(--gold); border-color:var(--gold); }
+.skyid-progress span.current{ border-color:var(--starlight); transform:scale(1.3); }
+.skyid-hud-right{ text-align:right; display:flex; flex-direction:column; gap:0.3em; }
+.skyid-streak{
+  font-family:var(--font-mono); font-size:0.85rem; color:var(--gold); transition:font-size .2s ease, text-shadow .3s ease;
+}
+.skyid-streak.tier-2{ font-size:0.95rem; text-shadow:0 0 10px rgba(232,176,75,0.5); }
+.skyid-streak.tier-3{ font-size:1.05rem; color:#ffb84d; text-shadow:0 0 16px rgba(255,184,77,0.7); animation:skyidStreakPulse 1s ease infinite; }
+.skyid-streak.tier-4{ font-size:1.15rem; color:#ff8a3d; text-shadow:0 0 22px rgba(255,138,61,0.85); animation:skyidStreakPulse .6s ease infinite; }
+@keyframes skyidStreakPulse{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.08); } }
+.skyid-score{ font-family:var(--font-mono); font-size:1.05rem; color:var(--starlight); font-weight:600; }
+
+/* ---- the puzzle stage ---- */
+.skyid-stage{
+  position:relative; aspect-ratio:16/10; max-height:46vh; background:rgba(255,255,255,0.02);
+  border:1px solid var(--panel-border); border-radius:var(--radius); overflow:hidden;
+  display:flex; align-items:center; justify-content:center; margin-bottom:1.3rem;
+  transition:border-color .3s ease, box-shadow .3s ease;
+}
+.skyid-stage.pulse-correct{ border-color:var(--gold-dim); box-shadow:0 0 0 3px rgba(232,176,75,0.12), 0 0 30px rgba(232,176,75,0.15); }
+.skyid-stage.pulse-wrong{ border-color:rgba(255,106,106,0.5); box-shadow:0 0 0 3px rgba(255,106,106,0.1); }
+.skyid-const-svg{ width:88%; height:88%; }
+.skyid-const-svg .star-dot{ }
+.skyid-const-svg line{ stroke:rgba(232,176,75,0.55); stroke-width:0.35; }
+.skyid-photo{ position:absolute; inset:0; background:var(--void-softer) center/cover no-repeat; }
+.skyid-photo .dso-skel{ position:absolute; inset:0; background:linear-gradient(100deg, var(--void-soft) 30%, var(--void-softer) 50%, var(--void-soft) 70%); background-size:200% 100%; animation:shimmer 1.6s infinite; }
+body.night-vision .skyid-photo{ filter:grayscale(1) sepia(1) saturate(4) hue-rotate(-50deg) brightness(0.65); }
+
+.skyid-feedback{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-display); font-size:clamp(1.4rem,4vw,2.1rem); font-weight:700;
+  opacity:0; pointer-events:none; z-index:3;
+}
+.skyid-feedback.correct{ color:var(--gold); animation:skyidPop .8s ease forwards; }
+.skyid-feedback.wrong{ color:#ff6a6a; animation:skyidShakeFlash .5s ease forwards; }
+@keyframes skyidPop{
+  0%{opacity:0; transform:scale(0.7);}
+  25%{opacity:1; transform:scale(1.08);}
+  70%{opacity:1; transform:scale(1);}
+  100%{opacity:0; transform:scale(1.05);}
+}
+@keyframes skyidShakeFlash{
+  0%{opacity:1; transform:translateX(0);}
+  20%{transform:translateX(-10px);} 40%{transform:translateX(10px);}
+  60%{transform:translateX(-6px);} 80%{transform:translateX(6px);}
+  100%{opacity:0; transform:translateX(0);}
+}
+.skyid-stage.shake{ animation:skyidStageShake .4s ease; }
+@keyframes skyidStageShake{
+  0%,100%{ transform:translateX(0); } 25%{ transform:translateX(-6px); }
+  75%{ transform:translateX(6px); }
+}
+
+/* ---- particle burst on correct answer (and a bigger version for level/game complete) ---- */
+.skyid-particle{
+  position:absolute; width:4px; height:4px; border-radius:50%; pointer-events:none; z-index:4;
+  animation:skyidBurst 0.9s cubic-bezier(.15,.6,.4,1) forwards;
+}
+.skyid-particle.big{ width:6px; height:6px; animation-duration:1.4s; }
+@keyframes skyidBurst{
+  0%{ transform:translate(0,0) scale(1); opacity:1; }
+  100%{ transform:translate(var(--dx), var(--dy)) scale(0.2); opacity:0; }
+}
+
+.skyid-points-float{
+  position:absolute; font-family:var(--font-mono); font-weight:700; font-size:1.1rem; color:var(--gold);
+  z-index:5; pointer-events:none; animation:skyidFloat 1s ease forwards;
+}
+@keyframes skyidFloat{
+  0%{ opacity:0; transform:translateY(0); }
+  15%{ opacity:1; }
+  100%{ opacity:0; transform:translateY(-38px); }
+}
+
+/* ---- answer input + autocomplete ---- */
+.skyid-answer{ display:flex; gap:0.7rem; }
+.skyid-input-wrap{ position:relative; flex:1; }
+.skyid-input-wrap input{
+  width:100%; background:var(--void-softer); border:1px solid var(--panel-border); color:var(--starlight);
+  font-family:var(--font-body); font-size:0.95rem; padding:0.75em 1em; border-radius:var(--radius);
+  transition:border-color .2s ease;
+}
+.skyid-input-wrap input:focus{ outline:none; border-color:var(--gold-dim); }
+.skyid-suggestions{
+  position:absolute; top:calc(100% + 6px); left:0; right:0; background:var(--void-soft);
+  border:1px solid var(--panel-border); border-radius:var(--radius); overflow:hidden; z-index:6;
+  text-align:left; display:none; box-shadow:0 10px 30px rgba(0,0,0,0.4);
+}
+.skyid-suggestions.show{ display:block; }
+.skyid-suggestions div{
+  padding:0.6em 1em; font-size:0.88rem; color:var(--starlight-dim); cursor:pointer; transition:background .15s ease, color .15s ease;
+}
+.skyid-suggestions div:hover, .skyid-suggestions div.hl{ background:rgba(232,176,75,0.1); color:var(--gold); }
+.skyid-hint{ margin-top:0.9rem; font-family:var(--font-mono); font-size:0.8rem; color:var(--starlight-dim); min-height:1.3em; }
+.skyid-hint .reveal{ color:var(--gold); letter-spacing:0.08em; }
+
+/* ---- level-complete / final ---- */
+.skyid-stats{ display:flex; justify-content:center; gap:2.2rem; margin:1.6rem 0 2rem; flex-wrap:wrap; }
+.skyid-stats > div{ text-align:center; }
+.skyid-stats .n{ display:block; font-family:var(--font-mono); font-size:1.6rem; color:var(--gold); font-weight:700; }
+.skyid-stats .k{ display:block; font-size:0.72rem; color:var(--starlight-dim); text-transform:uppercase; letter-spacing:0.06em; margin-top:0.3em; }
+.skyid-stars{ font-size:1.6rem; letter-spacing:0.2em; margin-bottom:0.6rem; }
+
+.skyid-rank-badge{
+  font-size:2.6rem; margin-bottom:0.2em; filter:drop-shadow(0 0 18px rgba(232,176,75,0.5));
+  animation:skyidBadgePop .6s cubic-bezier(.2,.8,.3,1.3) both;
+}
+@keyframes skyidBadgePop{ from{ opacity:0; transform:scale(0.4) rotate(-10deg); } to{ opacity:1; transform:scale(1) rotate(0); } }
+
+.skyid-badges{ display:flex; flex-wrap:wrap; justify-content:center; gap:0.6rem; margin:0 0 1.8rem; }
+.skyid-badge{
+  display:flex; align-items:center; gap:0.5em; padding:0.5em 0.9em; border:1px solid var(--panel-border);
+  border-radius:20px; background:var(--void-softer); font-size:0.78rem; color:var(--starlight-dim);
+  animation:skyidFadeUp .4s ease both;
+}
+.skyid-badge .ic{ font-size:1rem; }
+.skyid-badge.earned{ border-color:var(--gold-dim); color:var(--gold); }
+.skyid-final-actions{ display:flex; gap:0.8rem; justify-content:center; flex-wrap:wrap; }
+
+@media (max-width:640px){
+  .skyid-stage{ max-height:34vh; }
+  .skyid-answer{ flex-direction:column; }
+  .skyid-stats{ gap:1.4rem; }
+  .skyid-path-label{ font-size:0.56rem; }
+  .skyid-mute{ right:4rem; }
+}
 
 .lb-comment-form{display:flex; gap:0.7rem; padding:0 1.3rem 1.2rem; flex-shrink:0;}
 .lb-comment-form input{
@@ -857,7 +1043,13 @@ html.intro-pending footer.site-footer{opacity:0;}
     h = canvas.height = window.innerHeight;
     cx = w/2; cy = h/2;
   }
-  window.addEventListener('resize', resize);
+  var resizeT = null;
+  window.addEventListener('resize', function(){
+    // mobile fires resize very often (URL bar show/hide while scrolling) —
+    // debounce so it can't thrash canvas reallocation mid-animation
+    clearTimeout(resizeT);
+    resizeT = setTimeout(resize, 120);
+  });
   resize();
 
   // same starlight palette as the site's ambient starfield, plus a gold streak here and there
@@ -867,11 +1059,17 @@ html.intro-pending footer.site-footer{opacity:0;}
       angle: Math.random()*Math.PI*2,
       radius: Math.random()*Math.max(w,h)*0.06,
       speed: 0.4 + Math.random()*0.6,
-      color: COLORS[Math.random()<0.82 ? Math.floor(Math.random()*3) : 3]
+      colorIdx: Math.random()<0.82 ? Math.floor(Math.random()*3) : 3
     };
   }
-  var COUNT = Math.min(300, Math.floor((w*h)/4000)) || 120;
+  // smaller/mobile screens get noticeably fewer streaks — fewer draw-call
+  // buckets to fill and a lighter per-frame math load where it matters most
+  var isSmall = Math.min(w,h) < 600;
+  var divisor = isSmall ? 7000 : 4000;
+  var cap = isSmall ? 130 : 300;
+  var COUNT = Math.min(cap, Math.floor((w*h)/divisor)) || 90;
   for(var i=0;i<COUNT;i++){ streaks.push(makeStreak()); }
+  var buckets = [[],[],[],[]];
 
   var ACCEL = 1600, PEAK = 800, DECEL = 1000;
   var start = performance.now();
@@ -885,14 +1083,24 @@ html.intro-pending footer.site-footer{opacity:0;}
     return 0;
   }
 
+  var frameN = 0, lastGrad = null, lastGlowR = -1;
   function frame(now){
     var elapsed = now - start;
     var wf = warpFactorAt(elapsed);
     var maxR = Math.hypot(w,h)/2 + 40;
+    frameN++;
 
     // a translucent fill (rather than a full clear) leaves soft motion trails
     ctx.fillStyle = 'rgba(5,7,13,' + (0.3 + (1-wf)*0.22) + ')';
     ctx.fillRect(0,0,w,h);
+
+    // lineWidth and alpha only depend on wf (shared by every streak this
+    // frame), not on any per-streak value — computing them once here instead
+    // of inside the loop, and batching strokes by color, cuts this from up to
+    // 300 individual draw calls down to at most 4 per frame
+    ctx.lineWidth = 0.6 + wf*1.6;
+    var alpha = Math.min(1, 0.22 + wf*0.78);
+    buckets[0].length = 0; buckets[1].length = 0; buckets[2].length = 0; buckets[3].length = 0;
 
     for(var i=0;i<streaks.length;i++){
       var s = streaks[i];
@@ -905,20 +1113,32 @@ html.intro-pending footer.site-footer{opacity:0;}
         prevR = s.radius;
         s.angle = Math.random()*Math.PI*2;
       }
-      var x1 = cx + dx*prevR, y1 = cy + dy*prevR;
-      var x2 = cx + dx*s.radius, y2 = cy + dy*s.radius;
-      var alpha = Math.min(1, 0.22 + wf*0.78);
-      ctx.strokeStyle = 'rgba('+s.color+','+alpha+')';
-      ctx.lineWidth = 0.6 + wf*1.6;
-      ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+      var b = buckets[s.colorIdx];
+      b.push(cx+dx*prevR, cy+dy*prevR, cx+dx*s.radius, cy+dy*s.radius);
+    }
+    for(var c=0;c<4;c++){
+      var pts = buckets[c];
+      if(!pts.length) continue;
+      ctx.strokeStyle = 'rgba('+COLORS[c]+','+alpha+')';
+      ctx.beginPath();
+      for(var j=0;j<pts.length;j+=4){
+        ctx.moveTo(pts[j],pts[j+1]);
+        ctx.lineTo(pts[j+2],pts[j+3]);
+      }
+      ctx.stroke();
     }
 
-    // central glow that builds with speed, like a tunnel opening up
+    // central glow that builds with speed, like a tunnel opening up.
+    // Rebuilding a gradient is one of the pricier canvas calls, so only do it
+    // every other frame — at animation speed the one-frame staleness is invisible.
     var glowR = 40 + wf*170;
-    var grad = ctx.createRadialGradient(cx,cy,0,cx,cy,glowR);
-    grad.addColorStop(0, 'rgba(232,176,75,'+(0.2*wf)+')');
-    grad.addColorStop(1, 'rgba(232,176,75,0)');
-    ctx.fillStyle = grad;
+    if(frameN%2===0 || !lastGrad || Math.abs(glowR-lastGlowR)>6){
+      lastGrad = ctx.createRadialGradient(cx,cy,0,cx,cy,glowR);
+      lastGrad.addColorStop(0, 'rgba(232,176,75,'+(0.2*wf)+')');
+      lastGrad.addColorStop(1, 'rgba(232,176,75,0)');
+      lastGlowR = glowR;
+    }
+    ctx.fillStyle = lastGrad;
     ctx.beginPath(); ctx.arc(cx,cy,glowR,0,Math.PI*2); ctx.fill();
 
     if(!finished){ raf = requestAnimationFrame(frame); }
@@ -1115,6 +1335,7 @@ html.intro-pending footer.site-footer{opacity:0;}
         <div class="eyebrow">Heavens</div>
         <h2>The sky, object by object</h2>
         <p>Constellations, galaxies, and nebulae — click through real catalog data and real NASA imagery for each.</p>
+        <button class="btn solid skyid-launch" id="skyidLaunch">🎮 Play: Sky ID <span>Identify all 40, three levels, no multiple choice</span></button>
       </div>
       <span class="pb-credit"></span>
       </div>
@@ -1252,6 +1473,87 @@ html.intro-pending footer.site-footer{opacity:0;}
       <div id="galleryGrid" class="gallery-grid"><div class="gallery-loading">Loading the feed…</div></div>
     </div>
   </main>
+
+<div class="skyid-overlay" id="skyidOverlay">
+  <button class="egg-close skyid-close" id="skyidClose" aria-label="Close game">✕</button>
+  <button class="skyid-mute" id="skyidMute" aria-label="Toggle sound" title="Toggle sound">🔊</button>
+
+  <div class="skyid-quit-confirm" id="skyidQuitConfirm">
+    <div class="skyid-quit-box">
+      <p>Quit now and lose this run's progress?</p>
+      <div class="skyid-quit-actions">
+        <button class="btn solid" id="skyidQuitCancel">Keep playing</button>
+        <button class="btn" id="skyidQuitConfirmBtn">Quit anyway</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- START SCREEN -->
+  <div class="skyid-screen skyid-start" id="skyidStart">
+    <div class="eyebrow">Three levels. No multiple choice.</div>
+    <h2>Sky ID</h2>
+    <p class="skyid-intro">You'll see a real star pattern or a real NASA image, with the name hidden. Type what it is. Get every item in a level right and the next one unlocks — constellations, then galaxies, then nebulae. 40 objects total.</p>
+    <div class="skyid-path" aria-hidden="true">
+      <div class="skyid-path-node"><span class="skyid-path-icon">✦</span><span class="skyid-path-label">Constellations</span></div>
+      <div class="skyid-path-line"></div>
+      <div class="skyid-path-node"><span class="skyid-path-icon">◈</span><span class="skyid-path-label">Galaxies</span></div>
+      <div class="skyid-path-line"></div>
+      <div class="skyid-path-node"><span class="skyid-path-icon">✺</span><span class="skyid-path-label">Nebulae</span></div>
+    </div>
+    <div class="skyid-best" id="skyidBest"></div>
+    <button class="btn solid" id="skyidStartBtn">Start with Constellations →</button>
+  </div>
+
+  <!-- ROUND SCREEN -->
+  <div class="skyid-screen skyid-round" id="skyidRound">
+    <div class="skyid-hud">
+      <div class="skyid-hud-left">
+        <span class="skyid-level-tag" id="skyidLevelTag">Level 1 — Constellations</span>
+        <div class="skyid-progress" id="skyidProgress"></div>
+      </div>
+      <div class="skyid-hud-right">
+        <span class="skyid-streak" id="skyidStreak">🔥 0</span>
+        <span class="skyid-score" id="skyidScore">0 pts</span>
+      </div>
+    </div>
+
+    <div class="skyid-stage" id="skyidStage">
+      <svg class="skyid-const-svg" id="skyidConstSvg" viewBox="0 0 100 100" style="display:none;"></svg>
+      <div class="skyid-photo" id="skyidPhoto" style="display:none;"></div>
+      <div class="skyid-feedback" id="skyidFeedback"></div>
+    </div>
+
+    <form class="skyid-answer" id="skyidForm" autocomplete="off">
+      <div class="skyid-input-wrap">
+        <input type="text" id="skyidInput" placeholder="Type its name…" autocomplete="off" spellcheck="false">
+        <div class="skyid-suggestions" id="skyidSuggestions"></div>
+      </div>
+      <button type="submit" class="btn solid">Guess</button>
+    </form>
+    <div class="skyid-hint" id="skyidHint"></div>
+  </div>
+
+  <!-- LEVEL COMPLETE SCREEN -->
+  <div class="skyid-screen skyid-levelend" id="skyidLevelEnd">
+    <div class="eyebrow" id="skyidLevelEndTag">Level 1 clear</div>
+    <h2 id="skyidLevelEndTitle">Constellations mastered.</h2>
+    <div class="skyid-stats" id="skyidLevelEndStats"></div>
+    <button class="btn solid" id="skyidLevelEndBtn">Continue →</button>
+  </div>
+
+  <!-- FINAL SCREEN -->
+  <div class="skyid-screen skyid-final" id="skyidFinal">
+    <div class="eyebrow">All 40 identified</div>
+    <div class="skyid-rank-badge" id="skyidRankBadge">🏅</div>
+    <h2 id="skyidRankTitle">—</h2>
+    <div class="skyid-stats" id="skyidFinalStats"></div>
+    <div class="skyid-badges" id="skyidBadges"></div>
+    <div class="skyid-final-actions">
+      <button class="btn" id="skyidShareBtn">Share result ↗</button>
+      <button class="btn solid" id="skyidReplayBtn">Play again</button>
+    </div>
+  </div>
+</div>
 
 <footer class="site-footer">
   <div class="footer-grid">
@@ -1661,16 +1963,94 @@ document.querySelectorAll('.modal-overlay').forEach(el=>{
 
   function triggerBlackHoleVignette(){
     let v = document.getElementById('bhVignette');
+    let canvas, ctx;
     if(!v){
       v = document.createElement('div');
       v.id = 'bhVignette';
       v.className = 'bh-vignette';
+      canvas = document.createElement('canvas');
+      v.appendChild(canvas);
       document.body.appendChild(v);
+    } else {
+      canvas = v.querySelector('canvas');
     }
+    ctx = canvas.getContext('2d');
+    const w = canvas.width = window.innerWidth;
+    const h = canvas.height = window.innerHeight;
+    const cx = w/2, cy = h/2;
+
+    // Matter spiraling inward, accelerating as it nears the center — same
+    // warm/cool starlight palette as the ambient starfield, so it reads as
+    // "this page's own stars falling in," not an unrelated overlay.
+    const COLORS = ['245,243,236','220,230,255','255,243,218','232,176,75','255,140,90'];
+    const n = Math.min(220, Math.floor((w*h)/6500)) || 90;
+    const particles = Array.from({length:n}, ()=>{
+      const angle = Math.random()*Math.PI*2;
+      const radius = 60 + Math.random()*Math.max(w,h)*0.55;
+      return {
+        angle, radius, startRadius:radius,
+        spin: (0.004 + Math.random()*0.01) * (Math.random()<0.5?-1:1),
+        col: COLORS[Math.floor(Math.random()*COLORS.length)],
+        seed: Math.random()
+      };
+    });
+
     v.classList.remove('bh-active'); void v.offsetWidth;
     v.classList.add('bh-active');
     showEggToast('✦ You just fell past the event horizon. <span style="color:var(--starlight-dim)">(Don\u2019t worry — you\u2019re spaghettified, but fine.)</span>', 3600);
-    setTimeout(()=>v.classList.remove('bh-active'), 2200);
+
+    const DURATION = 2400; // ms, total animation length
+    const start = performance.now();
+    let raf;
+
+    function frame(now){
+      const t = Math.min(1, (now-start)/DURATION);
+      // event horizon grows fast then holds — ease-out
+      const horizonR = 90 * (1 - Math.pow(1-t, 3));
+      // whole scene dims as it happens, then the vignette clears at the very end
+      const dim = t < 0.85 ? Math.min(1, t/0.55) : (1-t)/0.15;
+
+      ctx.clearRect(0,0,w,h);
+      ctx.fillStyle = `rgba(2,3,7,${0.55*dim})`;
+      ctx.fillRect(0,0,w,h);
+
+      for(const p of particles){
+        p.angle += p.spin * (1 + (1 - p.radius/p.startRadius)*6);
+        p.radius = p.startRadius * (1 - t) + horizonR*0.3*t;
+        if(p.radius <= horizonR) continue; // swallowed
+        const x = cx + Math.cos(p.angle)*p.radius;
+        const y = cy + Math.sin(p.angle)*p.radius*0.72; // slight tilt, like a disk seen at an angle
+        const alpha = Math.min(1, 0.3 + (1 - p.radius/p.startRadius)*0.9) * dim;
+        const r = 0.6 + (1 - p.radius/(p.startRadius+1))*1.8;
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(${p.col},${alpha})`;
+        ctx.arc(x,y,r,0,Math.PI*2);
+        ctx.fill();
+      }
+
+      // photon ring — bright, thin, slightly brighter on one edge (Doppler beaming,
+      // same asymmetry the real M87* photo shows)
+      if(horizonR > 2){
+        const grad = ctx.createRadialGradient(cx,cy,horizonR*0.85,cx,cy,horizonR*1.35);
+        grad.addColorStop(0, `rgba(232,176,75,0)`);
+        grad.addColorStop(0.5, `rgba(232,176,75,${0.55*dim})`);
+        grad.addColorStop(1, `rgba(232,176,75,0)`);
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(cx,cy,horizonR*1.35,0,Math.PI*2);
+        ctx.fill();
+
+        // the event horizon itself: pure black, always on top
+        ctx.beginPath();
+        ctx.fillStyle = '#000';
+        ctx.arc(cx,cy,horizonR,0,Math.PI*2);
+        ctx.fill();
+      }
+
+      if(t < 1){ raf = requestAnimationFrame(frame); }
+      else { ctx.clearRect(0,0,w,h); v.classList.remove('bh-active'); }
+    }
+    raf = requestAnimationFrame(frame);
   }
 
   /* ---- 3) Click the logo 7 times fast -> a small original reflection, not a photo ---- */
@@ -2366,9 +2746,7 @@ function renderDsoGrid(containerId, items){
   items.forEach((d,i)=>fetchDsoImage(`${containerId}-photo-${i}`, Array.isArray(d.wiki) ? d.wiki : [d.wiki]));
 }
 
-async function fetchDsoImage(elId, titles){
-  const el = document.getElementById(elId);
-  if(!el) return;
+async function getDsoImageUrl(titles){
   for(const title of titles){
     try{
       const url = `https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=pageimages&piprop=thumbnail&pithumbsize=500&titles=${encodeURIComponent(title)}`;
@@ -2381,19 +2759,27 @@ async function fetchDsoImage(elId, titles){
       if(!src) continue;
       await new Promise((resolve, reject)=>{
         const img = new Image();
-        img.onload = ()=>{
-          el.style.backgroundImage = `url("${src}")`;
-          const skel = el.querySelector('.dso-skel');
-          if(skel) skel.remove();
-          resolve();
-        };
+        img.onload = resolve;
         img.onerror = reject;
         img.src = src;
       });
-      return;
+      return src;
     }catch(err){ /* try next fallback title */ }
   }
-  console.warn('DSO image fetch failed for all titles:', titles);
+  return null;
+}
+
+async function fetchDsoImage(elId, titles){
+  const el = document.getElementById(elId);
+  if(!el) return;
+  const src = await getDsoImageUrl(titles);
+  if(src && el){
+    el.style.backgroundImage = `url("${src}")`;
+    const skel = el.querySelector('.dso-skel');
+    if(skel) skel.remove();
+  } else {
+    console.warn('DSO image fetch failed for all titles:', titles);
+  }
 }
 
 /* =============================================================
@@ -2670,7 +3056,7 @@ function resizeSimCanvas(){
   const rect = canvas.parentElement.getBoundingClientRect();
   canvas.width = rect.width; canvas.height = rect.height;
 }
-window.addEventListener('resize', resizeSimCanvas);
+window.addEventListener('resize', ()=>{ resizeSimCanvas(); computeAndRender(); });
 resizeSimCanvas();
 
 function computeAndRender(){
@@ -3273,6 +3659,481 @@ document.getElementById('lightboxShareBtn').addEventListener('click', async ()=>
 });
 
 renderAuthUI();
+</script>
+<script>
+/* =============================================================
+   SKY ID — the identification game.
+   Level 1: all 16 constellations (from CONSTELLATIONS, reusing the
+   same projection math as the Heavens star maps, just without labels).
+   Level 2: all 12 galaxies. Level 3: all 11 nebulae (both reusing
+   the same Wikipedia image lookup as the DSO grid). Every item in a
+   level must be answered correctly — first try or after hints —
+   before the next level unlocks.
+============================================================= */
+(function(){
+  const LEVELS = [
+    { key:'constellations', label:'Constellations', tag:'Level 1 — Constellations' },
+    { key:'galaxies',       label:'Galaxies',        tag:'Level 2 — Galaxies' },
+    { key:'nebulae',        label:'Nebulae',         tag:'Level 3 — Nebulae' },
+  ];
+
+  /* ---- tiny synthesized sound effects — no audio files needed ---- */
+  let actx = null;
+  let muted = localStorage.getItem('skyid-muted') === '1';
+  function tone(freq, start, dur, type='sine', gain=0.09){
+    if(muted) return;
+    try{
+      actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+      const osc = actx.createOscillator(), g = actx.createGain();
+      osc.type = type; osc.frequency.value = freq;
+      g.gain.value = 0;
+      osc.connect(g); g.connect(actx.destination);
+      const t = actx.currentTime + start;
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(gain, t + 0.015);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      osc.start(t); osc.stop(t + dur + 0.02);
+    }catch(err){ /* Web Audio unavailable/blocked — sound is a nicety, not required */ }
+  }
+  const sfx = {
+    correct: ()=>{ tone(660,0,.12); tone(880,.08,.18); },
+    wrong: ()=>{ tone(140,0,.16,'square',.06); },
+    levelUp: ()=>{ tone(523,0,.12); tone(659,.1,.12); tone(784,.2,.28); },
+    finalFanfare: ()=>{ tone(523,0,.14); tone(659,.12,.14); tone(784,.24,.14); tone(1047,.36,.4); },
+  };
+
+  function normalize(s){
+    return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');
+  }
+  // Small Levenshtein distance check so a near-miss typo ("cassiopia") still
+  // counts — this is a recall game, not a spelling test.
+  function editDistance(a,b){
+    if(Math.abs(a.length-b.length) > 3) return 99;
+    const dp = [];
+    for(let i=0;i<=a.length;i++){ dp.push([i]); }
+    for(let j=1;j<=b.length;j++){ dp[0][j] = j; }
+    for(let i=1;i<=a.length;i++){
+      for(let j=1;j<=b.length;j++){
+        dp[i][j] = a[i-1]===b[j-1] ? dp[i-1][j-1] : 1+Math.min(dp[i-1][j-1],dp[i-1][j],dp[i][j-1]);
+      }
+    }
+    return dp[a.length][b.length];
+  }
+
+  function buildPool(){
+    const constPool = Object.entries(CONSTELLATIONS).map(([key,c])=>{
+      const parts = c.label.split(' — ');
+      const proper = parts[0], nick = parts[1];
+      return { type:'constellations', key, display:proper, accepted:[proper, nick].filter(Boolean) };
+    });
+    const galPool = GALAXIES.map(g=>({ type:'galaxies', display:g.name, accepted:[g.name, g.cat], data:g }));
+    const nebPool = NEBULAE.map(nb=>({ type:'nebulae', display:nb.name, accepted:[nb.name, nb.cat], data:nb }));
+    return { constellations:constPool, galaxies:galPool, nebulae:nebPool };
+  }
+
+  function shuffle(arr){
+    const a = arr.slice();
+    for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+    return a;
+  }
+
+  let pool, state;
+  function resetGame(){
+    pool = buildPool();
+    state = {
+      levelIdx:0, queue:[], idx:0, score:0, streak:0, maxStreak:0,
+      levelCorrectFirstTry:0, levelMisses:0, totalMisses:0,
+      gameStart:Date.now(), roundStart:Date.now(),
+      attemptsThisRound:0, currentItem:null, allNamesForLevel:[],
+      levelStars:[], firstTryTimes:[]
+    };
+    displayedScore = 0;
+  }
+
+  const overlay    = document.getElementById('skyidOverlay');
+  const launchBtn  = document.getElementById('skyidLaunch');
+  const closeBtn   = document.getElementById('skyidClose');
+  const muteBtn    = document.getElementById('skyidMute');
+  const quitConfirmEl = document.getElementById('skyidQuitConfirm');
+  const screens = {
+    start: document.getElementById('skyidStart'),
+    round: document.getElementById('skyidRound'),
+    levelend: document.getElementById('skyidLevelEnd'),
+    final: document.getElementById('skyidFinal')
+  };
+  const bestEl        = document.getElementById('skyidBest');
+  const startBtn       = document.getElementById('skyidStartBtn');
+  const levelTag       = document.getElementById('skyidLevelTag');
+  const progressEl     = document.getElementById('skyidProgress');
+  const streakEl       = document.getElementById('skyidStreak');
+  const scoreEl        = document.getElementById('skyidScore');
+  const stage          = document.getElementById('skyidStage');
+  const constSvg       = document.getElementById('skyidConstSvg');
+  const photoEl        = document.getElementById('skyidPhoto');
+  const feedbackEl     = document.getElementById('skyidFeedback');
+  const form           = document.getElementById('skyidForm');
+  const input          = document.getElementById('skyidInput');
+  const suggestionsEl  = document.getElementById('skyidSuggestions');
+  const hintEl         = document.getElementById('skyidHint');
+  const levelEndTag    = document.getElementById('skyidLevelEndTag');
+  const levelEndTitle  = document.getElementById('skyidLevelEndTitle');
+  const levelEndStats  = document.getElementById('skyidLevelEndStats');
+  const levelEndBtn    = document.getElementById('skyidLevelEndBtn');
+  const rankBadgeEl    = document.getElementById('skyidRankBadge');
+  const rankTitle      = document.getElementById('skyidRankTitle');
+  const finalStats     = document.getElementById('skyidFinalStats');
+  const badgesEl       = document.getElementById('skyidBadges');
+  const shareBtn       = document.getElementById('skyidShareBtn');
+  const replayBtn      = document.getElementById('skyidReplayBtn');
+  if(!overlay || !launchBtn) return; // markup missing — fail quietly rather than throw
+
+  function refreshMuteBtn(){
+    muteBtn.textContent = muted ? '🔇' : '🔊';
+    muteBtn.classList.toggle('muted', muted);
+  }
+  refreshMuteBtn();
+  muteBtn.addEventListener('click', ()=>{
+    muted = !muted;
+    localStorage.setItem('skyid-muted', muted ? '1' : '0');
+    refreshMuteBtn();
+  });
+
+  function showScreen(name){
+    Object.values(screens).forEach(s=>s.classList.remove('active'));
+    screens[name].classList.add('active');
+  }
+
+  function openGame(){
+    resetGame();
+    const best = localStorage.getItem('skyid-best');
+    bestEl.textContent = best ? `Best score so far: ${best} pts` : '';
+    showScreen('start');
+    overlay.classList.add('show');
+  }
+  function closeGame(){ overlay.classList.remove('show'); quitConfirmEl.classList.remove('show'); }
+  function requestClose(){
+    // no real progress yet (still on the start/final screen) — just close, nothing to lose
+    const midGame = screens.round.classList.contains('active') || screens.levelend.classList.contains('active');
+    if(!midGame){ closeGame(); return; }
+    quitConfirmEl.classList.add('show');
+  }
+  launchBtn.addEventListener('click', openGame);
+  closeBtn.addEventListener('click', requestClose);
+  document.getElementById('skyidQuitCancel').addEventListener('click', ()=> quitConfirmEl.classList.remove('show'));
+  document.getElementById('skyidQuitConfirmBtn').addEventListener('click', closeGame);
+  // Deliberately NOT closing on a background click: a full-screen game is an
+  // easy target for a stray/misjudged tap on mobile, and losing an active
+  // streak to an accidental tap is exactly the "exits unexpectedly" bug this
+  // fixes. Explicit close (✕) or Escape are the only ways out, and both now
+  // confirm first if a run is actually in progress.
+  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && overlay.classList.contains('show')) requestClose(); });
+
+  startBtn.addEventListener('click', startLevel);
+  levelEndBtn.addEventListener('click', ()=>{
+    state.levelIdx++;
+    if(state.levelIdx >= LEVELS.length){ endGame(); } else { startLevel(); }
+  });
+  replayBtn.addEventListener('click', openGame);
+
+  function startLevel(){
+    const lv = LEVELS[state.levelIdx];
+    state.queue = shuffle(pool[lv.key]);
+    state.idx = 0;
+    state.levelCorrectFirstTry = 0;
+    state.levelMisses = 0;
+    state.allNamesForLevel = state.queue.map(item=>item.display);
+    levelTag.textContent = lv.tag;
+    showScreen('round');
+    nextRound();
+  }
+
+  function renderProgress(){
+    progressEl.innerHTML = state.queue.map((_,i)=>{
+      const cls = i < state.idx ? 'done' : i === state.idx ? 'current' : '';
+      return `<span class="${cls}"></span>`;
+    }).join('');
+  }
+
+  function nextRound(){
+    if(state.idx >= state.queue.length){ finishLevel(); return; }
+    state.currentItem = state.queue[state.idx];
+    state.attemptsThisRound = 0;
+    state.roundStart = Date.now();
+    input.value = '';
+    hintEl.innerHTML = '';
+    suggestionsEl.classList.remove('show');
+    renderProgress();
+    renderStage(state.currentItem);
+    updateHud();
+    setTimeout(()=>input.focus(), 60);
+  }
+
+  let displayedScore = 0, scoreAnimId = null;
+  function animateScoreTo(target){
+    if(scoreAnimId) cancelAnimationFrame(scoreAnimId);
+    const from = displayedScore, start = performance.now(), dur = 500;
+    function step(now){
+      const t = Math.min(1, (now-start)/dur);
+      const eased = 1 - Math.pow(1-t, 3);
+      displayedScore = Math.round(from + (target-from)*eased);
+      scoreEl.textContent = `${displayedScore} pts`;
+      if(t < 1) scoreAnimId = requestAnimationFrame(step); else displayedScore = target;
+    }
+    scoreAnimId = requestAnimationFrame(step);
+  }
+
+  function updateHud(){
+    const tier = state.streak>=15?4 : state.streak>=8?3 : state.streak>=4?2 : 1;
+    streakEl.textContent = `🔥 ${state.streak}`;
+    streakEl.className = 'skyid-streak' + (tier>1 ? ` tier-${tier}` : '');
+    animateScoreTo(state.score);
+  }
+
+  function renderStage(item){
+    if(item.type === 'constellations'){
+      constSvg.style.display = 'block';
+      photoEl.style.display = 'none';
+      photoEl.style.backgroundImage = '';
+      const c = CONSTELLATIONS[item.key];
+      const projected = projectConstellation(c.stars);
+      let markup = '';
+      c.lines.forEach(([a,b])=>{
+        const s1=projected[a], s2=projected[b];
+        markup += `<line x1="${s1.x.toFixed(2)}" y1="${s1.y.toFixed(2)}" x2="${s2.x.toFixed(2)}" y2="${s2.y.toFixed(2)}"/>`;
+      });
+      projected.forEach(s=>{
+        const r = magSize(s.mag), col = specColor(s.spec);
+        markup += `<circle cx="${s.x.toFixed(2)}" cy="${s.y.toFixed(2)}" r="${r}" fill="${col}" style="filter:drop-shadow(0 0 ${r}px ${col})"/>`;
+      });
+      constSvg.innerHTML = markup;
+    } else {
+      constSvg.style.display = 'none';
+      photoEl.style.display = 'block';
+      photoEl.style.backgroundImage = '';
+      photoEl.innerHTML = '<div class="dso-skel"></div>';
+      const titles = Array.isArray(item.data.wiki) ? item.data.wiki : [item.data.wiki];
+      getDsoImageUrl(titles).then(src=>{
+        if(src && state.currentItem === item){
+          photoEl.style.backgroundImage = `url("${src}")`;
+          const skel = photoEl.querySelector('.dso-skel');
+          if(skel) skel.remove();
+        }
+      });
+    }
+  }
+
+  /* ---- autocomplete: suggests from the full pool of this level's names,
+     not just the correct one, so it aids recall without giving the answer away ---- */
+  let hlIdx = -1;
+  input.addEventListener('input', ()=>{
+    const q = normalize(input.value);
+    hlIdx = -1;
+    if(!q){ suggestionsEl.classList.remove('show'); return; }
+    const matches = state.allNamesForLevel.filter(name=>normalize(name).includes(q)).slice(0,6);
+    if(!matches.length){ suggestionsEl.classList.remove('show'); return; }
+    suggestionsEl.innerHTML = matches.map(m=>`<div data-name="${m.replace(/"/g,'&quot;')}">${m}</div>`).join('');
+    suggestionsEl.classList.add('show');
+  });
+  suggestionsEl.addEventListener('mousedown', (e)=>{
+    const d = e.target.closest('div[data-name]');
+    if(d){ input.value = d.dataset.name; suggestionsEl.classList.remove('show'); form.requestSubmit(); }
+  });
+  input.addEventListener('keydown', (e)=>{
+    const items = [...suggestionsEl.querySelectorAll('div')];
+    if(!items.length) return;
+    if(e.key==='ArrowDown'){ e.preventDefault(); hlIdx=Math.min(hlIdx+1,items.length-1); updateHl(items); }
+    else if(e.key==='ArrowUp'){ e.preventDefault(); hlIdx=Math.max(hlIdx-1,0); updateHl(items); }
+    else if(e.key==='Enter' && hlIdx>=0){ e.preventDefault(); input.value = items[hlIdx].dataset.name; suggestionsEl.classList.remove('show'); form.requestSubmit(); }
+  });
+  function updateHl(items){ items.forEach((it,i)=>it.classList.toggle('hl', i===hlIdx)); }
+  document.addEventListener('click', (e)=>{ if(!e.target.closest('.skyid-input-wrap')) suggestionsEl.classList.remove('show'); });
+
+  form.addEventListener('submit', (e)=>{
+    e.preventDefault();
+    suggestionsEl.classList.remove('show');
+    const guess = normalize(input.value);
+    if(!guess) return;
+    const item = state.currentItem;
+    const acceptedNorm = item.accepted.map(normalize);
+    const correct = acceptedNorm.some(a => a===guess || editDistance(a,guess) <= (a.length>7?2:1));
+    state.attemptsThisRound++;
+    if(correct) handleCorrect(item); else handleWrong(item);
+  });
+
+  function handleCorrect(item){
+    const elapsed = (Date.now()-state.roundStart)/1000;
+    const firstTry = state.attemptsThisRound === 1;
+    let pts;
+    if(firstTry){
+      state.levelCorrectFirstTry++;
+      state.streak++;
+      state.maxStreak = Math.max(state.maxStreak, state.streak);
+      state.firstTryTimes.push(elapsed);
+      const speedBonus = Math.max(0, Math.round(50 * Math.max(0, 1 - elapsed/12)));
+      const streakMult = 1 + Math.min(state.streak*0.1, 1); // caps at 2x
+      pts = Math.round((100+speedBonus) * streakMult);
+    } else {
+      state.streak = 0;
+      pts = Math.max(10, 40 - (state.attemptsThisRound-1)*15);
+    }
+    state.score += pts;
+    updateHud();
+    showFeedback('correct', `✓ ${item.display}`);
+    stage.classList.remove('pulse-wrong'); stage.classList.add('pulse-correct');
+    setTimeout(()=>stage.classList.remove('pulse-correct'), 500);
+    sfx.correct();
+    spawnParticles();
+    spawnPointsFloat(`+${pts}`);
+    setTimeout(()=>{ state.idx++; nextRound(); }, 900);
+  }
+
+  function handleWrong(item){
+    state.streak = 0;
+    state.levelMisses++;
+    state.totalMisses++;
+    updateHud();
+    showFeedback('wrong', '✕');
+    stage.classList.remove('pulse-correct'); stage.classList.add('pulse-wrong');
+    setTimeout(()=>stage.classList.remove('pulse-wrong'), 500);
+    sfx.wrong();
+    stage.classList.remove('shake'); void stage.offsetWidth; stage.classList.add('shake');
+    input.value='';
+    if(state.attemptsThisRound === 1){
+      hintEl.innerHTML = `First letter: <span class="reveal">${item.display[0].toUpperCase()}</span>`;
+    } else if(state.attemptsThisRound === 2){
+      let count = 0;
+      const revealed = item.display.replace(/[a-zA-Z]/g, c => (count++ % 2 === 0) ? c : '_');
+      hintEl.innerHTML = `Getting there: <span class="reveal">${revealed}</span>`;
+    } else if(state.attemptsThisRound >= 3){
+      hintEl.innerHTML = `It's <span class="reveal">${item.display}</span> — type it once to lock it in and move on.`;
+    }
+  }
+
+  function showFeedback(kind, text){
+    feedbackEl.textContent = text;
+    feedbackEl.className = 'skyid-feedback';
+    void feedbackEl.offsetWidth;
+    feedbackEl.classList.add(kind);
+  }
+
+  function spawnParticles(big){
+    const container = big ? overlay : stage;
+    const rect = container.getBoundingClientRect();
+    const n = big ? 40 : 16;
+    const originY = big ? rect.height*0.38 : rect.height/2;
+    for(let i=0;i<n;i++){
+      const p = document.createElement('div');
+      p.className = 'skyid-particle' + (big ? ' big' : '');
+      const angle = (Math.PI*2*i)/n + Math.random()*0.3;
+      const dist = (big ? 120 : 60) + Math.random()*(big ? 160 : 70);
+      p.style.setProperty('--dx', `${Math.cos(angle)*dist}px`);
+      p.style.setProperty('--dy', `${Math.sin(angle)*dist}px`);
+      p.style.position = 'fixed';
+      p.style.left = (rect.left + rect.width/2) + 'px';
+      p.style.top = (rect.top + originY) + 'px';
+      p.style.background = Math.random()<0.5 ? 'var(--gold)' : '#dce6ff';
+      container.appendChild(p);
+      setTimeout(()=>p.remove(), big ? 1450 : 950);
+    }
+  }
+
+  function spawnPointsFloat(text){
+    const rect = stage.getBoundingClientRect();
+    const f = document.createElement('div');
+    f.className = 'skyid-points-float';
+    f.textContent = text;
+    f.style.left = (rect.width/2 - 20) + 'px';
+    f.style.top = (rect.height/2 - 10) + 'px';
+    stage.appendChild(f);
+    setTimeout(()=>f.remove(), 1050);
+  }
+
+  function finishLevel(){
+    const lv = LEVELS[state.levelIdx];
+    const total = state.queue.length;
+    const accuracy = Math.round((state.levelCorrectFirstTry/total)*100);
+    const stars = accuracy>=90 ? 3 : accuracy>=65 ? 2 : 1;
+    state.levelStars.push(stars);
+    levelEndTag.textContent = `Level ${state.levelIdx+1} clear`;
+    levelEndTitle.textContent = `${lv.label} mastered.`;
+    levelEndStats.innerHTML = `<div style="width:100%;"><span class="skyid-stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</span></div>` +
+      [
+        {n:`${state.levelCorrectFirstTry}/${total}`, k:'First-try correct'},
+        {n:`${accuracy}%`, k:'Accuracy'},
+        {n:state.score, k:'Score so far'},
+      ].map(s=>`<div><span class="n">${s.n}</span><span class="k">${s.k}</span></div>`).join('');
+    const isLast = state.levelIdx === LEVELS.length-1;
+    levelEndBtn.textContent = isLast ? 'See final results →' : `Continue to ${LEVELS[state.levelIdx+1].label} →`;
+    showScreen('levelend');
+    sfx.levelUp();
+    spawnParticles(true);
+  }
+
+  const BADGES = [
+    { id:'sharpshooter', ic:'🎯', label:'Sharpshooter', hint:'Every one of the 40 correct on the first try', test:s=>s.totalMisses===0 },
+    { id:'speed', ic:'⚡', label:'Speed Demon', hint:'Averaged under 6s per first-try answer',
+      test:s=>s.firstTryTimes.length>0 && (s.firstTryTimes.reduce((a,b)=>a+b,0)/s.firstTryTimes.length)<6 },
+    { id:'streak', ic:'🔥', label:'Unstoppable', hint:'Hit a streak of 15 or more', test:s=>s.maxStreak>=15 },
+    { id:'triple', ic:'⭐', label:'Triple Crown', hint:'3 stars on every level', test:s=>s.levelStars.length===3 && s.levelStars.every(n=>n===3) },
+    { id:'grit', ic:'🧠', label:'Kept Going', hint:'Pushed through misses and still finished all 40', test:s=>s.totalMisses>0 },
+  ];
+
+  function rankFor(score){
+    if(score >= 3800) return { title:'ISRO-Track Observer', icon:'🚀' };
+    if(score >= 3000) return { title:'Master Observer', icon:'🏆' };
+    if(score >= 2000) return { title:'Seasoned Skywatcher', icon:'🔭' };
+    if(score >= 1000) return { title:'Astrx Cadet', icon:'🌠' };
+    return { title:'Novice Stargazer', icon:'🌙' };
+  }
+
+  function endGame(){
+    const totalTime = Math.round((Date.now()-state.gameStart)/1000);
+    const mins = Math.floor(totalTime/60), secs = totalTime%60;
+    const best = +(localStorage.getItem('skyid-best')||0);
+    const isNewBest = state.score > best;
+    if(isNewBest){ localStorage.setItem('skyid-best', state.score); }
+    const rank = rankFor(state.score);
+    rankBadgeEl.textContent = rank.icon;
+    rankTitle.textContent = rank.title;
+    finalStats.innerHTML = [
+      {n:state.score, k:'Final score'},
+      {n:`${mins}m ${secs}s`, k:'Total time'},
+      {n: isNewBest ? 'New best! ✦' : `${best} pts`, k: isNewBest ? 'Personal record' : 'Best score'},
+    ].map(s=>`<div><span class="n">${s.n}</span><span class="k">${s.k}</span></div>`).join('');
+
+    const earned = BADGES.map(b=>({...b, got:b.test(state)}));
+    badgesEl.innerHTML = earned.map(b=>
+      `<div class="skyid-badge${b.got?' earned':''}" title="${b.hint}"><span class="ic">${b.ic}</span>${b.label}</div>`
+    ).join('');
+
+    state._shareText = buildShareText(rank, earned);
+    showScreen('final');
+    sfx.finalFanfare();
+    spawnParticles(true);
+  }
+
+  function buildShareText(rank, earned){
+    const lvIcons = ['✦','◈','✺'];
+    const starsLines = state.levelStars.map((n,i)=>`${lvIcons[i]} ${'★'.repeat(n)}${'☆'.repeat(3-n)} ${LEVELS[i].label}`).join('\n');
+    const badgeLine = earned.filter(b=>b.got).map(b=>b.ic).join(' ') || '—';
+    return `🔭 Sky ID — Astrx Club\n${starsLines}\n\n${state.score} pts · ${rank.title}\nBadges: ${badgeLine}\n\nCan you beat it?`;
+  }
+
+  shareBtn.addEventListener('click', async ()=>{
+    const text = state._shareText || '';
+    if(navigator.share){
+      try{ await navigator.share({ text }); return; }catch(err){ /* user cancelled the share sheet — fall through to clipboard */ }
+    }
+    try{
+      await navigator.clipboard.writeText(text);
+      const old = shareBtn.textContent;
+      shareBtn.textContent = 'Copied ✓';
+      setTimeout(()=>{ shareBtn.textContent = old; }, 1600);
+    }catch(err){
+      shareBtn.textContent = "Couldn't copy — select text manually";
+    }
+  });
+})();
 </script>
 </body>
 </html>
