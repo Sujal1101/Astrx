@@ -114,8 +114,10 @@ header#topnav{
 }
 .sb-logo{
   font-family:var(--font-display); font-weight:700; font-size:1.1rem; display:flex; align-items:center;
-  gap:0.55rem; flex-shrink:0;
+  gap:0.55rem; flex-shrink:0; color:var(--starlight); text-decoration:none; cursor:pointer;
+  transition:opacity .2s ease;
 }
+.sb-logo:hover{ opacity:0.85; }
 .sb-logo svg{width:23px; height:23px; flex-shrink:0;}
 .sb-logo .sub{font-family:var(--font-mono); font-size:0.56rem; color:var(--starlight-dim); letter-spacing:0.1em; display:block; margin-top:1px;}
 
@@ -132,6 +134,35 @@ header#topnav{
 .nav-item.active{color:var(--gold); background:rgba(232,176,75,0.1); font-weight:600;}
 
 .nav-right{display:flex; align-items:center; gap:0.8rem; flex-shrink:0;}
+.nav-auth{ position:relative; display:flex; align-items:center; }
+.nav-auth-btn{
+  display:flex; align-items:center; gap:0.4em; background:transparent; border:1px solid var(--panel-border);
+  color:var(--starlight-dim); padding:0.5em 0.9em; border-radius:20px; font-size:0.68rem; font-family:var(--font-mono);
+  text-transform:uppercase; letter-spacing:0.03em; white-space:nowrap; transition:border-color .2s ease, color .2s ease;
+}
+.nav-auth-btn:hover{ border-color:var(--gold-dim); color:var(--gold); }
+.nav-user-toggle{
+  width:30px; height:30px; border-radius:50%; padding:0; border:1px solid var(--panel-border); overflow:hidden;
+  background:var(--void-softer); transition:border-color .2s ease;
+}
+.nav-user-toggle:hover{ border-color:var(--gold-dim); }
+.nav-user-toggle img{ width:100%; height:100%; object-fit:cover; display:block; }
+.nav-user-pop{
+  position:absolute; top:calc(100% + 10px); right:0; background:var(--void-soft); border:1px solid var(--panel-border);
+  border-radius:var(--radius); padding:0.9rem 1rem; min-width:170px; text-align:left; z-index:250;
+  opacity:0; transform:translateY(-6px); pointer-events:none; transition:opacity .15s ease, transform .15s ease;
+}
+.nav-user-pop.open{ opacity:1; transform:translateY(0); pointer-events:auto; }
+.nav-user-pop .name{ font-size:0.82rem; color:var(--starlight); margin-bottom:0.7rem; word-break:break-word; }
+.nav-user-pop button{
+  width:100%; background:transparent; border:1px solid var(--panel-border); color:var(--starlight-dim);
+  padding:0.5em 0.8em; border-radius:var(--radius); font-size:0.74rem; transition:border-color .2s ease, color .2s ease;
+}
+.nav-user-pop button:hover{ border-color:#ff6a6a; color:#ff6a6a; }
+@media(max-width:600px){
+  .nav-auth-btn span.label{ display:none; }
+  .nav-auth-btn{ padding:0.5em 0.7em; }
+}
 #nvToggle{
   display:flex; align-items:center; gap:0.5em; background:transparent; border:1px solid var(--panel-border);
   color:var(--starlight-dim); padding:0.5em 0.75em; border-radius:20px; font-size:0.66rem; font-family:var(--font-mono);
@@ -701,11 +732,33 @@ body.modal-open{overflow:hidden;}
 /* =============================================================
    SKY ID — the identification game (Heavens section)
 ============================================================= */
-.skyid-launch{
-  margin-top:1.3rem; flex-direction:column; align-items:flex-start; gap:0.2em; text-align:left;
+.skyid-cta{
+  display:flex; align-items:center; gap:1rem; margin-top:1.3rem; padding:1rem 1.3rem;
+  background:linear-gradient(135deg, rgba(232,176,75,0.12), rgba(232,176,75,0.03));
+  border:1px solid var(--gold-dim); border-radius:var(--radius); cursor:pointer;
+  text-align:left; width:100%; max-width:440px; position:relative; overflow:hidden;
+  transition:border-color .25s ease, transform .25s ease, background .25s ease;
 }
-.skyid-launch span{ display:block; font-size:0.7rem; font-weight:400; color:var(--void); opacity:0.65; letter-spacing:0.01em; }
-.skyid-launch:hover span{ color:var(--void); }
+.skyid-cta::before{
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(115deg, transparent 20%, rgba(255,255,255,0.07) 35%, transparent 50%);
+  transform:translateX(-120%); transition:transform .9s ease;
+}
+.skyid-cta:hover::before{ transform:translateX(120%); }
+.skyid-cta:hover{ border-color:var(--gold); transform:translateY(-2px); background:linear-gradient(135deg, rgba(232,176,75,0.18), rgba(232,176,75,0.05)); }
+.skyid-cta:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+.skyid-cta-icon{
+  flex-shrink:0; width:2.7rem; height:2.7rem; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  background:radial-gradient(circle, rgba(232,176,75,0.28), rgba(232,176,75,0.05)); color:var(--gold); font-size:1.2rem;
+  animation:skyidCtaPulse 2.6s ease-in-out infinite;
+}
+@keyframes skyidCtaPulse{ 0%,100%{box-shadow:0 0 0 0 rgba(232,176,75,0.25);} 50%{box-shadow:0 0 0 7px rgba(232,176,75,0);} }
+.skyid-cta-text{ flex:1; display:flex; flex-direction:column; gap:0.3em; min-width:0; }
+.skyid-cta-title{ font-family:var(--font-display); font-weight:700; font-size:1.05rem; color:var(--starlight); }
+.skyid-cta-sub{ font-family:var(--font-mono); font-size:0.68rem; color:var(--starlight-dim); letter-spacing:0.01em; }
+.skyid-cta-arrow{ color:var(--gold); font-size:1.2rem; transition:transform .25s ease; flex-shrink:0; }
+.skyid-cta:hover .skyid-cta-arrow{ transform:translateX(4px); }
+@media(max-width:480px){ .skyid-cta-sub{ font-size:0.62rem; } }
 
 .skyid-overlay{
   position:fixed; inset:0; z-index:9998; background:radial-gradient(ellipse at 50% 20%, #0d1220 0%, var(--void) 70%);
@@ -879,6 +932,24 @@ body.night-vision .skyid-photo{ filter:grayscale(1) sepia(1) saturate(4) hue-rot
 .skyid-badge .ic{ font-size:1rem; }
 .skyid-badge.earned{ border-color:var(--gold-dim); color:var(--gold); }
 .skyid-final-actions{ display:flex; gap:0.8rem; justify-content:center; flex-wrap:wrap; }
+
+.skyid-leaderboard{ margin-top:1.8rem; text-align:left; }
+.skyid-leaderboard:empty{ display:none; }
+.skyid-lb-title{
+  font-family:var(--font-mono); font-size:0.68rem; text-transform:uppercase; letter-spacing:0.06em;
+  color:var(--starlight-dim); margin-bottom:0.7rem; text-align:center;
+}
+.skyid-lb-list{ display:flex; flex-direction:column; gap:0.4rem; max-width:360px; margin:0 auto; }
+.skyid-lb-row{
+  display:flex; align-items:center; gap:0.7rem; padding:0.5em 0.8em; border:1px solid var(--panel-border);
+  border-radius:var(--radius); background:var(--void-softer);
+}
+.skyid-lb-row.me{ border-color:var(--gold-dim); background:rgba(232,176,75,0.07); }
+.skyid-lb-rank{ font-family:var(--font-mono); font-size:0.78rem; color:var(--starlight-dim); width:1.4em; flex-shrink:0; }
+.skyid-lb-row img{ width:22px; height:22px; border-radius:50%; flex-shrink:0; }
+.skyid-lb-name{ flex:1; font-size:0.82rem; color:var(--starlight); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.skyid-lb-score{ font-family:var(--font-mono); font-size:0.82rem; color:var(--gold); font-weight:600; flex-shrink:0; }
+.skyid-lb-empty{ font-size:0.8rem; color:var(--starlight-dim); text-align:center; }
 
 @media (max-width:640px){
   .skyid-stage{ max-height:34vh; }
@@ -1193,13 +1264,12 @@ html.intro-pending footer.site-footer{opacity:0;}
 <canvas id="starfield"></canvas>
 
 <header id="topnav">
-  <div class="sb-logo">
+  <a class="sb-logo" href="#home" data-target="home">
     <svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="1.6" fill="var(--gold)"/><circle cx="8" cy="12" r="1.3" fill="var(--starlight)"/><circle cx="30" cy="10" r="1.1" fill="var(--starlight)"/><circle cx="33" cy="26" r="1.6" fill="var(--gold)"/><circle cx="12" cy="31" r="1.1" fill="var(--starlight)"/><path d="M8 12 L20 20 L30 10 M20 20 L33 26 M20 20 L12 31" stroke="var(--gold-dim)" stroke-width="0.7"/></svg>
     <span>SKYPAGE<span class="sub">ASTRX CLUB</span></span>
-  </div>
+  </a>
 
   <nav class="sidebar-nav" id="sidebarNav">
-    <a class="nav-item" data-target="home">Home</a>
     <a class="nav-item" data-target="apod">Space Today</a>
     <a class="nav-item" data-target="events">Sky Events</a>
     <a class="nav-item" data-target="starmap">Heavens</a>
@@ -1208,6 +1278,7 @@ html.intro-pending footer.site-footer{opacity:0;}
   </nav>
 
   <div class="nav-right">
+    <div class="nav-auth" id="navAuth"></div>
     <button id="nvToggle"><span class="dot"></span> NIGHT VISION</button>
     <button id="burger">☰</button>
   </div>
@@ -1335,7 +1406,14 @@ html.intro-pending footer.site-footer{opacity:0;}
         <div class="eyebrow">Heavens</div>
         <h2>The sky, object by object</h2>
         <p>Constellations, galaxies, and nebulae — click through real catalog data and real NASA imagery for each.</p>
-        <button class="btn solid skyid-launch" id="skyidLaunch">🎮 Play: Sky ID <span>Identify all 40, three levels, no multiple choice</span></button>
+        <button class="skyid-cta" id="skyidLaunch" type="button">
+          <span class="skyid-cta-icon">✦</span>
+          <span class="skyid-cta-text">
+            <span class="skyid-cta-title">Play: Sky ID</span>
+            <span class="skyid-cta-sub">Identify all 40 · three levels · no multiple choice</span>
+          </span>
+          <span class="skyid-cta-arrow">→</span>
+        </button>
       </div>
       <span class="pb-credit"></span>
       </div>
@@ -1488,6 +1566,18 @@ html.intro-pending footer.site-footer{opacity:0;}
     </div>
   </div>
 
+  <!-- AUTH GATE (shown instead of the start screen when signed out) -->
+  <div class="skyid-screen skyid-authgate" id="skyidAuthGate">
+    <div class="eyebrow">Sign in required</div>
+    <h2>Sign in to play Sky ID</h2>
+    <p class="skyid-intro">Scores save to your account and rank on the club leaderboard. Sign in with Google to jump in — it's the same account as the Member Gallery.</p>
+    <button class="auth-btn" id="skyidSignInBtn">
+      <svg width="16" height="16" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.91c1.7-1.57 2.69-3.87 2.69-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.91-2.26c-.81.54-1.85.86-3.05.86-2.35 0-4.34-1.58-5.05-3.71H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.95 10.71a5.4 5.4 0 0 1 0-3.42V4.96H.96a9 9 0 0 0 0 8.08l2.99-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.51.46 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .96 4.96l2.99 2.33C4.66 5.16 6.65 3.58 9 3.58z"/></svg>
+      Sign in with Google
+    </button>
+    <div class="skyid-leaderboard" id="skyidLbGate"></div>
+  </div>
+
   <!-- START SCREEN -->
   <div class="skyid-screen skyid-start" id="skyidStart">
     <div class="eyebrow">Three levels. No multiple choice.</div>
@@ -1502,6 +1592,7 @@ html.intro-pending footer.site-footer{opacity:0;}
     </div>
     <div class="skyid-best" id="skyidBest"></div>
     <button class="btn solid" id="skyidStartBtn">Start with Constellations →</button>
+    <div class="skyid-leaderboard" id="skyidLbStart"></div>
   </div>
 
   <!-- ROUND SCREEN -->
@@ -1548,6 +1639,7 @@ html.intro-pending footer.site-footer{opacity:0;}
     <h2 id="skyidRankTitle">—</h2>
     <div class="skyid-stats" id="skyidFinalStats"></div>
     <div class="skyid-badges" id="skyidBadges"></div>
+    <div class="skyid-leaderboard" id="skyidLbFinal"></div>
     <div class="skyid-final-actions">
       <button class="btn" id="skyidShareBtn">Share result ↗</button>
       <button class="btn solid" id="skyidReplayBtn">Play again</button>
@@ -2116,8 +2208,6 @@ const QUOTES = [
   {q:"For small creatures such as we, the vastness is bearable only through love.", a:"Carl Sagan"},
   {q:"Astronomy is a humbling and character-building experience.", a:"Carl Sagan"},
   {q:"Look up at the stars and not down at your feet.", a:"Stephen Hawking"},
-  {q:"The universe is under no obligation to make sense to you.", a:"Neil deGrasse Tyson"},
-  {q:"Not only do we live among the stars, the stars live within us.", a:"Neil deGrasse Tyson"},
   {q:"Equipped with his five senses, man explores the universe and calls the adventure Science.", a:"Edwin Hubble"},
   {q:"We have peered into a new world and have seen that it is more mysterious and more complex than we had imagined.", a:"Vera Rubin"},
   {q:"The Sun, with all the planets revolving around it, can still ripen a bunch of grapes as if it had nothing else in the universe to do.", a:"Galileo Galilei"},
@@ -2513,7 +2603,12 @@ const CONSTELLATIONS = {
       {n:'Zeta Tauri', ra:5.628, dec:21.14, dist:440, mag:3.00, spec:'B4III'},
       {n:'Elnath', ra:5.438, dec:28.61, dist:134, mag:1.65, spec:'B7III'},
     ],
-    lines:[[0,1],[0,2],[1,4],[2,3]]
+    // V-shaped face (Aldebaran-Ain, Aldebaran-Theta²) plus both horns radiating
+    // from Aldebaran directly. Previously the horns ran Ain→Elnath and
+    // Theta²→Zeta, which — because Ain and Theta² sit so close together —
+    // geometrically crossed into an X right at the face. Hubbing both horns
+    // through Aldebaran keeps the real star positions but removes the crossing.
+    lines:[[0,1],[0,2],[0,4],[0,3]]
   },
   crux: {
     label:'Crux — The Southern Cross',
@@ -2535,7 +2630,7 @@ const CONSTELLATIONS = {
       {n:'Mebsuta', ra:6.732, dec:25.13, dist:840, mag:3.06, spec:'G8Ib'},
       {n:'Mekbuda', ra:7.068, dec:20.57, dist:1200, mag:3.79, spec:'G0Ib'},
     ],
-    lines:[[0,4],[4,2],[1,5],[5,3],[0,1]]
+    lines:[[0,4],[4,2],[1,3],[3,5],[0,1]]
   },
   lyra: {
     label:'Lyra — The Lyre',
@@ -3193,8 +3288,8 @@ import {
   getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 import {
-  getFirestore, collection, addDoc, doc, deleteDoc, updateDoc,
-  onSnapshot, query, orderBy, serverTimestamp, arrayUnion, arrayRemove
+  getFirestore, collection, addDoc, doc, deleteDoc, updateDoc, setDoc,
+  onSnapshot, query, orderBy, limit, serverTimestamp, arrayUnion, arrayRemove
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -3231,10 +3326,18 @@ let sharedPostAttempted = false;
 
 /* Note: comments live in a `posts/{postId}/comments` subcollection — if you
    lock down Firestore Security Rules, remember to allow signed-in users to
-   read that subcollection and create (not edit/delete others') docs in it. */
+   read that subcollection and create (not edit/delete others') docs in it.
+
+   Sky ID's leaderboard uses a new `skyid_scores` collection, one document per
+   user (doc ID = their uid). Rules needed: allow public read on
+   skyid_scores/**, and allow write only where request.auth.uid matches the
+   document ID being written (so someone can only ever update their own
+   score, not anyone else's). */
 
 const galleryGrid = document.getElementById('galleryGrid');
 const galleryAuthEl = document.getElementById('galleryAuth');
+const navAuthEl = document.getElementById('navAuth');
+const authChangeListeners = [];
 
 /* ---------- auth ---------- */
 function renderAuthUI(){
@@ -3249,6 +3352,21 @@ function renderAuthUI(){
     `;
     document.getElementById('signOutBtn').addEventListener('click', ()=>signOut(auth));
     document.getElementById('openUploadBtn').addEventListener('click', openUploadModal);
+
+    navAuthEl.innerHTML = `
+      <button class="nav-user-toggle" id="navUserToggle" aria-label="Account">
+        <img src="${currentUser.photoURL || ''}" alt="">
+      </button>
+      <div class="nav-user-pop" id="navUserPop">
+        <div class="name">${escapeHtml(currentUser.displayName || 'Member')}</div>
+        <button id="navSignOutBtn">Sign out</button>
+      </div>
+    `;
+    const toggle = document.getElementById('navUserToggle');
+    const pop = document.getElementById('navUserPop');
+    toggle.addEventListener('click', (e)=>{ e.stopPropagation(); pop.classList.toggle('open'); });
+    document.addEventListener('click', ()=> pop.classList.remove('open'));
+    document.getElementById('navSignOutBtn').addEventListener('click', ()=>signOut(auth));
   }else{
     galleryAuthEl.innerHTML = `
       <button class="auth-btn" id="signInBtn">
@@ -3262,6 +3380,14 @@ function renderAuthUI(){
         alert("Sign-in didn't go through — try again.");
       });
     });
+
+    navAuthEl.innerHTML = `<button class="nav-auth-btn" id="navSignInBtn"><span class="label">Sign in</span></button>`;
+    document.getElementById('navSignInBtn').addEventListener('click', ()=>{
+      signInWithPopup(auth, googleProvider).catch(err=>{
+        console.error('Sign-in failed', err);
+        alert("Sign-in didn't go through — try again.");
+      });
+    });
   }
 }
 
@@ -3270,7 +3396,55 @@ onAuthStateChanged(auth, (user)=>{
   renderAuthUI();
   renderGallery(); // re-render so ascend button states reflect the current user
   updateCommentFormState();
+  authChangeListeners.forEach(fn=>{ try{ fn(user); }catch(err){ console.error(err); } });
 });
+
+/* ---------- small site-wide API other <script> blocks (Sky ID) use for
+   account state and the shared leaderboard, since this module script is the
+   only place with access to the Firebase imports ---------- */
+async function submitSkyidScore(payload){
+  if(!currentUser) return { ok:false, reason:'signed-out' };
+  try{
+    await setDoc(doc(db, 'skyid_scores', currentUser.uid), {
+      uid: currentUser.uid,
+      name: currentUser.displayName || 'Member',
+      photo: currentUser.photoURL || '',
+      score: payload.score,
+      stars: payload.stars,
+      badges: payload.badges,
+      updatedAt: serverTimestamp()
+    }, { merge:true });
+    return { ok:true };
+  }catch(err){
+    console.error('Could not submit Sky ID score — check Firestore rules for the skyid_scores collection', err);
+    return { ok:false, reason:'write-failed', error:err };
+  }
+}
+function subscribeSkyidLeaderboard(cb, max){
+  try{
+    const q = query(collection(db, 'skyid_scores'), orderBy('score','desc'), limit(max||10));
+    return onSnapshot(q, snap=>{
+      cb(snap.docs.map(d=>d.data()));
+    }, err=>{
+      console.error('Leaderboard subscription failed — check Firestore rules for the skyid_scores collection', err);
+      cb(null, err);
+    });
+  }catch(err){
+    console.error(err);
+    cb(null, err);
+    return ()=>{};
+  }
+}
+window.astrxAuth = {
+  getUser: ()=>currentUser,
+  signIn: ()=>signInWithPopup(auth, googleProvider),
+  signOut: ()=>signOut(auth),
+  onChange: (fn)=>{ authChangeListeners.push(fn); if(currentUser!==undefined) fn(currentUser); }
+};
+window.astrxScores = {
+  submit: submitSkyidScore,
+  subscribeLeaderboard: subscribeSkyidLeaderboard
+};
 
 /* ---------- load posts (live) ---------- */
 function subscribeToPosts(){
@@ -3756,6 +3930,7 @@ renderAuthUI();
   const muteBtn    = document.getElementById('skyidMute');
   const quitConfirmEl = document.getElementById('skyidQuitConfirm');
   const screens = {
+    authgate: document.getElementById('skyidAuthGate'),
     start: document.getElementById('skyidStart'),
     round: document.getElementById('skyidRound'),
     levelend: document.getElementById('skyidLevelEnd'),
@@ -3785,6 +3960,10 @@ renderAuthUI();
   const badgesEl       = document.getElementById('skyidBadges');
   const shareBtn       = document.getElementById('skyidShareBtn');
   const replayBtn      = document.getElementById('skyidReplayBtn');
+  const signInBtn      = document.getElementById('skyidSignInBtn');
+  const lbGate         = document.getElementById('skyidLbGate');
+  const lbStart        = document.getElementById('skyidLbStart');
+  const lbFinal        = document.getElementById('skyidLbFinal');
   if(!overlay || !launchBtn) return; // markup missing — fail quietly rather than throw
 
   function refreshMuteBtn(){
@@ -3803,11 +3982,73 @@ renderAuthUI();
     screens[name].classList.add('active');
   }
 
+  /* ---------- account integration ----------
+     window.astrxAuth / window.astrxScores are set up by the Firebase <script
+     type="module"> elsewhere on the page. Module scripts execute deferred
+     (after the document parses), so by the time THIS classic script's
+     top-level code runs, that API may not exist yet — hence the small
+     retry loop below instead of assuming it's already there. */
+  let currentAuthUser = null;
+  let integrationReady = false;
+  let integrationTries = 0;
+
+  function renderLeaderboardInto(container, scores){
+    if(!container) return;
+    if(scores === null){
+      container.innerHTML = `<div class="skyid-lb-title">Leaderboard</div><div class="skyid-lb-empty">Leaderboard isn't reachable right now.</div>`;
+      return;
+    }
+    if(!scores.length){
+      container.innerHTML = `<div class="skyid-lb-title">Leaderboard</div><div class="skyid-lb-empty">No scores yet — be the first.</div>`;
+      return;
+    }
+    const me = currentAuthUser && currentAuthUser.uid;
+    const esc = s=>String(s||'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    container.innerHTML = `<div class="skyid-lb-title">Top Observers</div><div class="skyid-lb-list">` +
+      scores.map((s,i)=>`
+        <div class="skyid-lb-row${s.uid===me?' me':''}">
+          <span class="skyid-lb-rank">${i+1}</span>
+          <img src="${esc(s.photo)}" alt="">
+          <span class="skyid-lb-name">${esc(s.name||'Member')}</span>
+          <span class="skyid-lb-score">${s.score}</span>
+        </div>`).join('') + `</div>`;
+  }
+  function renderAllLeaderboards(scores){
+    renderLeaderboardInto(lbGate, scores);
+    renderLeaderboardInto(lbStart, scores);
+    renderLeaderboardInto(lbFinal, scores);
+  }
+
+  function ensureIntegration(){
+    if(integrationReady) return;
+    if(!window.astrxAuth || !window.astrxScores){
+      integrationTries++;
+      if(integrationTries < 60){ setTimeout(ensureIntegration, 80); }
+      else{ renderAllLeaderboards(null); if(signInBtn){ signInBtn.textContent = "Couldn't reach sign-in — try reloading"; } }
+      return;
+    }
+    integrationReady = true;
+    window.astrxAuth.onChange((user)=>{
+      currentAuthUser = user;
+      // if they sign in while looking at the gate, move them straight into the game
+      if(overlay.classList.contains('show') && screens.authgate.classList.contains('active') && user){
+        showScreen('start');
+      }
+    });
+    window.astrxScores.subscribeLeaderboard((scores)=> renderAllLeaderboards(scores), 10);
+  }
+  ensureIntegration();
+  signInBtn.addEventListener('click', ()=>{
+    if(window.astrxAuth){ window.astrxAuth.signIn().catch(()=>{}); }
+  });
+
   function openGame(){
+    ensureIntegration();
     resetGame();
     const best = localStorage.getItem('skyid-best');
     bestEl.textContent = best ? `Best score so far: ${best} pts` : '';
-    showScreen('start');
+    const signedIn = window.astrxAuth && window.astrxAuth.getUser();
+    showScreen(signedIn ? 'start' : 'authgate');
     overlay.classList.add('show');
   }
   function closeGame(){ overlay.classList.remove('show'); quitConfirmEl.classList.remove('show'); }
@@ -4110,6 +4351,14 @@ renderAuthUI();
     showScreen('final');
     sfx.finalFanfare();
     spawnParticles(true);
+
+    if(window.astrxScores && window.astrxAuth && window.astrxAuth.getUser()){
+      window.astrxScores.submit({
+        score: state.score,
+        stars: state.levelStars,
+        badges: earned.filter(b=>b.got).map(b=>b.id)
+      });
+    }
   }
 
   function buildShareText(rank, earned){
