@@ -959,6 +959,220 @@ body.night-vision .skyid-photo{ filter:grayscale(1) sepia(1) saturate(4) hue-rot
   .skyid-mute{ right:4rem; }
 }
 
+/* =============================================================
+   DEEP SKY HUNT — the observing game (Sky Events section)
+   Real-time "spot it before it's gone": meteors, satellites,
+   variable stars, faint DSOs, and one rare unidentified object
+   spawn and move across a simulated sky. A blinking aircraft is
+   the one thing you should NOT tap — same tell real observers use
+   to separate a satellite from a plane.
+============================================================= */
+.game-cta-row{ display:flex; gap:1rem; flex-wrap:wrap; }
+.game-cta-row .skyid-cta, .game-cta-row .hunt-cta{ flex:1 1 260px; }
+
+.hunt-cta{
+  display:flex; align-items:center; gap:1rem; margin-top:1.3rem; padding:1rem 1.3rem;
+  background:linear-gradient(135deg, rgba(93,217,193,0.12), rgba(93,217,193,0.03));
+  border:1px solid #2e6e63; border-radius:var(--radius); cursor:pointer;
+  text-align:left; width:100%; max-width:440px; position:relative; overflow:hidden;
+  transition:border-color .25s ease, transform .25s ease, background .25s ease;
+}
+.hunt-cta::before{
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(115deg, transparent 20%, rgba(255,255,255,0.07) 35%, transparent 50%);
+  transform:translateX(-120%); transition:transform .9s ease;
+}
+.hunt-cta:hover::before{ transform:translateX(120%); }
+.hunt-cta:hover{ border-color:var(--teal); transform:translateY(-2px); background:linear-gradient(135deg, rgba(93,217,193,0.18), rgba(93,217,193,0.05)); }
+.hunt-cta:focus-visible{ outline:2px solid var(--teal); outline-offset:2px; }
+.hunt-cta-icon{
+  flex-shrink:0; width:2.7rem; height:2.7rem; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  background:radial-gradient(circle, rgba(93,217,193,0.28), rgba(93,217,193,0.05)); color:var(--teal); font-size:1.2rem;
+  animation:huntCtaPulse 2.6s ease-in-out infinite;
+}
+@keyframes huntCtaPulse{ 0%,100%{box-shadow:0 0 0 0 rgba(93,217,193,0.25);} 50%{box-shadow:0 0 0 7px rgba(93,217,193,0);} }
+.hunt-cta-text{ flex:1; display:flex; flex-direction:column; gap:0.3em; min-width:0; }
+.hunt-cta-title{ font-family:var(--font-display); font-weight:700; font-size:1.05rem; color:var(--starlight); }
+.hunt-cta-sub{ font-family:var(--font-mono); font-size:0.68rem; color:var(--starlight-dim); letter-spacing:0.01em; }
+.hunt-cta-arrow{ color:var(--teal); font-size:1.2rem; transition:transform .25s ease; flex-shrink:0; }
+.hunt-cta:hover .hunt-cta-arrow{ transform:translateX(4px); }
+@media(max-width:480px){ .hunt-cta-sub{ font-size:0.62rem; } }
+
+.hunt-overlay{
+  position:fixed; inset:0; z-index:9998; background:radial-gradient(ellipse at 50% 20%, #0a1414 0%, var(--void) 70%);
+  display:flex; align-items:center; justify-content:center; padding:2rem;
+  opacity:0; pointer-events:none; transition:opacity .35s ease;
+}
+.hunt-overlay.show{ opacity:1; pointer-events:auto; }
+.hunt-close{ position:fixed; top:1.4rem; right:1.6rem; z-index:32; }
+.hunt-quit-confirm{
+  position:fixed; inset:0; z-index:30; display:none; align-items:center; justify-content:center;
+  background:rgba(5,7,13,0.72);
+}
+.hunt-quit-confirm.show{ display:flex; }
+.hunt-quit-box{
+  background:var(--void-soft); border:1px solid var(--panel-border); border-radius:var(--radius);
+  padding:1.8rem 2.2rem; text-align:center; max-width:320px; animation:skyidFadeUp .25s ease;
+}
+.hunt-quit-box p{ margin:0 0 1.3rem; color:var(--starlight); line-height:1.5; }
+.hunt-quit-actions{ display:flex; gap:0.7rem; justify-content:center; flex-wrap:wrap; }
+.hunt-mute{
+  position:fixed; top:1.4rem; right:4.4rem; z-index:32; background:transparent; border:1px solid var(--panel-border);
+  color:var(--starlight-dim); width:2.2rem; height:2.2rem; border-radius:50%; cursor:pointer; font-size:0.95rem;
+  transition:color .2s ease, border-color .2s ease;
+}
+.hunt-mute:hover{ border-color:#2e6e63; color:var(--teal); }
+.hunt-mute.muted{ opacity:0.5; }
+
+.hunt-screen{ display:none; width:100%; max-width:680px; text-align:center; }
+.hunt-screen.active{ display:block; animation:skyidFadeUp .4s ease; }
+
+.hunt-start h2, .hunt-levelend h2, .hunt-final h2{
+  font-family:var(--font-display); font-size:clamp(1.7rem,4vw,2.4rem); color:var(--starlight); margin:0.3em 0 0.7em;
+}
+.hunt-intro{ color:var(--starlight-dim); line-height:1.7; max-width:56ch; margin:0 auto 1.6rem; }
+.hunt-best{ font-family:var(--font-mono); font-size:0.78rem; color:var(--teal); margin-bottom:1.2rem; min-height:1.2em; }
+
+/* ---- field guide chips on the start screen ---- */
+.hunt-legend{ display:flex; flex-wrap:wrap; gap:0.6rem; justify-content:center; margin:0 auto 1.8rem; max-width:560px; }
+.hunt-legend-card{
+  display:flex; align-items:center; gap:0.6em; padding:0.5em 0.85em; border:1px solid var(--panel-border);
+  border-radius:20px; background:var(--void-softer); font-size:0.78rem; color:var(--starlight-dim);
+}
+.hunt-legend-card .ic{ font-size:1rem; }
+.hunt-legend-card.good{ border-color:#2e6e63; color:var(--teal); }
+.hunt-legend-card.bad{ border-color:rgba(255,93,93,0.35); color:#ff8a8a; }
+
+/* ---- round HUD ---- */
+.hunt-hud{ display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; margin-bottom:1rem; text-align:left; }
+.hunt-hud-left{ flex:1; min-width:0; }
+.hunt-level-tag{ font-family:var(--font-mono); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--starlight-dim); display:block; margin-bottom:0.5rem; }
+.hunt-focus-bar{ width:100%; max-width:220px; height:5px; border-radius:3px; background:var(--void-softer); border:1px solid var(--panel-border); overflow:hidden; margin-bottom:0.4rem; }
+.hunt-focus-fill{ height:100%; width:100%; background:linear-gradient(90deg, var(--teal), #8fe8d4); transition:width .3s ease, background .3s ease; }
+.hunt-focus-fill.low{ background:linear-gradient(90deg, #ff8a3d, #ff5d5d); }
+.hunt-target-count{ font-family:var(--font-mono); font-size:0.72rem; color:var(--starlight-dim); }
+.hunt-hud-right{ text-align:right; display:flex; flex-direction:column; gap:0.3em; flex-shrink:0; }
+.hunt-timer{ font-family:var(--font-mono); font-size:0.95rem; color:var(--starlight); }
+.hunt-timer.low{ color:#ff6a6a; animation:skyidStreakPulse .6s ease infinite; }
+.hunt-streak{ font-family:var(--font-mono); font-size:0.85rem; color:var(--teal); transition:font-size .2s ease, text-shadow .3s ease; }
+.hunt-streak.tier-2{ font-size:0.95rem; text-shadow:0 0 10px rgba(93,217,193,0.5); }
+.hunt-streak.tier-3{ font-size:1.05rem; color:#8fe8d4; text-shadow:0 0 16px rgba(143,232,212,0.7); animation:skyidStreakPulse 1s ease infinite; }
+.hunt-streak.tier-4{ font-size:1.15rem; color:#b6ffef; text-shadow:0 0 22px rgba(182,255,239,0.85); animation:skyidStreakPulse .6s ease infinite; }
+.hunt-score{ font-family:var(--font-mono); font-size:1.05rem; color:var(--starlight); font-weight:600; }
+
+/* ---- the sky stage ---- */
+.hunt-stage{
+  position:relative; aspect-ratio:16/10; max-height:50vh; background:#060a13;
+  border:1px solid var(--panel-border); border-radius:var(--radius); overflow:hidden;
+  margin-bottom:1rem; cursor:crosshair; touch-action:none;
+}
+.hunt-bgstar{ position:absolute; border-radius:50%; background:#dce6ff; pointer-events:none; animation:huntTwinkle 3s ease-in-out infinite; }
+@keyframes huntTwinkle{ 0%,100%{opacity:0.15;} 50%{opacity:0.9;} }
+
+.hunt-obj{
+  position:absolute; display:flex; align-items:center; justify-content:center;
+  transform:translate(-50%,-50%); cursor:pointer; user-select:none; z-index:3; line-height:1;
+  will-change:left, top, opacity;
+}
+.hunt-obj.meteor{ font-size:1.1rem; color:#fff; filter:drop-shadow(0 0 6px #fff); }
+.hunt-obj.satellite{ font-size:0.85rem; color:#dce6ff; filter:drop-shadow(0 0 4px #dce6ff); }
+.hunt-obj.variable{ font-size:1rem; color:var(--gold); animation:huntPulseStar 2.2s ease-in-out infinite; }
+@keyframes huntPulseStar{ 0%,100%{opacity:0.25; transform:translate(-50%,-50%) scale(0.85);} 50%{opacity:1; transform:translate(-50%,-50%) scale(1.15);} }
+.hunt-obj.faint{ font-size:1.3rem; color:rgba(168,107,255,0.55); animation:huntBreathe 4s ease-in-out infinite; }
+@keyframes huntBreathe{ 0%,100%{opacity:0.35;} 50%{opacity:0.7;} }
+.hunt-obj.ufo{ font-size:1.2rem; filter:drop-shadow(0 0 8px var(--nebula)); animation:huntWobble .5s ease-in-out infinite; }
+@keyframes huntWobble{ 0%,100%{ transform:translate(-50%,-50%) rotate(-6deg);} 50%{ transform:translate(-50%,-50%) rotate(6deg);} }
+.hunt-obj.plane{ font-size:0.9rem; animation:huntBlink 1s steps(1) infinite; }
+@keyframes huntBlink{ 0%,49%{ color:#ff5d5d; } 50%,100%{ color:#5dd9c1; } }
+
+.hunt-obj.caught{ animation:huntCaughtPop .4s ease forwards; pointer-events:none; }
+@keyframes huntCaughtPop{ 0%{ transform:translate(-50%,-50%) scale(1); opacity:1;} 100%{ transform:translate(-50%,-50%) scale(1.8); opacity:0;} }
+.hunt-obj.missed{ animation:huntMissedFade .3s ease forwards; pointer-events:none; }
+@keyframes huntMissedFade{ 0%{opacity:1;} 100%{opacity:0;} }
+
+.hunt-cloud{
+  position:absolute; top:0; width:38%; aspect-ratio:3/1; border-radius:50%;
+  background:radial-gradient(ellipse, rgba(180,190,215,0.22), rgba(180,190,215,0) 70%);
+  filter:blur(6px); pointer-events:none; z-index:4; transform:translateY(-50%);
+}
+
+.hunt-feedback{
+  position:fixed; font-family:var(--font-mono); font-weight:700; font-size:0.95rem;
+  pointer-events:none; z-index:45; white-space:nowrap; transform:translate(-50%,-140%);
+  animation:skyidFloat 1.1s ease forwards;
+}
+.hunt-feedback.good{ color:var(--teal); }
+.hunt-feedback.bad{ color:#ff6a6a; }
+.hunt-feedback.bonus{ color:var(--nebula); }
+
+.hunt-particle{
+  position:fixed; width:4px; height:4px; border-radius:50%; pointer-events:none; z-index:40;
+  animation:skyidBurst 0.9s cubic-bezier(.15,.6,.4,1) forwards;
+}
+.hunt-particle.big{ width:6px; height:6px; animation-duration:1.4s; }
+
+/* ---- recent-catch log strip ---- */
+.hunt-log{ display:flex; gap:0.4rem; justify-content:center; flex-wrap:wrap; min-height:1.6em; }
+.hunt-log-chip{
+  font-size:0.9rem; padding:0.15em 0.45em; border:1px solid var(--panel-border); border-radius:20px;
+  background:var(--void-softer); animation:skyidFadeUp .3s ease both;
+}
+
+/* ---- level-complete / final ---- */
+.hunt-stats{ display:flex; justify-content:center; gap:2.2rem; margin:1.6rem 0 2rem; flex-wrap:wrap; }
+.hunt-stats > div{ text-align:center; }
+.hunt-stats .n{ display:block; font-family:var(--font-mono); font-size:1.6rem; color:var(--teal); font-weight:700; }
+.hunt-stats .k{ display:block; font-size:0.72rem; color:var(--starlight-dim); text-transform:uppercase; letter-spacing:0.06em; margin-top:0.3em; }
+.hunt-stars{ font-size:1.6rem; letter-spacing:0.2em; margin-bottom:0.6rem; color:var(--teal); }
+
+.hunt-rank-badge{
+  font-size:2.6rem; margin-bottom:0.2em; filter:drop-shadow(0 0 18px rgba(93,217,193,0.5));
+  animation:skyidBadgePop .6s cubic-bezier(.2,.8,.3,1.3) both;
+}
+.hunt-badges{ display:flex; flex-wrap:wrap; justify-content:center; gap:0.6rem; margin:0 0 1.6rem; }
+.hunt-badge{
+  display:flex; align-items:center; gap:0.5em; padding:0.5em 0.9em; border:1px solid var(--panel-border);
+  border-radius:20px; background:var(--void-softer); font-size:0.78rem; color:var(--starlight-dim);
+  animation:skyidFadeUp .4s ease both;
+}
+.hunt-badge .ic{ font-size:1rem; }
+.hunt-badge.earned{ border-color:#2e6e63; color:var(--teal); }
+
+/* ---- observation log: reveal what you actually caught, after the fact ---- */
+.hunt-obslog{ text-align:left; max-width:520px; margin:0 auto 1.6rem; display:flex; flex-direction:column; gap:0.6rem; }
+.hunt-obslog:empty{ display:none; }
+.hunt-obslog-title{ font-family:var(--font-mono); font-size:0.68rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--starlight-dim); margin-bottom:0.2rem; text-align:center; }
+.hunt-obslog-item{
+  display:flex; gap:0.7rem; padding:0.6em 0.8em; border:1px solid var(--panel-border); border-radius:var(--radius);
+  background:var(--void-softer); align-items:flex-start;
+}
+.hunt-obslog-item .ic{ font-size:1.15rem; flex-shrink:0; margin-top:0.05em; }
+.hunt-obslog-item .name{ font-weight:600; color:var(--starlight); font-size:0.86rem; display:block; }
+.hunt-obslog-item .fact{ color:var(--starlight-dim); font-size:0.8rem; line-height:1.5; }
+
+.hunt-final-actions{ display:flex; gap:0.8rem; justify-content:center; flex-wrap:wrap; }
+
+.hunt-leaderboard{ margin-top:1.6rem; text-align:left; }
+.hunt-leaderboard:empty{ display:none; }
+.hunt-lb-title{ font-family:var(--font-mono); font-size:0.68rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--starlight-dim); margin-bottom:0.7rem; text-align:center; }
+.hunt-lb-list{ display:flex; flex-direction:column; gap:0.4rem; max-width:360px; margin:0 auto; }
+.hunt-lb-row{ display:flex; align-items:center; gap:0.7rem; padding:0.5em 0.8em; border:1px solid var(--panel-border); border-radius:var(--radius); background:var(--void-softer); }
+.hunt-lb-row.me{ border-color:#2e6e63; background:rgba(93,217,193,0.07); }
+.hunt-lb-rank{ font-family:var(--font-mono); font-size:0.78rem; color:var(--starlight-dim); width:1.4em; flex-shrink:0; }
+.hunt-lb-row img{ width:22px; height:22px; border-radius:50%; flex-shrink:0; }
+.hunt-lb-name{ flex:1; font-size:0.82rem; color:var(--starlight); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.hunt-lb-score{ font-family:var(--font-mono); font-size:0.82rem; color:var(--teal); font-weight:600; flex-shrink:0; }
+.hunt-lb-empty{ font-size:0.8rem; color:var(--starlight-dim); text-align:center; }
+
+body.night-vision .hunt-stage{ filter:grayscale(1) sepia(1) saturate(4) hue-rotate(-50deg) brightness(0.65); }
+
+@media (max-width:640px){
+  .hunt-stage{ max-height:40vh; }
+  .hunt-stats{ gap:1.4rem; }
+  .hunt-mute{ right:4rem; }
+  .hunt-legend{ gap:0.4rem; }
+}
+
 .lb-comment-form{display:flex; gap:0.7rem; padding:0 1.3rem 1.2rem; flex-shrink:0;}
 .lb-comment-form input{
   flex:1; background:var(--void-softer); border:1px solid var(--panel-border); color:var(--starlight);
@@ -1406,14 +1620,24 @@ html.intro-pending footer.site-footer{opacity:0;}
         <div class="eyebrow">Heavens</div>
         <h2>The sky, object by object</h2>
         <p>Constellations, galaxies, and nebulae — click through real catalog data and real NASA imagery for each.</p>
-        <button class="skyid-cta" id="skyidLaunch" type="button">
-          <span class="skyid-cta-icon">✦</span>
-          <span class="skyid-cta-text">
-            <span class="skyid-cta-title">Play: Sky ID</span>
-            <span class="skyid-cta-sub">Identify all 40 · three levels · no multiple choice</span>
-          </span>
-          <span class="skyid-cta-arrow">→</span>
-        </button>
+        <div class="game-cta-row">
+          <button class="skyid-cta" id="skyidLaunch" type="button">
+            <span class="skyid-cta-icon">✦</span>
+            <span class="skyid-cta-text">
+              <span class="skyid-cta-title">Play: Sky ID</span>
+              <span class="skyid-cta-sub">Identify all 40 · three levels · no multiple choice</span>
+            </span>
+            <span class="skyid-cta-arrow">→</span>
+          </button>
+          <button class="hunt-cta" id="huntLaunch" type="button">
+            <span class="hunt-cta-icon">🔭</span>
+            <span class="hunt-cta-text">
+              <span class="hunt-cta-title">Play: Deep Sky Hunt</span>
+              <span class="hunt-cta-sub">Real-time spotting · 3 nights · don't tap the plane</span>
+            </span>
+            <span class="hunt-cta-arrow">→</span>
+          </button>
+        </div>
       </div>
       <span class="pb-credit"></span>
       </div>
@@ -1643,6 +1867,91 @@ html.intro-pending footer.site-footer{opacity:0;}
     <div class="skyid-final-actions">
       <button class="btn" id="skyidShareBtn">Share result ↗</button>
       <button class="btn solid" id="skyidReplayBtn">Play again</button>
+    </div>
+  </div>
+</div>
+
+<div class="hunt-overlay" id="huntOverlay">
+  <button class="egg-close hunt-close" id="huntClose" aria-label="Close game">✕</button>
+  <button class="hunt-mute" id="huntMute" aria-label="Toggle sound" title="Toggle sound">🔊</button>
+
+  <div class="hunt-quit-confirm" id="huntQuitConfirm">
+    <div class="hunt-quit-box">
+      <p>Close the dome now and lose this run's progress?</p>
+      <div class="hunt-quit-actions">
+        <button class="btn solid" id="huntQuitCancel">Keep watching</button>
+        <button class="btn" id="huntQuitConfirmBtn">Close dome</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AUTH GATE (shown instead of the start screen when signed out) -->
+  <div class="hunt-screen hunt-authgate" id="huntAuthGate">
+    <div class="eyebrow">Sign in required</div>
+    <h2>Sign in to open the dome</h2>
+    <p class="hunt-intro">Scores save to your account and rank on the observers' leaderboard — the same account as Sky ID and the Member Gallery.</p>
+    <button class="auth-btn" id="huntSignInBtn">
+      <svg width="16" height="16" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.91c1.7-1.57 2.69-3.87 2.69-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.91-2.26c-.81.54-1.85.86-3.05.86-2.35 0-4.34-1.58-5.05-3.71H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.95 10.71a5.4 5.4 0 0 1 0-3.42V4.96H.96a9 9 0 0 0 0 8.08l2.99-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.51.46 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .96 4.96l2.99 2.33C4.66 5.16 6.65 3.58 9 3.58z"/></svg>
+      Sign in with Google
+    </button>
+    <div class="hunt-leaderboard" id="huntLbGate"></div>
+  </div>
+
+  <!-- START SCREEN -->
+  <div class="hunt-screen hunt-start" id="huntStart">
+    <div class="eyebrow">Real behavior. Real fakes. Three nights.</div>
+    <h2>Deep Sky Hunt</h2>
+    <p class="hunt-intro">The dome's open and the clock's running. Tag meteors, satellites, pulsing variable stars, and faint smudges the instant you spot them. Everything moves and behaves the way the real thing actually does — including the one thing you should leave alone.</p>
+    <div class="hunt-legend" aria-hidden="true">
+      <span class="hunt-legend-card good"><span class="ic">☄</span>Meteor — quick streak</span>
+      <span class="hunt-legend-card good"><span class="ic">🛰</span>Satellite — steady drift</span>
+      <span class="hunt-legend-card good"><span class="ic">✦</span>Variable star — pulses in place</span>
+      <span class="hunt-legend-card good"><span class="ic">◌</span>Faint DSO — barely there</span>
+      <span class="hunt-legend-card bad"><span class="ic">✈</span>Aircraft — blinks, don't tap it</span>
+    </div>
+    <div class="hunt-best" id="huntBest"></div>
+    <button class="btn solid" id="huntStartBtn">Open the dome →</button>
+    <div class="hunt-leaderboard" id="huntLbStart"></div>
+  </div>
+
+  <!-- ROUND SCREEN -->
+  <div class="hunt-screen hunt-round" id="huntRound">
+    <div class="hunt-hud">
+      <div class="hunt-hud-left">
+        <span class="hunt-level-tag" id="huntLevelTag">Night 1 — Clear Skies</span>
+        <div class="hunt-focus-bar"><div class="hunt-focus-fill" id="huntFocusFill"></div></div>
+        <span class="hunt-target-count" id="huntTargetCount">0 / 8 found</span>
+      </div>
+      <div class="hunt-hud-right">
+        <span class="hunt-timer" id="huntTimer">0:45</span>
+        <span class="hunt-streak" id="huntStreak">🔥 0</span>
+        <span class="hunt-score" id="huntScore">0 pts</span>
+      </div>
+    </div>
+    <div class="hunt-stage" id="huntStage"></div>
+    <div class="hunt-log" id="huntLog"></div>
+  </div>
+
+  <!-- LEVEL COMPLETE SCREEN -->
+  <div class="hunt-screen hunt-levelend" id="huntLevelEnd">
+    <div class="eyebrow" id="huntLevelEndTag">Night 1 clear</div>
+    <h2 id="huntLevelEndTitle">Clear skies, well spotted.</h2>
+    <div class="hunt-stats" id="huntLevelEndStats"></div>
+    <button class="btn solid" id="huntLevelEndBtn">Continue →</button>
+  </div>
+
+  <!-- FINAL SCREEN -->
+  <div class="hunt-screen hunt-final" id="huntFinal">
+    <div class="eyebrow" id="huntFinalEyebrow">Dome closed for the night</div>
+    <div class="hunt-rank-badge" id="huntRankBadge">🔭</div>
+    <h2 id="huntRankTitle">—</h2>
+    <div class="hunt-stats" id="huntFinalStats"></div>
+    <div class="hunt-obslog" id="huntObsLog"></div>
+    <div class="hunt-badges" id="huntBadges"></div>
+    <div class="hunt-leaderboard" id="huntLbFinal"></div>
+    <div class="hunt-final-actions">
+      <button class="btn" id="huntShareBtn">Share result ↗</button>
+      <button class="btn solid" id="huntReplayBtn">Play again</button>
     </div>
   </div>
 </div>
@@ -3435,6 +3744,43 @@ function subscribeSkyidLeaderboard(cb, max){
     return ()=>{};
   }
 }
+/* ---------- same pattern as above, for the Deep Sky Hunt game's
+   leaderboard — a separate 'hunt_scores' collection so the two
+   games don't share rank lists ---------- */
+async function submitHuntScore(payload){
+  if(!currentUser) return { ok:false, reason:'signed-out' };
+  try{
+    await setDoc(doc(db, 'hunt_scores', currentUser.uid), {
+      uid: currentUser.uid,
+      name: currentUser.displayName || 'Member',
+      photo: currentUser.photoURL || '',
+      score: payload.score,
+      nights: payload.nights,
+      badges: payload.badges,
+      updatedAt: serverTimestamp()
+    }, { merge:true });
+    return { ok:true };
+  }catch(err){
+    console.error('Could not submit Deep Sky Hunt score — check Firestore rules for the hunt_scores collection', err);
+    return { ok:false, reason:'write-failed', error:err };
+  }
+}
+function subscribeHuntLeaderboard(cb, max){
+  try{
+    const q = query(collection(db, 'hunt_scores'), orderBy('score','desc'), limit(max||10));
+    return onSnapshot(q, snap=>{
+      cb(snap.docs.map(d=>d.data()));
+    }, err=>{
+      console.error('Leaderboard subscription failed — check Firestore rules for the hunt_scores collection', err);
+      cb(null, err);
+    });
+  }catch(err){
+    console.error(err);
+    cb(null, err);
+    return ()=>{};
+  }
+}
+
 window.astrxAuth = {
   getUser: ()=>currentUser,
   signIn: ()=>signInWithPopup(auth, googleProvider),
@@ -3443,7 +3789,11 @@ window.astrxAuth = {
 };
 window.astrxScores = {
   submit: submitSkyidScore,
-  subscribeLeaderboard: subscribeSkyidLeaderboard
+  subscribeLeaderboard: subscribeSkyidLeaderboard,
+  hunt: {
+    submit: submitHuntScore,
+    subscribeLeaderboard: subscribeHuntLeaderboard
+  }
 };
 
 /* ---------- load posts (live) ---------- */
@@ -4372,6 +4722,637 @@ renderAuthUI();
     const text = state._shareText || '';
     if(navigator.share){
       try{ await navigator.share({ text }); return; }catch(err){ /* user cancelled the share sheet — fall through to clipboard */ }
+    }
+    try{
+      await navigator.clipboard.writeText(text);
+      const old = shareBtn.textContent;
+      shareBtn.textContent = 'Copied ✓';
+      setTimeout(()=>{ shareBtn.textContent = old; }, 1600);
+    }catch(err){
+      shareBtn.textContent = "Couldn't copy — select text manually";
+    }
+  });
+})();
+</script>
+
+<script>
+/* =============================================================
+   DEEP SKY HUNT — the observing game.
+   Not a quiz: a real-time spotting game. Real target behaviors —
+   meteors streak, satellites drift in straight lines, variable
+   stars pulse on a cycle, faint DSOs barely register — spawn and
+   move across a simulated sky over three nights of rising
+   difficulty. One decoy (a blinking aircraft) looks similar to a
+   satellite but costs you if tapped; drifting clouds on Night 3
+   physically obscure the stage. Reuses the same window.astrxAuth /
+   window.astrxScores.hunt integration Sky ID uses.
+============================================================= */
+(function(){
+  const NIGHTS = [
+    { key:'clear',      tag:'Night 1 — Clear Skies',        label:'Clear skies, well spotted.',     duration:42, targetGoal:8,  spawnRange:[900,1500], decoyChance:0.16, cloudChance:0,    dim:1 },
+    { key:'pollution',  tag:'Night 2 — Light Pollution',     label:'Light pollution, beaten anyway.', duration:48, targetGoal:10, spawnRange:[750,1250], decoyChance:0.24, cloudChance:0,    dim:0.6 },
+    { key:'clouds',     tag:'Night 3 — Clouds Rolling In',   label:"Clouds rolled in — you still won.", duration:54, targetGoal:12, spawnRange:[650,1100], decoyChance:0.32, cloudChance:0.16, dim:0.75 },
+  ];
+
+  const TARGETS = {
+    meteor:   { icon:'☄', label:'Meteor',              base:80,  real:'A meteor — dust or rock burning up roughly 60–100 km overhead, gone in under a second.', life:1000, kind:'streak' },
+    satellite:{ icon:'🛰', label:'Satellite',           base:60,  real:'A satellite in low Earth orbit — a steady point of reflected sunlight tracking in a straight line.', life:4200, kind:'linear' },
+    variable: { icon:'✦', label:'Variable star',        base:100, real:"A variable star — its brightness genuinely rises and falls on a real, repeating cycle.", life:5200, kind:'pulse' },
+    faint:    { icon:'◌', label:'Faint deep-sky object', base:150, real:'A faint galaxy or nebula — the kind that only really opens up under a long exposure.', life:6000, kind:'static' },
+    ufo:      { icon:'🛸', label:'Unidentified',         base:250, real:'Almost certainly a weather balloon. Almost certainly.', life:1500, kind:'zigzag', rare:true },
+  };
+  const DECOY = { icon:'✈', label:'Aircraft', penalty:18, life:3600, kind:'linear', line:"That's a plane — steady blink, not a satellite." };
+
+  // TESTING ONLY — skips the sign-in gate so the game is playable without
+  // Google auth. Scores still won't save while signed out (submitHuntScore
+  // no-ops gracefully). Flip to false (or delete this line) before launch.
+  const TESTING_SKIP_AUTH = true;
+
+  /* ---- tiny synthesized sound effects — no audio files needed ---- */
+  let actx = null;
+  let muted = localStorage.getItem('hunt-muted') === '1';
+  function tone(freq, start, dur, type='sine', gain=0.09){
+    if(muted) return;
+    try{
+      actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+      const osc = actx.createOscillator(), g = actx.createGain();
+      osc.type = type; osc.frequency.value = freq;
+      g.gain.value = 0;
+      osc.connect(g); g.connect(actx.destination);
+      const t = actx.currentTime + start;
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(gain, t + 0.015);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      osc.start(t); osc.stop(t + dur + 0.02);
+    }catch(err){ /* Web Audio unavailable/blocked — sound is a nicety, not required */ }
+  }
+  const sfx = {
+    correct: ()=>{ tone(720,0,.09); tone(960,.06,.13); },
+    bonus: ()=>{ tone(500,0,.06); tone(760,.05,.06); tone(1040,.1,.16); },
+    wrong: ()=>{ tone(160,0,.14,'square',.05); },
+    levelUp: ()=>{ tone(587,0,.1); tone(740,.08,.1); tone(880,.16,.24); },
+    finalFanfare: ()=>{ tone(587,0,.12); tone(740,.1,.12); tone(880,.2,.12); tone(1175,.32,.36); },
+  };
+
+  const overlay      = document.getElementById('huntOverlay');
+  const launchBtn     = document.getElementById('huntLaunch');
+  const closeBtn      = document.getElementById('huntClose');
+  const muteBtn       = document.getElementById('huntMute');
+  const quitConfirmEl = document.getElementById('huntQuitConfirm');
+  const screens = {
+    authgate: document.getElementById('huntAuthGate'),
+    start:    document.getElementById('huntStart'),
+    round:    document.getElementById('huntRound'),
+    levelend: document.getElementById('huntLevelEnd'),
+    final:    document.getElementById('huntFinal'),
+  };
+  const bestEl        = document.getElementById('huntBest');
+  const startBtn       = document.getElementById('huntStartBtn');
+  const levelTag        = document.getElementById('huntLevelTag');
+  const focusFillEl     = document.getElementById('huntFocusFill');
+  const targetCountEl   = document.getElementById('huntTargetCount');
+  const timerEl         = document.getElementById('huntTimer');
+  const streakEl        = document.getElementById('huntStreak');
+  const scoreEl         = document.getElementById('huntScore');
+  const stage           = document.getElementById('huntStage');
+  const logEl           = document.getElementById('huntLog');
+  const levelEndTag     = document.getElementById('huntLevelEndTag');
+  const levelEndTitle   = document.getElementById('huntLevelEndTitle');
+  const levelEndStats   = document.getElementById('huntLevelEndStats');
+  const levelEndBtn     = document.getElementById('huntLevelEndBtn');
+  const rankBadgeEl     = document.getElementById('huntRankBadge');
+  const rankTitle       = document.getElementById('huntRankTitle');
+  const finalEyebrowEl  = document.getElementById('huntFinalEyebrow');
+  const finalStats      = document.getElementById('huntFinalStats');
+  const obsLogEl        = document.getElementById('huntObsLog');
+  const badgesEl        = document.getElementById('huntBadges');
+  const shareBtn        = document.getElementById('huntShareBtn');
+  const replayBtn       = document.getElementById('huntReplayBtn');
+  const signInBtn       = document.getElementById('huntSignInBtn');
+  const lbGate          = document.getElementById('huntLbGate');
+  const lbStart         = document.getElementById('huntLbStart');
+  const lbFinal         = document.getElementById('huntLbFinal');
+  if(!overlay || !launchBtn) return; // markup missing — fail quietly rather than throw
+
+  function refreshMuteBtn(){
+    muteBtn.textContent = muted ? '🔇' : '🔊';
+    muteBtn.classList.toggle('muted', muted);
+  }
+  refreshMuteBtn();
+  muteBtn.addEventListener('click', ()=>{
+    muted = !muted;
+    localStorage.setItem('hunt-muted', muted ? '1' : '0');
+    refreshMuteBtn();
+  });
+
+  function showScreen(name){
+    Object.values(screens).forEach(s=>s.classList.remove('active'));
+    screens[name].classList.add('active');
+  }
+
+  /* ---------- account integration (same window.astrxAuth / window.astrxScores.hunt
+     pattern as Sky ID — see the comment on that game for why the retry loop
+     exists) ---------- */
+  let currentAuthUser = null;
+  let integrationReady = false;
+  let integrationTries = 0;
+
+  function renderLeaderboardInto(container, scores){
+    if(!container) return;
+    if(scores === null){
+      container.innerHTML = `<div class="hunt-lb-title">Leaderboard</div><div class="hunt-lb-empty">Leaderboard isn't reachable right now.</div>`;
+      return;
+    }
+    if(!scores.length){
+      container.innerHTML = `<div class="hunt-lb-title">Leaderboard</div><div class="hunt-lb-empty">No scores yet — be the first.</div>`;
+      return;
+    }
+    const me = currentAuthUser && currentAuthUser.uid;
+    const esc = s=>String(s||'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    container.innerHTML = `<div class="hunt-lb-title">Top Observers</div><div class="hunt-lb-list">` +
+      scores.map((s,i)=>`
+        <div class="hunt-lb-row${s.uid===me?' me':''}">
+          <span class="hunt-lb-rank">${i+1}</span>
+          <img src="${esc(s.photo)}" alt="">
+          <span class="hunt-lb-name">${esc(s.name||'Member')}</span>
+          <span class="hunt-lb-score">${s.score}</span>
+        </div>`).join('') + `</div>`;
+  }
+  function renderAllLeaderboards(scores){
+    renderLeaderboardInto(lbGate, scores);
+    renderLeaderboardInto(lbStart, scores);
+    renderLeaderboardInto(lbFinal, scores);
+  }
+
+  function ensureIntegration(){
+    if(integrationReady) return;
+    if(!window.astrxAuth || !window.astrxScores || !window.astrxScores.hunt){
+      integrationTries++;
+      if(integrationTries < 60){ setTimeout(ensureIntegration, 80); }
+      else{ renderAllLeaderboards(null); if(signInBtn){ signInBtn.textContent = "Couldn't reach sign-in — try reloading"; } }
+      return;
+    }
+    integrationReady = true;
+    window.astrxAuth.onChange((user)=>{
+      currentAuthUser = user;
+      if(overlay.classList.contains('show') && screens.authgate.classList.contains('active') && user){
+        showScreen('start');
+      }
+    });
+    window.astrxScores.hunt.subscribeLeaderboard((scores)=> renderAllLeaderboards(scores), 10);
+  }
+  ensureIntegration();
+  signInBtn.addEventListener('click', ()=>{
+    if(window.astrxAuth){ window.astrxAuth.signIn().catch(()=>{}); }
+  });
+
+  /* ---------- game state ---------- */
+  let state, activeObjs, objSeq;
+  function resetGame(){
+    state = {
+      nightIdx:0, score:0, streak:0, maxStreak:0,
+      found:0, goal:0, focus:100, timeLeft:0, running:false,
+      decoyHitsThisNight:0, totalDecoyHits:0, ufoCaught:false,
+      caughtDetails:{}, nightStats:[], ufoSpawnedThisNight:false,
+      gameStart:Date.now(), spawnTimer:null, cloudTimer:null, timerInterval:null,
+    };
+    activeObjs = new Map();
+    objSeq = 0;
+    displayedScore = 0;
+  }
+
+  function openGame(){
+    ensureIntegration();
+    resetGame();
+    const best = localStorage.getItem('hunt-best');
+    bestEl.textContent = best ? `Best score so far: ${best} pts` : '';
+    const signedIn = window.astrxAuth && window.astrxAuth.getUser();
+    showScreen((signedIn || TESTING_SKIP_AUTH) ? 'start' : 'authgate');
+    overlay.classList.add('show');
+  }
+  function closeGame(){
+    stopNight();
+    overlay.classList.remove('show');
+    quitConfirmEl.classList.remove('show');
+  }
+  function requestClose(){
+    const midGame = screens.round.classList.contains('active') || screens.levelend.classList.contains('active');
+    if(!midGame){ closeGame(); return; }
+    quitConfirmEl.classList.add('show');
+  }
+  launchBtn.addEventListener('click', openGame);
+  closeBtn.addEventListener('click', requestClose);
+  document.getElementById('huntQuitCancel').addEventListener('click', ()=> quitConfirmEl.classList.remove('show'));
+  document.getElementById('huntQuitConfirmBtn').addEventListener('click', closeGame);
+  // Same reasoning as Sky ID: no closing on a background click, so a stray
+  // tap mid-run can't nuke a streak. Explicit close or Escape only, and
+  // both confirm first if a night is actually in progress.
+  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && overlay.classList.contains('show')) requestClose(); });
+
+  startBtn.addEventListener('click', ()=>{ state.nightIdx = 0; startNight(); });
+  levelEndBtn.addEventListener('click', ()=>{
+    state.nightIdx++;
+    if(state.nightIdx >= NIGHTS.length){ endGame(false); } else { startNight(); }
+  });
+  replayBtn.addEventListener('click', openGame);
+
+  /* ---------- night lifecycle ---------- */
+  function startNight(){
+    const night = NIGHTS[state.nightIdx];
+    state.found = 0; state.goal = night.targetGoal; state.focus = 100;
+    state.decoyHitsThisNight = 0; state.running = true; state.ufoSpawnedThisNight = false;
+    state.timeLeft = night.duration;
+    levelTag.textContent = night.tag;
+    updateFocusBar();
+    targetCountEl.textContent = `0 / ${night.targetGoal} found`;
+    timerEl.textContent = fmtTime(night.duration);
+    timerEl.classList.remove('low');
+    streakEl.textContent = '🔥 0'; streakEl.className = 'hunt-streak';
+    logEl.innerHTML = '';
+    updateHud();
+    buildStage();
+    showScreen('round');
+    state.timerInterval = setInterval(tickTimer, 1000);
+    scheduleSpawn();
+    if(night.cloudChance > 0) scheduleCloud();
+  }
+
+  function stopNight(){
+    if(!state) return;
+    state.running = false;
+    clearTimeout(state.spawnTimer);
+    clearTimeout(state.cloudTimer);
+    clearInterval(state.timerInterval);
+    activeObjs.forEach(obj=>{
+      clearTimeout(obj.removeTimer);
+      if(obj.zigInterval) clearInterval(obj.zigInterval);
+    });
+    activeObjs.clear();
+    stage.innerHTML = '';
+  }
+
+  function fmtTime(t){ const m = Math.floor(t/60), s = t%60; return `${m}:${String(s).padStart(2,'0')}`; }
+
+  function tickTimer(){
+    state.timeLeft--;
+    timerEl.textContent = fmtTime(Math.max(0,state.timeLeft));
+    timerEl.classList.toggle('low', state.timeLeft <= 10);
+    if(state.timeLeft <= 0){ finishNight(); }
+  }
+
+  function buildStage(){
+    stage.innerHTML = '';
+    const n = 70;
+    for(let i=0;i<n;i++){
+      const s = document.createElement('div');
+      s.className = 'hunt-bgstar';
+      const size = 1 + Math.random()*1.6;
+      s.style.width = size+'px'; s.style.height = size+'px';
+      s.style.left = (Math.random()*100)+'%';
+      s.style.top = (Math.random()*100)+'%';
+      s.style.animationDuration = (2+Math.random()*3)+'s';
+      s.style.animationDelay = (Math.random()*3)+'s';
+      stage.appendChild(s);
+    }
+  }
+
+  /* ---------- spawning ---------- */
+  function scheduleSpawn(){
+    if(!state.running) return;
+    const night = NIGHTS[state.nightIdx];
+    const [lo,hi] = night.spawnRange;
+    const delay = lo + Math.random()*(hi-lo);
+    state.spawnTimer = setTimeout(()=>{ spawnOne(); scheduleSpawn(); }, delay);
+  }
+
+  function spawnOne(){
+    const night = NIGHTS[state.nightIdx];
+    const isDecoy = Math.random() < night.decoyChance;
+    let key, def;
+    if(isDecoy){
+      key = 'plane'; def = DECOY;
+    } else {
+      const ufoChance = state.nightIdx === 2 ? 0.07 : 0.035;
+      if(!state.ufoSpawnedThisNight && Math.random() < ufoChance){
+        key = 'ufo'; state.ufoSpawnedThisNight = true;
+      } else {
+        const pool = ['meteor','satellite','variable','faint'];
+        key = pool[Math.floor(Math.random()*pool.length)];
+      }
+      def = TARGETS[key];
+    }
+    createObj(key, def, isDecoy);
+  }
+
+  function createObj(key, def, isDecoy){
+    const id = 'o' + (objSeq++);
+    const el = document.createElement('div');
+    el.className = 'hunt-obj ' + key;
+    el.textContent = def.icon;
+    stage.appendChild(el);
+
+    const pad = 8;
+    let x0,y0,x1,y1;
+    if(def.kind === 'linear'){
+      const fromLeft = Math.random() < 0.5;
+      y0 = pad + Math.random()*(100-2*pad);
+      y1 = pad + Math.random()*(100-2*pad);
+      x0 = fromLeft ? -6 : 106;
+      x1 = fromLeft ? 106 : -6;
+    } else if(def.kind === 'streak'){
+      const fromLeft = Math.random() < 0.5;
+      x0 = fromLeft ? -6 : 106;
+      y0 = Math.random()*45;
+      x1 = fromLeft ? 106 : -6;
+      y1 = y0 + 35 + Math.random()*30;
+    } else {
+      x0 = pad + Math.random()*(100-2*pad);
+      y0 = pad + Math.random()*(100-2*pad);
+      x1 = x0; y1 = y0;
+    }
+    el.style.left = x0+'%';
+    el.style.top = y0+'%';
+    if(key === 'faint'){ el.style.opacity = String(0.35 * NIGHTS[state.nightIdx].dim); }
+
+    const obj = { id, el, key, def, isDecoy, caught:false, spawnTime:Date.now(), life:def.life };
+    activeObjs.set(id, obj);
+    el.addEventListener('pointerdown', (e)=>{ e.stopPropagation(); handleHit(obj); });
+
+    if(def.kind === 'linear' || def.kind === 'streak'){
+      el.style.transition = `left ${def.life}ms linear, top ${def.life}ms linear`;
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{
+        el.style.left = x1+'%'; el.style.top = y1+'%';
+      }));
+    }
+    if(def.kind === 'zigzag'){
+      obj.zigInterval = setInterval(()=>{
+        if(obj.caught) return;
+        const nx = pad + Math.random()*(100-2*pad), ny = pad + Math.random()*(100-2*pad);
+        el.style.transition = 'left .35s ease-in-out, top .35s ease-in-out';
+        el.style.left = nx+'%'; el.style.top = ny+'%';
+      }, 380);
+    }
+
+    obj.removeTimer = setTimeout(()=>expireObj(obj), def.life);
+  }
+
+  function expireObj(obj){
+    if(!activeObjs.has(obj.id)) return;
+    obj.el.classList.add('missed');
+    setTimeout(()=>obj.el.remove(), 320);
+    activeObjs.delete(obj.id);
+    if(obj.zigInterval) clearInterval(obj.zigInterval);
+  }
+
+  /* ---------- hit handling ---------- */
+  function handleHit(obj){
+    if(obj.caught || !activeObjs.has(obj.id)) return;
+    obj.caught = true;
+    clearTimeout(obj.removeTimer);
+    if(obj.zigInterval) clearInterval(obj.zigInterval);
+    const elapsedFrac = (Date.now()-obj.spawnTime) / obj.life;
+
+    if(obj.isDecoy) handleDecoyHit(obj); else handleTargetHit(obj, elapsedFrac);
+
+    obj.el.classList.add('caught');
+    setTimeout(()=>{ obj.el.remove(); }, 420);
+    activeObjs.delete(obj.id);
+  }
+
+  function handleTargetHit(obj, elapsedFrac){
+    const def = obj.def;
+    const speedBonus = Math.round(30 * Math.max(0, 1-elapsedFrac));
+    state.streak++;
+    state.maxStreak = Math.max(state.maxStreak, state.streak);
+    const mult = 1 + Math.min(state.streak*0.08, 1);
+    let pts = Math.round((def.base + speedBonus) * mult);
+    let note = '';
+
+    if(obj.key === 'variable'){
+      const phase = Math.sin((Date.now()%2200)/2200*Math.PI*2);
+      if(phase > 0.6){ pts += 40; note = ' peak!'; }
+    }
+
+    state.score += pts;
+    state.found++;
+    state.caughtDetails[obj.key] = (state.caughtDetails[obj.key]||0) + 1;
+    if(obj.key === 'ufo') state.ufoCaught = true;
+
+    updateHud();
+    showFeedback(obj.el, obj.key === 'ufo' ? 'bonus' : 'good', `+${pts}${note}`);
+    logCatch(def.icon);
+    obj.key === 'ufo' ? sfx.bonus() : sfx.correct();
+    spawnParticles(obj.el, obj.key === 'ufo');
+    targetCountEl.textContent = `${state.found} / ${state.goal} found`;
+    if(state.found >= state.goal) finishNight();
+  }
+
+  function handleDecoyHit(obj){
+    const def = obj.def;
+    state.streak = 0;
+    state.decoyHitsThisNight++;
+    state.totalDecoyHits++;
+    state.focus = Math.max(0, state.focus - def.penalty);
+    state.score = Math.max(0, state.score - 30);
+    updateHud();
+    updateFocusBar();
+    showFeedback(obj.el, 'bad', def.line);
+    sfx.wrong();
+    if(state.focus <= 0){ setTimeout(()=>cloudedOut(), 450); }
+  }
+
+  function cloudedOut(){
+    stopNight();
+    endGame(true);
+  }
+
+  /* ---------- clouds (Night 3 atmosphere — visual obstruction only, not clickable) ---------- */
+  function scheduleCloud(){
+    if(!state.running) return;
+    const delay = 3000 + Math.random()*4000;
+    state.cloudTimer = setTimeout(()=>{
+      spawnCloud();
+      scheduleCloud();
+    }, delay);
+  }
+  function spawnCloud(){
+    const el = document.createElement('div');
+    el.className = 'hunt-cloud';
+    const fromLeft = Math.random() < 0.5;
+    el.style.top = (10+Math.random()*70)+'%';
+    el.style.left = (fromLeft ? -20 : 110)+'%';
+    el.style.transition = 'left 9s linear';
+    stage.appendChild(el);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      el.style.left = (fromLeft ? 110 : -20)+'%';
+    }));
+    setTimeout(()=>el.remove(), 9200);
+  }
+
+  /* ---------- HUD ---------- */
+  let displayedScore = 0, scoreAnimId = null;
+  function animateScoreTo(target){
+    if(scoreAnimId) cancelAnimationFrame(scoreAnimId);
+    const from = displayedScore, start = performance.now(), dur = 450;
+    function step(now){
+      const t = Math.min(1, (now-start)/dur);
+      const eased = 1 - Math.pow(1-t, 3);
+      displayedScore = Math.round(from + (target-from)*eased);
+      scoreEl.textContent = `${displayedScore} pts`;
+      if(t < 1) scoreAnimId = requestAnimationFrame(step); else displayedScore = target;
+    }
+    scoreAnimId = requestAnimationFrame(step);
+  }
+  function updateHud(){
+    const tier = state.streak>=15?4 : state.streak>=8?3 : state.streak>=4?2 : 1;
+    streakEl.textContent = `🔥 ${state.streak}`;
+    streakEl.className = 'hunt-streak' + (tier>1 ? ` tier-${tier}` : '');
+    animateScoreTo(state.score);
+  }
+  function updateFocusBar(){
+    focusFillEl.style.width = state.focus + '%';
+    focusFillEl.classList.toggle('low', state.focus <= 35);
+  }
+
+  function showFeedback(anchorEl, kind, text){
+    const r = anchorEl.getBoundingClientRect();
+    const f = document.createElement('div');
+    f.className = 'hunt-feedback ' + kind;
+    f.textContent = text;
+    f.style.left = (r.left + r.width/2) + 'px';
+    f.style.top = r.top + 'px';
+    overlay.appendChild(f);
+    setTimeout(()=>f.remove(), 1150);
+  }
+
+  function spawnParticles(anchorEl, big){
+    const r = anchorEl.getBoundingClientRect();
+    const originX = r.left + r.width/2, originY = r.top + r.height/2;
+    const n = big ? 34 : 12;
+    for(let i=0;i<n;i++){
+      const p = document.createElement('div');
+      p.className = 'hunt-particle' + (big ? ' big' : '');
+      const angle = (Math.PI*2*i)/n + Math.random()*0.3;
+      const dist = (big ? 100 : 50) + Math.random()*(big ? 140 : 55);
+      p.style.setProperty('--dx', `${Math.cos(angle)*dist}px`);
+      p.style.setProperty('--dy', `${Math.sin(angle)*dist}px`);
+      p.style.left = originX+'px'; p.style.top = originY+'px';
+      p.style.background = Math.random()<0.5 ? 'var(--teal)' : (big ? 'var(--nebula)' : '#dce6ff');
+      overlay.appendChild(p);
+      setTimeout(()=>p.remove(), big ? 1450 : 950);
+    }
+  }
+  function bigBurstCenter(){
+    const r = stage.getBoundingClientRect();
+    return { left:r.left+r.width/2, top:r.top+r.height*0.4 };
+  }
+
+  function logCatch(icon){
+    const chip = document.createElement('span');
+    chip.className = 'hunt-log-chip';
+    chip.textContent = icon;
+    logEl.appendChild(chip);
+    while(logEl.children.length > 10) logEl.removeChild(logEl.firstChild);
+  }
+
+  /* ---------- night end / game end ---------- */
+  function finishNight(){
+    stopNight();
+    const night = NIGHTS[state.nightIdx];
+    const timeBonus = state.timeLeft > 0 ? state.timeLeft * 4 : 0;
+    if(timeBonus > 0) state.score += timeBonus;
+    state.nightStats.push({ found:state.found, goal:state.goal, decoyHits:state.decoyHitsThisNight, focus:state.focus });
+
+    const isLast = state.nightIdx === NIGHTS.length-1;
+    const stars = state.decoyHitsThisNight===0 && state.found>=state.goal ? 3 : state.found>=state.goal ? 2 : 1;
+    levelEndTag.textContent = `${night.tag} clear`;
+    levelEndTitle.textContent = night.label;
+    const rows = [
+      {n:`${state.found}/${state.goal}`, k:'Objects found'},
+      {n:state.decoyHitsThisNight, k:'Decoys hit'},
+      {n:state.score, k:'Score so far'},
+    ];
+    if(timeBonus>0) rows.splice(2,0,{n:`+${timeBonus}`, k:'Time bonus'});
+    levelEndStats.innerHTML = `<div style="width:100%;"><span class="hunt-stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</span></div>` +
+      rows.map(s=>`<div><span class="n">${s.n}</span><span class="k">${s.k}</span></div>`).join('');
+    levelEndBtn.textContent = isLast ? 'See final results →' : `Continue to ${NIGHTS[state.nightIdx+1].tag} →`;
+    showScreen('levelend');
+    sfx.levelUp();
+    const c = bigBurstCenter();
+    const fakeAnchor = { getBoundingClientRect:()=>({ left:c.left, top:c.top, width:0, height:0 }) };
+    spawnParticles(fakeAnchor, true);
+  }
+
+  const BADGES = [
+    { id:'sharp',     ic:'🔬', label:'Sharp-Eyed',   hint:'Caught a faint deep-sky object', test:s=> (s.caughtDetails.faint||0) > 0 },
+    { id:'quickdraw', ic:'⚡', label:'Quick Draw',    hint:'Caught 5 or more meteors', test:s=> (s.caughtDetails.meteor||0) >= 5 },
+    { id:'notfooled', ic:'🧭', label:'Not Fooled',    hint:'Finished a night without hitting a single plane', test:s=> s.nightStats.some(n=>n.decoyHits===0) },
+    { id:'contact',   ic:'🛸', label:'First Contact', hint:'Caught the unidentified object', test:s=> s.ufoCaught },
+    { id:'steady',    ic:'🎯', label:'Steady Hands',  hint:'Finished a night with focus at 80 or above', test:s=> s.nightStats.some(n=>n.focus>=80) },
+  ];
+
+  function rankFor(score){
+    if(score >= 3200) return { title:'Sky Warden', icon:'🏆' };
+    if(score >= 2400) return { title:'Chief Observer', icon:'🔭' };
+    if(score >= 1600) return { title:'Night Watch', icon:'🌌' };
+    if(score >= 800)  return { title:'Dome Assistant', icon:'🛰' };
+    return { title:'Backyard Blinker', icon:'🔦' };
+  }
+
+  function endGame(cloudedEarly){
+    const totalTime = Math.round((Date.now()-state.gameStart)/1000);
+    const mins = Math.floor(totalTime/60), secs = totalTime%60;
+    const best = +(localStorage.getItem('hunt-best')||0);
+    const isNewBest = state.score > best;
+    if(isNewBest) localStorage.setItem('hunt-best', state.score);
+    const rank = rankFor(state.score);
+    rankBadgeEl.textContent = rank.icon;
+    rankTitle.textContent = rank.title;
+    finalEyebrowEl.textContent = cloudedEarly ? 'Clouds rolled in early' : 'Dome closed for the night';
+    finalStats.innerHTML = [
+      {n:state.score, k:'Final score'},
+      {n:`${mins}m ${secs}s`, k:'Total time'},
+      {n: isNewBest ? 'New best! ✦' : `${best} pts`, k: isNewBest ? 'Personal record' : 'Best score'},
+    ].map(s=>`<div><span class="n">${s.n}</span><span class="k">${s.k}</span></div>`).join('');
+
+    const seenKeys = Object.keys(state.caughtDetails);
+    obsLogEl.innerHTML = seenKeys.length ?
+      `<div class="hunt-obslog-title">What you actually caught</div>` +
+      seenKeys.map(k=>{
+        const def = TARGETS[k];
+        return `<div class="hunt-obslog-item"><span class="ic">${def.icon}</span><span><span class="name">${def.label} × ${state.caughtDetails[k]}</span><span class="fact">${def.real}</span></span></div>`;
+      }).join('') : '';
+
+    const earned = BADGES.map(b=>({...b, got:b.test(state)}));
+    badgesEl.innerHTML = earned.map(b=>
+      `<div class="hunt-badge${b.got?' earned':''}" title="${b.hint}"><span class="ic">${b.ic}</span>${b.label}</div>`
+    ).join('');
+
+    state._shareText = buildShareText(rank, earned);
+    showScreen('final');
+    sfx.finalFanfare();
+    const c = bigBurstCenter();
+    const fakeAnchor = { getBoundingClientRect:()=>({ left:c.left, top:c.top, width:0, height:0 }) };
+    spawnParticles(fakeAnchor, true);
+
+    if(window.astrxScores && window.astrxScores.hunt && window.astrxAuth && window.astrxAuth.getUser()){
+      window.astrxScores.hunt.submit({
+        score: state.score,
+        nights: state.nightStats.length,
+        badges: earned.filter(b=>b.got).map(b=>b.id),
+      });
+    }
+  }
+
+  function buildShareText(rank, earned){
+    const badgeLine = earned.filter(b=>b.got).map(b=>b.ic).join(' ') || '—';
+    return `🔭 Deep Sky Hunt — Astrx Club\n${state.score} pts · ${rank.title}\nNights cleared: ${state.nightStats.length}/3\nBadges: ${badgeLine}\n\nCan you out-spot me?`;
+  }
+
+  shareBtn.addEventListener('click', async ()=>{
+    const text = state._shareText || '';
+    if(navigator.share){
+      try{ await navigator.share({ text }); return; }catch(err){ /* user cancelled the share sheet */ }
     }
     try{
       await navigator.clipboard.writeText(text);
