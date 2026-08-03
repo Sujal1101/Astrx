@@ -29,6 +29,7 @@
 <style>
 /* ============================= DESIGN TOKENS ============================= */
 :root{
+  color-scheme: dark;
   --void:#05070d;
   --void-soft:#0b0f1d;
   --void-softer:#121729;
@@ -71,7 +72,7 @@ body.night-vision{
   --void-softer:#1c0303;
   --panel-border:rgba(255,80,80,0.25);
   --starlight:#ff9d9d;
-  --starlight-dim:#b85454;
+  --starlight-dim:#c05e5e;
   --gold:#ff3b3b;
   --gold-dim:#8a1f1f;
   --nebula:#ff6666;
@@ -348,7 +349,20 @@ header#topnav{
     border-left: none;
     border-right: none;
   }
+  /* On a narrow phone, min-height:65vh makes this box taller than it is
+     wide (portrait), while the background photo is landscape — cover
+     then has to crop away most of the photo's width to fill it, which
+     reads as the banner image being chopped off. Capping height by
+     viewport *width* instead keeps the box closer to landscape, so
+     cover only needs to trim the photo modestly, same as on desktop. */
+  .photo-banner.hero-banner { min-height: min(65vh, 90vw); }
+  @keyframes bannerKenBurnsMobile{
+    0%{ background-size:104% auto; background-position:50% 45%; }
+    100%{ background-size:110% auto; background-position:50% 55%; }
+  }
+  .photo-banner.has-photo{ animation-name: bannerKenBurnsMobile; }
 }
+
 .photo-banner > *{position:relative; z-index:1;}
 .photo-banner .pane-head{margin-bottom:0; max-width:680px;}
 .photo-banner .pb-credit{
@@ -375,8 +389,6 @@ footer.site-footer::before{
   padding-top:1.5rem; border-top:1px solid var(--panel-border); font-family:var(--font-mono); font-size:0.7rem; color:var(--starlight-dim);
 }
 .footbar b{color:var(--gold); font-weight:600;}
-
-.photo-banner.hero-banner{min-height:62vh; justify-content:center; padding:3rem clamp(1.25rem,4vw,3rem);}
 
 /* ============================= HOME PANE ============================= */
 .home-h1{font-size:clamp(2.2rem,5vw,3.6rem); line-height:1.05; letter-spacing:-0.02em; max-width:820px; animation:heroRise .9s var(--ease-out) both;}
@@ -479,7 +491,7 @@ footer.site-footer::before{
   border:1px solid var(--panel-border); border-radius:var(--radius-lg); overflow:hidden;
   background:radial-gradient(circle at 50% 45%, #090909, #000 72%);
 }
-.iss-globe-canvas{position:absolute; inset:0; width:100%; height:100%; cursor:grab;}
+.iss-globe-canvas{position:absolute; inset:0; width:100%; height:100%; cursor:grab; touch-action:none;}
 .iss-globe-canvas:active{cursor:grabbing;}
 .iss-globe-canvas canvas{display:block;}
 .iss-globe-skel{
@@ -488,7 +500,7 @@ footer.site-footer::before{
   transition:opacity var(--dur-fast) var(--ease-out);
 }
 .iss-globe-skel-detail{display:block; margin-top:0.5rem; font-size:0.68rem; opacity:0.6;}
-.iss-stats-col{display:flex; flex-direction:column; gap:1.1rem; height:100%;}
+.iss-stats-col{display:flex; flex-direction:column; gap:1.1rem;}
 .iss-stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:0.8rem; align-content:start;}
 .iss-stat{
   border:1px solid var(--panel-border); background:var(--void-softer); border-radius:var(--radius);
@@ -1543,8 +1555,8 @@ html.intro-pending #auroraLayer span{animation-play-state:paused;}
 
   <div class="nav-right">
     <div class="nav-auth" id="navAuth"></div>
-    <button id="nvToggle"><span class="dot"></span> NIGHT VISION</button>
-    <button id="burger">☰</button>
+    <button id="nvToggle" aria-pressed="false"><span class="dot"></span> NIGHT VISION</button>
+    <button id="burger" aria-label="Toggle menu" aria-expanded="false" aria-controls="sidebarNav">☰</button>
   </div>
 </header>
 
@@ -1675,9 +1687,13 @@ html.intro-pending #auroraLayer span{animation-play-state:paused;}
             <option value="59051">Meteor-M2 4 (weather satellite)</option>
             <option value="57166">Meteor-M2 3 (weather satellite)</option>
             <option value="49260">Landsat 9 (Earth imaging)</option>
+            <option value="60133">GOES-19 (weather, geostationary)</option>
+            <option value="43873">GPS III "Vespucci" (navigation)</option>
+            <option value="56759">NVS-01 (NavIC navigation, India)</option>
+            <option value="27386">Envisat (defunct — space debris)</option>
           </select>
         </div>
-        <p class="manifest-sub" id="satDesc">The International Space Station circles Earth roughly every 92 minutes at about 400&nbsp;km up, moving close to 27,600&nbsp;km/h — fast enough to cross the continental US in under 10 minutes. Drag the globe to look around; the marker below tracks its real position live.</p>
+        <p class="manifest-sub" id="satDesc">The International Space Station circles Earth roughly every 92 minutes at about 400&nbsp;km up, moving close to 27,600&nbsp;km/h — fast enough to cross the continental US in under 10 minutes. Drag (or swipe on mobile) the globe to look around; the marker below tracks its real position live.</p>
         <div class="iss-globe-layout">
           <div class="iss-globe-col">
             <div class="iss-globe-stage">
@@ -1990,13 +2006,13 @@ html.intro-pending #auroraLayer span{animation-play-state:paused;}
               <button class="btn" data-preset="serious">Serious amateur</button>
               <button class="btn" data-preset="big">Large Dobsonian</button>
             </div>
-            <label class="sim-label">Aperture <span class="mono" id="apertureVal"></span></label>
+            <label class="sim-label" for="apertureSlider">Aperture <span class="mono" id="apertureVal"></span></label>
             <input type="range" id="apertureSlider" min="50" max="300" value="130" class="sim-range">
-            <label class="sim-label">Telescope focal length <span class="mono" id="focalVal"></span></label>
+            <label class="sim-label" for="focalSlider">Telescope focal length <span class="mono" id="focalVal"></span></label>
             <input type="range" id="focalSlider" min="400" max="3000" value="900" class="sim-range">
-            <label class="sim-label">Eyepiece focal length <span class="mono" id="eyepieceVal"></span></label>
+            <label class="sim-label" for="eyepieceSlider">Eyepiece focal length <span class="mono" id="eyepieceVal"></span></label>
             <input type="range" id="eyepieceSlider" min="4" max="32" value="10" class="sim-range">
-            <label class="sim-label">Sky conditions</label>
+            <label class="sim-label" for="seeingSelect">Sky conditions</label>
             <select id="seeingSelect" class="mono-select" style="width:100%; padding:0.8em;">
               <option value="0.5">Excellent — steady, dark rural sky</option>
               <option value="1.5" selected>Average — typical suburban night</option>
@@ -2097,7 +2113,7 @@ html.intro-pending #auroraLayer span{animation-play-state:paused;}
 
     <form class="skyid-answer" id="skyidForm" autocomplete="off">
       <div class="skyid-input-wrap">
-        <input type="text" id="skyidInput" placeholder="Type its name…" autocomplete="off" spellcheck="false">
+        <input type="text" id="skyidInput" placeholder="Type its name…" autocomplete="off" spellcheck="false" aria-label="Type the name of the highlighted object">
         <div class="skyid-suggestions" id="skyidSuggestions"></div>
       </div>
       <button type="submit" class="btn solid">Guess</button>
@@ -2186,34 +2202,34 @@ html.intro-pending #auroraLayer span{animation-play-state:paused;}
   <div class="modal-box">
     <div class="modal-head">
       <h3>Add a photo to the gallery</h3>
-      <button class="modal-close" id="closeUploadBtn">✕</button>
+      <button class="modal-close" id="closeUploadBtn" aria-label="Close">✕</button>
     </div>
     <form id="uploadForm">
-      <label class="field-label">Image file</label>
+      <label class="field-label" for="fieldFile">Image file</label>
       <input type="file" id="fieldFile" accept="image/*" required>
       <div id="filePreviewWrap" style="display:none;"><img id="filePreview" alt="preview"></div>
 
-      <label class="field-label">Title</label>
+      <label class="field-label" for="fieldTitle">Title</label>
       <input type="text" id="fieldTitle" placeholder="e.g. First light on the Orion Nebula" required>
 
-      <label class="field-label">What is it?</label>
+      <label class="field-label" for="fieldObject">What is it?</label>
       <input type="text" id="fieldObject" placeholder="e.g. M42 — The Orion Nebula" required>
 
       <div class="field-row">
         <div>
-          <label class="field-label">Date captured</label>
+          <label class="field-label" for="fieldDate">Date captured</label>
           <input type="date" id="fieldDate" required>
         </div>
         <div>
-          <label class="field-label">Camera</label>
+          <label class="field-label" for="fieldCamera">Camera</label>
           <input type="text" id="fieldCamera" placeholder="e.g. ZWO ASI224MC">
         </div>
       </div>
 
-      <label class="field-label">Telescope / setup</label>
+      <label class="field-label" for="fieldSetup">Telescope / setup</label>
       <input type="text" id="fieldSetup" placeholder="e.g. 150mm Newtonian, EQ3-2 mount" required>
 
-      <label class="field-label">Description (optional)</label>
+      <label class="field-label" for="fieldNotes">Description (optional)</label>
       <textarea id="fieldNotes" rows="3" placeholder="Conditions, processing, what to look for…"></textarea>
 
       <div id="uploadError" class="upload-error" style="display:none;"></div>
@@ -2228,7 +2244,7 @@ html.intro-pending #auroraLayer span{animation-play-state:paused;}
 
 <div class="modal-overlay" id="lightboxOverlay">
   <div class="modal-shell lightbox-shell">
-    <button class="modal-close lightbox-close" id="closeLightboxBtn">✕</button>
+    <button class="modal-close lightbox-close" id="closeLightboxBtn" aria-label="Close">✕</button>
     <div class="modal-box lightbox-box">
       <div class="lb-panel">
         <div class="lb-head">
@@ -2262,7 +2278,7 @@ html.intro-pending #auroraLayer span{animation-play-state:paused;}
         </div>
 
         <form class="lb-comment-form" id="lightboxCommentForm">
-          <input type="text" id="lightboxCommentInput" placeholder="Send a transmission…" maxlength="400" autocomplete="off">
+          <input type="text" id="lightboxCommentInput" placeholder="Send a transmission…" maxlength="400" autocomplete="off" aria-label="Write a comment">
           <button type="submit">Send</button>
         </form>
       </div>
@@ -2276,7 +2292,7 @@ html.intro-pending #auroraLayer span{animation-play-state:paused;}
 
 <div class="modal-overlay" id="detailLightboxOverlay">
   <div class="modal-shell lightbox-shell">
-    <button class="modal-close lightbox-close" id="closeDetailLightboxBtn">✕</button>
+    <button class="modal-close lightbox-close" id="closeDetailLightboxBtn" aria-label="Close">✕</button>
     <div class="modal-box lightbox-box">
       <div class="lb-panel">
         <div class="lb-head">
@@ -2420,14 +2436,18 @@ setPhotoBanner('banner-gallery', ['Astrophotography', 'Orion Nebula']);
 
 
 /* ---------- night vision toggle ---------- */
-document.getElementById('nvToggle').addEventListener('click', ()=>{
-  document.body.classList.toggle('night-vision');
+const nvToggleEl = document.getElementById('nvToggle');
+nvToggleEl.addEventListener('click', ()=>{
+  const on = document.body.classList.toggle('night-vision');
+  nvToggleEl.setAttribute('aria-pressed', String(on));
 });
 
 /* ---------- mobile nav menu ---------- */
 const navMenuEl = document.getElementById('sidebarNav');
-document.getElementById('burger').addEventListener('click', ()=>{
-  navMenuEl.classList.toggle('open');
+const burgerEl = document.getElementById('burger');
+burgerEl.addEventListener('click', ()=>{
+  const open = navMenuEl.classList.toggle('open');
+  burgerEl.setAttribute('aria-expanded', String(open));
 });
 
 /* ---------- pane router (any element with data-target routes, not just top nav) ---------- */
@@ -2448,6 +2468,7 @@ function showPane(target){
   window.scrollTo({top:0, behavior:'instant'});
   try{ history.replaceState(null, '', '#'+target); }catch(err){ /* blocked in some sandboxed preview contexts — harmless to skip */ }
   navMenuEl.classList.remove('open');
+  document.getElementById('burger').setAttribute('aria-expanded', 'false');
   positionNavPill();
 }
 window.addEventListener('resize', positionNavPill);
@@ -2483,8 +2504,11 @@ document.querySelectorAll('.modal-overlay').forEach(el=>{
 (function(){
   const canvas = document.getElementById('starfield');
   const ctx = canvas.getContext('2d');
-  let w,h,stars=[],meteors=[];
+  let w,h,stars=[],meteors=[],comets=[];
   let mouseX=0, mouseY=0;
+  // comets/asteroids are pure motion — skip spawning them for anyone who's
+  // asked the OS for reduced motion (stars/parallax above already stay calm)
+  const reduceMotionMQ = window.matchMedia('(prefers-reduced-motion: reduce)');
   // Real naked-eye stars skew white/blue-white with occasional warm tones —
   // kept low-saturation so it reads as "starlight," not a rainbow.
   const PALETTE = ['#f5f3ec','#f5f3ec','#dce6ff','#dce6ff','#fff3da','#ffe3c2'];
@@ -2561,6 +2585,116 @@ document.querySelectorAll('.modal-overlay').forEach(el=>{
         len: 90 + Math.random()*60
       });
     }
+  }
+
+  // ---- comets & asteroids: slow drifters that swing past the cursor ----
+  // Unlike the fast straight-line meteors above, these cross the sky over
+  // several seconds and carry real momentum. Near the pointer they feel a
+  // gravity-style pull, bending their path into a curve and continuing on
+  // the new heading — a flyby, not an orbit. The pull is an inverse-square
+  // force, softened at close range (COMET_MIN_DIST) so it can't spike to
+  // infinity and trap one circling the cursor forever; a hard age cap below
+  // is the backstop in case an unusual approach angle still lingers.
+  const COMET_INFLUENCE_R = 230;
+  const COMET_G = 70;
+  const COMET_MIN_DIST = 65;
+  const COMET_MAX_SPEED = 4.5;
+  const COMET_MAX_AGE = 900; // ~15s at 60fps — safety net, not the usual exit path
+
+  function maybeSpawnComet(){
+    if(comets.length >= 3 || Math.random() > 0.0018) return;
+    const asteroid = Math.random() < 0.45;
+    const margin = 60;
+    const edge = Math.floor(Math.random()*4); // 0 left, 1 right, 2 top, 3 bottom
+    let x,y,angle;
+    if(edge===0){       x=-margin;   y=Math.random()*h; angle = -0.5+Math.random(); }
+    else if(edge===1){  x=w+margin;  y=Math.random()*h; angle = Math.PI-0.5+Math.random(); }
+    else if(edge===2){  x=Math.random()*w; y=-margin;   angle = Math.PI/2-0.5+Math.random(); }
+    else{                x=Math.random()*w; y=h+margin;  angle = -Math.PI/2-0.5+Math.random(); }
+    const speed = asteroid ? (1.2+Math.random()*0.7) : (1.6+Math.random()*1.0);
+    comets.push({
+      x, y, vx:Math.cos(angle)*speed, vy:Math.sin(angle)*speed,
+      asteroid, r: asteroid ? (1.1+Math.random()*1.2) : (1.3+Math.random()*1.0),
+      rot: Math.random()*Math.PI*2, rotSpeed:(Math.random()-0.5)*0.05,
+      trail: [], maxTrail: asteroid ? 16 : 36,
+      age: 0
+    });
+  }
+
+  function updateAndDrawComets(nv){
+    maybeSpawnComet();
+    for(let i=comets.length-1;i>=0;i--){
+      const c = comets[i];
+      c.age++;
+      if(mouseActive){
+        const dx = mousePxX-c.x, dy = mousePxY-c.y;
+        const distSq = dx*dx+dy*dy;
+        if(distSq < COMET_INFLUENCE_R*COMET_INFLUENCE_R){
+          const dist = Math.sqrt(distSq);
+          const pull = COMET_G / Math.max(distSq, COMET_MIN_DIST*COMET_MIN_DIST);
+          c.vx += (dx/dist)*pull;
+          c.vy += (dy/dist)*pull;
+          const sp = Math.hypot(c.vx,c.vy);
+          if(sp > COMET_MAX_SPEED){ c.vx = c.vx/sp*COMET_MAX_SPEED; c.vy = c.vy/sp*COMET_MAX_SPEED; }
+        }
+      }
+      c.x += c.vx; c.y += c.vy;
+      c.rot += c.rotSpeed;
+      c.trail.push({x:c.x, y:c.y});
+      if(c.trail.length > c.maxTrail) c.trail.shift();
+
+      const offscreen = c.x<-150 || c.x>w+150 || c.y<-150 || c.y>h+150;
+      if(offscreen || c.age > COMET_MAX_AGE){ comets.splice(i,1); continue; }
+      drawComet(c, nv);
+    }
+  }
+
+  function drawComet(c, nv){
+    const trail = c.trail;
+    if(trail.length > 1){
+      if(c.asteroid){
+        const rgb = nv ? '255,120,110' : '168,163,150';
+        ctx.beginPath();
+        ctx.moveTo(trail[0].x, trail[0].y);
+        for(let i=1;i<trail.length;i++) ctx.lineTo(trail[i].x, trail[i].y);
+        ctx.strokeStyle = `rgba(${rgb},0.16)`;
+        ctx.lineWidth = c.r*0.8;
+        ctx.lineCap = 'round';
+        ctx.stroke();
+      } else {
+        const rgb = nv ? '255,150,140' : '160,220,255';
+        for(let i=1;i<trail.length;i++){
+          const t = i/trail.length;
+          ctx.beginPath();
+          ctx.moveTo(trail[i-1].x, trail[i-1].y);
+          ctx.lineTo(trail[i].x, trail[i].y);
+          ctx.strokeStyle = `rgba(${rgb},${t*0.5})`;
+          ctx.lineWidth = c.r*(0.4+t*1.1);
+          ctx.lineCap = 'round';
+          ctx.stroke();
+        }
+      }
+    }
+    ctx.save();
+    ctx.translate(c.x, c.y);
+    if(c.asteroid){
+      ctx.rotate(c.rot);
+      const rgb = nv ? '255,150,140' : '198,192,178';
+      ctx.fillStyle = `rgba(${rgb},0.85)`;
+      ctx.beginPath();
+      ctx.ellipse(0,0,c.r*1.3,c.r,0,0,Math.PI*2);
+      ctx.fill();
+    } else {
+      const rgb = nv ? '255,170,160' : '215,238,255';
+      const glow = ctx.createRadialGradient(0,0,0,0,0,c.r*4.5);
+      glow.addColorStop(0, `rgba(${rgb},0.85)`);
+      glow.addColorStop(1, `rgba(${rgb},0)`);
+      ctx.fillStyle = glow;
+      ctx.beginPath(); ctx.arc(0,0,c.r*4.5,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle = `rgba(${rgb},1)`;
+      ctx.beginPath(); ctx.arc(0,0,c.r,0,Math.PI*2); ctx.fill();
+    }
+    ctx.restore();
   }
 
   function drawMilkyWayGlow(nv){
@@ -2649,6 +2783,9 @@ document.querySelectorAll('.modal-overlay').forEach(el=>{
       m.x += dx*m.speed; m.y += dy*m.speed;
       m.life -= 0.012;
     }
+
+    if(!reduceMotionMQ.matches) updateAndDrawComets(nv);
+
     requestAnimationFrame(draw);
   }
   requestAnimationFrame(draw);
@@ -4303,7 +4440,7 @@ function renderGallery(){
         <div class="gallery-card-foot">
           <div class="gallery-user">
             <img class="gallery-avatar" src="${p.userPhoto || ''}" alt="">
-            <span>${escapeHtml(p.userName || 'Member')} · ${timeAgo(p.createdAt)}</span>
+            <span>${escapeHtml(p.userName || 'Member')} · ${timeAgo(p.originalUploadDate || p.createdAt)}</span>
           </div>
           <button class="ascend-btn${isAscended?' ascended':''}" data-ascend-id="${p.id}">▲ <span>${ascendedBy.length}</span></button>
         </div>
@@ -4485,7 +4622,7 @@ function openLightbox(id){
   document.getElementById('lightboxImg').src = p.imageUrl;
   document.getElementById('lightboxTitle').textContent = p.title || p.object;
   document.getElementById('lightboxMeta').textContent = `${escapeHtml(p.object)}${p.capturedDate ? ' · '+p.capturedDate : ''}${p.camera ? ' · '+p.camera : ''} · ${escapeHtml(p.telescope||'')}`;
-  document.getElementById('lightboxUser').innerHTML = `<img src="${p.userPhoto||''}" alt=""><span>Posted by ${escapeHtml(p.userName||'Member')} · ${timeAgo(p.createdAt)}</span>`;
+  document.getElementById('lightboxUser').innerHTML = `<img src="${p.userPhoto||''}" alt=""><span>Posted by ${escapeHtml(p.userName||'Member')} · ${timeAgo(p.originalUploadDate || p.createdAt)}</span>`;
   document.getElementById('lightboxNotes').textContent = p.description || 'No additional notes.';
 
   const ascendedBy = p.ascendedBy || [];
@@ -4529,8 +4666,16 @@ document.getElementById('deleteEntryBtn').addEventListener('click', async ()=>{
 
 /* ---------- comments (live subcollection: posts/{id}/comments) ---------- */
 function timeAgo(ts){
-  if(!ts || !ts.toDate) return 'just now';
-  const diffMs = Date.now() - ts.toDate().getTime();
+  if(!ts) return 'just now';
+  // Accepts a Firestore Timestamp (has .toDate()) OR a plain value —
+  // an ISO string, 'YYYY-MM-DD', a JS Date, or a millisecond number.
+  // The second form lets a post carry a manually-set, trustworthy
+  // original date (e.g. p.originalUploadDate) for cases where the
+  // Firestore createdAt stamp reflects an import/migration rather
+  // than when the photo actually went up.
+  const d = typeof ts.toDate === 'function' ? ts.toDate() : new Date(ts);
+  if(isNaN(d.getTime())) return 'just now';
+  const diffMs = Date.now() - d.getTime();
   const mins = Math.floor(diffMs/60000);
   if(mins < 1) return 'just now';
   if(mins < 60) return mins+'m ago';
@@ -4714,16 +4859,29 @@ async function initSatGlobe(THREE, visibility){
   if(!container) return;
 
   const EARTH_RADIUS_KM = 6371;
-  // Real altitude-to-Earth-radius ratios are tiny (LEO sats sit only ~6-13%
-  // of a radius above the surface) but read as an oddly wide gap once
-  // rendered on a small globe. This compresses just the rendered distance —
-  // the numeric altitude/speed/period stats shown elsewhere stay accurate.
+  // Real altitude-to-Earth-radius ratios are tiny for LEO (sats sit only
+  // ~6-13% of a radius above the surface) but read as an oddly wide gap
+  // once rendered on a small globe, so that range is still just linearly
+  // compressed as before. MEO/GEO satellites (added for the tracker's GPS,
+  // weather, and NavIC entries) sit 3-6 Earth radii out — run through the
+  // same linear factor, that would land past the camera entirely. Beyond
+  // the LEO range this instead grows logarithmically, so a GEO marker
+  // still reads as visibly farther out than an MEO one, which in turn
+  // reads farther than LEO, without ever leaving the camera's view.
+  // The numeric altitude/speed/period stats shown elsewhere are computed
+  // from the real, uncompressed values and are unaffected by this.
   const ALT_VISUAL_SCALE = 0.45;
+  const LEO_RATIO_CUTOFF = 0.15;
+  function toVisualAltRatio(altRatio){
+    if(altRatio <= LEO_RATIO_CUTOFF) return altRatio * ALT_VISUAL_SCALE;
+    const leoVisual = LEO_RATIO_CUTOFF * ALT_VISUAL_SCALE;
+    return leoVisual + Math.log(1 + (altRatio - LEO_RATIO_CUTOFF)) * 0.65;
+  }
 
   const SATELLITES = {
     '25544': {
       name: 'International Space Station', color: 0xe8b04b,
-      desc: "The International Space Station circles Earth roughly every 92 minutes at about 400\u00A0km up, moving close to 27,600\u00A0km/h — fast enough to cross the continental US in under 10 minutes. Drag the globe to look around; the marker below tracks its real position live.",
+      desc: "The International Space Station circles Earth roughly every 92 minutes at about 400\u00A0km up, moving close to 27,600\u00A0km/h — fast enough to cross the continental US in under 10 minutes. Drag (or swipe on mobile) the globe to look around; the marker below tracks its real position live.",
       fact: "The ISS is the largest object humans have ever assembled in orbit — its solar arrays alone span nearly the length of a football field.",
       wiki: ['International Space Station']
     },
@@ -4762,6 +4920,30 @@ async function initSatGlobe(THREE, visibility){
       desc: "Landsat 9 is the newest satellite in the world's longest-running Earth-imaging program, launched in 2021 into a Sun-synchronous orbit at about 705\u00A0km. Flying alongside Landsat 8, it re-photographs every spot on Earth every 8 days between the two of them.",
       fact: "Landsat 9's camera reads 16,384 shades of brightness in every color channel — 14-bit vision versus Landsat 8's 12-bit, 4,096 shades — making it noticeably sharper at picking out subtle changes in murky water, haze, and shadowed forest.",
       wiki: ['Landsat 9']
+    },
+    '60133': {
+      name: 'GOES-19 (NOAA weather satellite)', color: 0xffe066,
+      desc: "GOES-19 is NOAA's newest weather eye on the Americas, parked in geostationary orbit roughly 35,800\u00A0km up — nearly 5.6 Earth radii above the surface. At that altitude its orbit takes almost exactly 24 hours, the same as Earth's own rotation, so instead of racing across the globe like the satellites above, it appears to hang almost motionless over one spot on the equator (75°W). It took over as GOES-East in April 2025, watching hurricanes and storms form in real time across the Americas and the Atlantic.",
+      fact: "GOES-19 sits so far out that light itself takes a measurable moment to make the trip — about 0.12 seconds each way — a small but real delay baked into every live weather image it beams down.",
+      wiki: ['GOES-19', 'GOES-R']
+    },
+    '43873': {
+      name: 'GPS III "Vespucci" (navigation)', color: 0xa0c4ff,
+      desc: "Vespucci (USA-289) was the first satellite of the modernized GPS III generation, launched in December 2018 into medium Earth orbit at about 20,200\u00A0km — well above the satellites nearer Earth above, though nowhere near as far out as a geostationary one. It completes a full orbit every 12 hours, and is one of over 30 GPS satellites working together so every phone, car, and plane on the ground can tell exactly where it is.",
+      fact: "Vespucci was the first GPS satellite ever built able to broadcast the civilian L1C signal — a modern upgrade meant to punch through city interference better, which its newer siblings now rely on too.",
+      wiki: ['USA-289', 'GPS Block III', 'Global Positioning System']
+    },
+    '56759': {
+      name: 'NVS-01 (NavIC navigation, India)', color: 0xff9933,
+      desc: "NVS-01 is the first of ISRO's second-generation NavIC satellites — India's own regional answer to GPS — launched in May 2023 into geosynchronous orbit at 129.55°E. Like GOES-19, its roughly 24-hour orbit keeps it parked almost motionless in the sky, this time above the Indian Ocean, continuously broadcasting positioning signals across India and the surrounding region.",
+      fact: "NVS-01 carries India's first indigenous atomic clock, built at ISRO's Space Applications Centre after the imported Rubidium clocks on earlier NavIC satellites kept failing in orbit — one of only a handful of homegrown satellite atomic clocks flying anywhere in the world.",
+      wiki: ['NVS-01', 'Indian Regional Navigation Satellite System']
+    },
+    '27386': {
+      name: 'Envisat (defunct — space debris)', color: 0x9a9a9a,
+      desc: "Envisat was the largest civilian Earth-observation satellite ever built — over 8,200\u00A0kg and about 26\u00A0m long, roughly the length of a basketball court — launched by ESA in 2002 into a polar orbit at about 770\u00A0km. It abruptly stopped responding in April 2012 with no warning and no way to command it, and has been silently orbiting dead ever since.",
+      fact: "Because Envisat can no longer maneuver out of the way of anything, tracking agencies watch it closely — a collision with an object this size would scatter dangerous debris across a heavily used orbit for decades. It's expected to keep circling Earth, dead, for roughly another 150 years.",
+      wiki: ['Envisat']
     }
   };
 
@@ -4872,7 +5054,7 @@ async function initSatGlobe(THREE, visibility){
   }
 
   function setMarkerPosition(lat, lng, altRatio, prevLat, prevLng){
-    const visualAltRatio = altRatio * ALT_VISUAL_SCALE;
+    const visualAltRatio = toVisualAltRatio(altRatio);
     const p = latLngToVec3(lat, lng, R*(1+visualAltRatio));
     issGroup.position.copy(p);
     updateOrbitRing(lat, lng, prevLat, prevLng, visualAltRatio);
@@ -4939,19 +5121,53 @@ async function initSatGlobe(THREE, visibility){
     }
   })();
 
-  // drag to rotate, gentle auto-spin when idle
-  let autoRotate = true, dragging = false, lastX=0, lastY=0;
+  // drag to rotate (mouse, touch, and pen), gentle auto-spin when idle.
+  // Pointer Events unify all three input types, but a finger drag on a
+  // small phone-sized globe easily strays outside the canvas mid-gesture —
+  // without pointer capture (guarded here, since a handful of older
+  // in-app/WebView browsers throw on an invalid pointer id) and without a
+  // pointercancel handler (the OS can cancel a touch gesture partway
+  // through, e.g. a notification pull-down), the drag would silently stop
+  // updating, which reads as "the globe won't rotate on my phone."
+  let autoRotate = true, dragging = false, lastX=0, lastY=0, activePointerId=null;
   let rotY = globeGroup.rotation.y, rotX = globeGroup.rotation.x;
   const el = renderer.domElement;
-  el.addEventListener('pointerdown', e=>{ dragging=true; autoRotate=false; lastX=e.clientX; lastY=e.clientY; el.setPointerCapture(e.pointerId); });
-  el.addEventListener('pointerup', e=>{ dragging=false; el.releasePointerCapture(e.pointerId); });
-  el.addEventListener('pointermove', e=>{
+  el.style.touchAction = 'none'; // set directly on the canvas as well as via CSS —
+                                  // belt-and-suspenders for mobile browsers that don't
+                                  // reliably pick up touch-action from an ancestor
+
+  function dragStart(x, y){ dragging=true; autoRotate=false; lastX=x; lastY=y; }
+  function dragMove(x, y){
     if(!dragging) return;
-    rotY += (e.clientX-lastX)*0.006;
-    rotX += (e.clientY-lastY)*0.006;
+    rotY += (x-lastX)*0.006;
+    rotX += (y-lastY)*0.006;
     rotX = Math.max(-1.1, Math.min(1.1, rotX));
-    lastX=e.clientX; lastY=e.clientY;
-  });
+    lastX=x; lastY=y;
+  }
+  function dragEnd(){ dragging=false; activePointerId=null; }
+
+  if(window.PointerEvent){
+    el.addEventListener('pointerdown', e=>{
+      dragStart(e.clientX, e.clientY);
+      activePointerId = e.pointerId;
+      try{ el.setPointerCapture(e.pointerId); }catch(err){ /* invalid/expired pointer id on some older WebViews — dragMove still runs off lastX/lastY */ }
+    });
+    el.addEventListener('pointerup', e=>{
+      try{ el.releasePointerCapture(e.pointerId); }catch(err){ /* capture was never acquired — nothing to release */ }
+      dragEnd();
+    });
+    el.addEventListener('pointercancel', dragEnd);
+    el.addEventListener('pointermove', e=>{ if(e.pointerId===activePointerId) dragMove(e.clientX, e.clientY); });
+  } else {
+    // Fallback for the small minority of browsers without Pointer Events support
+    el.addEventListener('touchstart', e=>{ const t=e.touches[0]; if(t) dragStart(t.clientX, t.clientY); }, {passive:true});
+    el.addEventListener('touchmove', e=>{ const t=e.touches[0]; if(t){ dragMove(t.clientX, t.clientY); e.preventDefault(); } }, {passive:false});
+    el.addEventListener('touchend', dragEnd);
+    el.addEventListener('touchcancel', dragEnd);
+    el.addEventListener('mousedown', e=>dragStart(e.clientX, e.clientY));
+    window.addEventListener('mousemove', e=>dragMove(e.clientX, e.clientY));
+    window.addEventListener('mouseup', dragEnd);
+  }
 
   function resize(){
     const w = container.clientWidth||1, h = container.clientHeight||1;
